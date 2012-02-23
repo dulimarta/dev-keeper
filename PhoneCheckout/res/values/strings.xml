@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, PhoneCheckoutActivity!</string>
+    <string name="app_name">PhoneCheckout</string>
+    <string name="checkout">Checkout New Phone</string>
+    <string name="uid_prompt">Select student</string>
+    <string name="clear_sig">Clear Signature</string>
+
+</resources>
