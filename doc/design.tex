@@ -63,7 +63,7 @@
          % otherwise the current date is printed 
 
 \begin{document}
-%\landscape
+\landscape
 \maketitle
 
 \section{Introduction}
@@ -89,7 +89,7 @@ was checked out. It makes another HTTP GET to
 http://.../checkout.php?device=xyz and receives a JSON output that
 includes the device id, the user id, name of the student who checked
 the phone out, and timestamp of checkout. This information is produced
-by PHP scrip that runs queries to a MySQL database running on the EOS
+by PHP script that runs queries to a MySQL database running on the EOS
 server.
 \lstinputlisting[firstline=96,lastline=104]{IMEI2QRActivity.java}
 
@@ -167,4 +167,12 @@ To record a signature with multiple strokes:
    \end{itemize}
 \end{itemize}
 
+\section{Downloading The Source Code}
+The source code of these two apps are available for download from the CIS git repository.
+Use the following URI:
+
+\begin{center}
+\texttt{cis163@eos08.cis.gvsu.edu:PhoneCheckout.git}
+\end{center}
+[You can always replace eos08 with any other eosxx hostname]
 \end{document}
