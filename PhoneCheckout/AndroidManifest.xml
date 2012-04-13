@@ -21,7 +21,6 @@
         </activity>
         <activity
             android:name="PhoneCheckoutActivity"
-            android:screenOrientation="sensorLandscape" >
-        </activity>
+            android:screenOrientation="landscape"></activity>
     </application>
 </manifest>
