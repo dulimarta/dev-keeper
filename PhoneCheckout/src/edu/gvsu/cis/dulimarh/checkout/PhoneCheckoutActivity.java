@@ -56,9 +56,6 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 public class PhoneCheckoutActivity extends Activity {
     final String TAG = getClass().getName();
-//    private static final String BASE_URL = "http://www.cis.gvsu.edu/~dulimarh/CS367/CheckOut/";
-//    private static final String CHECKOUT_URL = BASE_URL + "checkout.php";
-//    private static final String USER_URL = BASE_URL + "users.php";
 
     private SignatureView signature;
     private Button checkout, clear;
@@ -180,30 +177,7 @@ public class PhoneCheckoutActivity extends Activity {
                 {
                     allUsers.add(obj.getString("user_id"));
                 }
-                /*
-                URL url = new URL(params[0]);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                Scanner scan = new Scanner(conn.getInputStream());
-                String str = "";
-                while (scan.hasNextLine()) {
-                    str += scan.nextLine();
-                }
-                Log.d(TAG, "JSON string " + str);
-                JSONObject obj = new JSONObject(str);
-                JSONArray users = obj.getJSONArray("users");
-                for (int k = 0; k < users.length(); k++) {
-                    JSONObject us = users.getJSONObject(k);
-                    String userid = us.getString("userid");
-                    allUsers.add(userid);
-                }
-                */
-            } /*catch (MalformedURLException e) {
-                Log.e(TAG, "MalformedURL " + e);
-            } catch (IOException e) {
-                Log.e(TAG, "IOException " + e);
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException " + e);
-            } */catch (ParseException e) {
+            } catch (ParseException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }

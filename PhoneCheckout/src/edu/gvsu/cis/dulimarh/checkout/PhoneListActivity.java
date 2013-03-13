@@ -1,23 +1,12 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.parse.Parse;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -27,14 +16,23 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
+
+import com.parse.FindCallback;
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 
 
 public class PhoneListActivity extends ListActivity {
     private final String TAG = getClass().getName();
+    private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
     
     private Button checkout;
     private SimpleAdapter adapter;
     private ArrayList<Map<String,String>> checkouts;
+    
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -50,12 +48,9 @@ public class PhoneListActivity extends ListActivity {
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
                 new String[] {"dev_id", "user_id"},
                 new int[] {android.R.id.text1, android.R.id.text2});
-//        adapter = new ArrayAdapter<String>(this, 
-//                android.R.layout.simple_list_item_2, checkouts);
         setListAdapter(adapter);
     }
 
-    
     /* (non-Javadoc)
      * @see android.app.Activity#onResume()
      */
@@ -73,12 +68,36 @@ public class PhoneListActivity extends ListActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
-                String contents = data.getStringExtra("SCAN_RESULT");
-                String format = data.getStringExtra("SCAN_RESULT_FORMAT");
-                Intent next = new Intent (PhoneListActivity.this, PhoneCheckoutActivity.class);
-                next.putExtra("dev_id", contents);
-                startActivity(next);
-                Log.d(TAG, contents + " => " + format);
+                final String contents = data.getStringExtra("SCAN_RESULT");
+//                String format = data.getStringExtra("SCAN_RESULT_FORMAT");
+                ParseQuery idQuery = new ParseQuery("DevOut");
+                idQuery.whereEqualTo("dev_id",  contents);
+                idQuery.findInBackground(new FindCallback() {
+                    
+                    @Override
+                    public void done(List<ParseObject> result, ParseException ex) {
+                        if (ex == null) {
+                            if (result.size() == 0) {
+                                Intent next = new Intent(
+                                        PhoneListActivity.this,
+                                        PhoneCheckoutActivity.class);
+                                next.putExtra("dev_id", contents);
+                                startActivity(next);
+                            }
+                            else {
+                                showDialog(DIALOG_ALREADY_CHECKEDOUT);
+                                Toast.makeText(PhoneListActivity.this, 
+                                        "The device is already checkout", Toast.LENGTH_LONG).
+                                        show();
+                            }
+                        }
+                        else {
+                            Toast.makeText(PhoneListActivity.this, 
+                                    "Error in querying device id: " + ex.getMessage(), 
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
             else if (resultCode == RESULT_CANCELED) {
                 Log.d(TAG, "Scanning cancelled");
@@ -103,27 +122,6 @@ public class PhoneListActivity extends ListActivity {
         protected Void doInBackground(Void... params) {
             try {
                 ParseQuery checkOutQuery = new ParseQuery("DevOut");
-                /*
-                URL url = new URL("http://www.cis.gvsu.edu/~dulimarh/CS163H/CheckOut/checkout.php");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                Scanner scan = new Scanner(conn.getInputStream());
-                String str = "";
-                while (scan.hasNextLine()) {
-                    str += scan.nextLine();
-                }
-                JSONObject obj = new JSONObject(str);
-                JSONArray users = obj.getJSONArray("checkouts");
-                checkouts.clear();
-                for (int k = 0; k < users.length(); k++) {
-                    JSONObject us = users.getJSONObject(k);
-                    String userid = us.getString("name");
-                    String device = us.getString("device_id");
-                    Map<String,String> dev_u = new HashMap<String, String>();
-                    dev_u.put("dev", device);
-                    dev_u.put("user", userid);
-                    checkouts.add(dev_u);
-                }
-                */
                 checkouts.clear();
                 for (ParseObject obj : checkOutQuery.find())
                 {
@@ -132,13 +130,7 @@ public class PhoneListActivity extends ListActivity {
                     dev_u.put("user_id", obj.getString("user_id"));
                     checkouts.add(dev_u);
                 }
-            } /*catch (MalformedURLException e) {
-                Log.e(TAG, "MalformedURL " + e);
-            } catch (IOException e) {
-                Log.e(TAG, "IOException " + e);
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException " + e);
-            } */catch (ParseException e) {
+            } catch (ParseException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -154,4 +146,22 @@ public class PhoneListActivity extends ListActivity {
         }
         
     }
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onCreateDialog(int)
+     */
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        switch (id) {
+        case DIALOG_ALREADY_CHECKEDOUT:
+            builder.setMessage("The scanned device is already checked out");
+            builder.setTitle("Warning");
+            builder.setPositiveButton("OK", null);
+            break;
+        }
+        return builder.create();
+    }
+    
+    
 }
