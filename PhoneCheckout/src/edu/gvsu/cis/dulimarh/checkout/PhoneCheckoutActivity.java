@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -9,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -28,6 +30,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.SaveCallback;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -43,13 +51,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
 public class PhoneCheckoutActivity extends Activity {
     final String TAG = getClass().getName();
-    private static final String BASE_URL = "http://www.cis.gvsu.edu/~dulimarh/CS367/CheckOut/";
-    private static final String CHECKOUT_URL = BASE_URL + "checkout.php";
-    private static final String USER_URL = BASE_URL + "users.php";
+//    private static final String BASE_URL = "http://www.cis.gvsu.edu/~dulimarh/CS367/CheckOut/";
+//    private static final String CHECKOUT_URL = BASE_URL + "checkout.php";
+//    private static final String USER_URL = BASE_URL + "users.php";
 
     private SignatureView signature;
     private Button checkout, clear;
@@ -77,7 +86,7 @@ public class PhoneCheckoutActivity extends Activity {
         uid.setAdapter(adapt);
         uid.setOnItemSelectedListener(uidChooser);
         UserTask uname = new UserTask();
-        uname.execute(USER_URL);
+        uname.execute(/*USER_URL*/);
         checkout.setOnClickListener(btnHandler);
         clear.setOnClickListener(btnHandler);
         signature.setDrawingCacheEnabled(true);
@@ -100,32 +109,35 @@ public class PhoneCheckoutActivity extends Activity {
         }
     }
     
-    private void post () {
-        saveBitmap ("sig.png");
-        HttpClient client = new DefaultHttpClient();
-        HttpContext ctx = new BasicHttpContext();
-        HttpPost poster = new HttpPost(CHECKOUT_URL);
-        MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+    private void post()
+    {
+        Bitmap sig = signature.getDrawingCache();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        sig.compress(CompressFormat.PNG, 90, stream);
+        ParseFile sigFile = new ParseFile ((String) uid.getSelectedItem() + ".png",
+                stream.toByteArray());
         try {
-            entity.addPart("name", new StringBody((String) uid.getSelectedItem()));
-            entity.addPart("device", new StringBody(URLEncoder.encode(deviceId)));
-            entity.addPart("time", new StringBody(String.valueOf(System.currentTimeMillis())));
-            File img = new File (Environment.getExternalStorageDirectory() + "/sig.png");
-            entity.addPart("image", new FileBody(img));
-            poster.setEntity(entity);
-            HttpResponse resp = client.execute(poster, ctx);
-            Log.d(TAG, "After client.execute() status is " + resp.getStatusLine().toString());
-            if (resp.getStatusLine().getStatusCode() == 200) {
-                Scanner scan = new Scanner(resp.getEntity().getContent());
-                while (scan.hasNextLine())
-                    Log.d(TAG, scan.nextLine());
-            }
-        } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, "Unsupported exception " + e);
-        } catch (ClientProtocolException e) {
-            Log.e(TAG, "Client Protocol exception " + e);
-        } catch (IOException e) {
-            Log.e(TAG, "IO exception " + e);
+            sigFile.save();
+            ParseObject checkout = new ParseObject("DevOut");
+            checkout.put("dev_id", deviceId);
+            checkout.put("user_id", (String)uid.getSelectedItem());
+            checkout.put("signature", sigFile);
+            checkout.saveInBackground(new SaveCallback() {
+                
+                @Override
+                public void done(ParseException e) {
+                    if (e == null)
+                        finish();
+                    else
+                        Toast.makeText(PhoneCheckoutActivity.this, 
+                                "Cannot checkout device: " + e.getMessage(), 
+                                Toast.LENGTH_LONG).show();
+                }
+            });
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+            Toast.makeText(this, "Cannot save signature file: " + e1.getMessage(), 
+                    Toast.LENGTH_LONG).show();
         }
     }
     
@@ -162,6 +174,13 @@ public class PhoneCheckoutActivity extends Activity {
         @Override
         protected Void doInBackground(String... params) {
             try {
+                ParseQuery userQuery = new ParseQuery("Users");
+                allUsers.clear();
+                for (ParseObject obj : userQuery.find())
+                {
+                    allUsers.add(obj.getString("user_id"));
+                }
+                /*
                 URL url = new URL(params[0]);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 Scanner scan = new Scanner(conn.getInputStream());
@@ -177,12 +196,16 @@ public class PhoneCheckoutActivity extends Activity {
                     String userid = us.getString("userid");
                     allUsers.add(userid);
                 }
-            } catch (MalformedURLException e) {
+                */
+            } /*catch (MalformedURLException e) {
                 Log.e(TAG, "MalformedURL " + e);
             } catch (IOException e) {
                 Log.e(TAG, "IOException " + e);
             } catch (JSONException e) {
                 Log.e(TAG, "JSONException " + e);
+            } */catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             return null;
         }

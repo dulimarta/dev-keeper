@@ -13,6 +13,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -21,7 +26,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 
 
@@ -38,11 +42,13 @@ public class PhoneListActivity extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.phonelist);
+        Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
+                "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
         checkout = (Button) findViewById(R.id.checkout);
         checkout.setOnClickListener(checker);
         checkouts = new ArrayList<Map<String,String>>();
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
-                new String[] {"dev", "user"},
+                new String[] {"dev_id", "user_id"},
                 new int[] {android.R.id.text1, android.R.id.text2});
 //        adapter = new ArrayAdapter<String>(this, 
 //                android.R.layout.simple_list_item_2, checkouts);
@@ -96,6 +102,8 @@ public class PhoneListActivity extends ListActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
+                ParseQuery checkOutQuery = new ParseQuery("DevOut");
+                /*
                 URL url = new URL("http://www.cis.gvsu.edu/~dulimarh/CS163H/CheckOut/checkout.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 Scanner scan = new Scanner(conn.getInputStream());
@@ -115,12 +123,24 @@ public class PhoneListActivity extends ListActivity {
                     dev_u.put("user", userid);
                     checkouts.add(dev_u);
                 }
-            } catch (MalformedURLException e) {
+                */
+                checkouts.clear();
+                for (ParseObject obj : checkOutQuery.find())
+                {
+                    Map<String,String> dev_u = new HashMap<String, String>();
+                    dev_u.put("dev_id", obj.getString("dev_id"));
+                    dev_u.put("user_id", obj.getString("user_id"));
+                    checkouts.add(dev_u);
+                }
+            } /*catch (MalformedURLException e) {
                 Log.e(TAG, "MalformedURL " + e);
             } catch (IOException e) {
                 Log.e(TAG, "IOException " + e);
             } catch (JSONException e) {
                 Log.e(TAG, "JSONException " + e);
+            } */catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             return null;
         }
