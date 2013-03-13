@@ -64,6 +64,7 @@ public class PhoneCheckoutActivity extends Activity {
     private ArrayList<CharSequence> allUsers;
     private ArrayAdapter<CharSequence> adapt;
     private String deviceId;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

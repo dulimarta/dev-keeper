@@ -1,6 +1,8 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,6 +132,14 @@ public class PhoneListActivity extends ListActivity {
                     dev_u.put("user_id", obj.getString("user_id"));
                     checkouts.add(dev_u);
                 }
+                Collections.sort(checkouts, new Comparator<Map<String,String>>() {
+
+                    @Override
+                    public int compare(Map<String, String> one,
+                            Map<String, String> two) {
+                        return one.get("user_id").compareTo(two.get("user_id"));
+                    }
+                });
             } catch (ParseException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
