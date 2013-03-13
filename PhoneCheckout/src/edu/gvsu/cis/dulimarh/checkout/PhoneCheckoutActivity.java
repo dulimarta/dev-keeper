@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -46,7 +47,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 public class PhoneCheckoutActivity extends Activity {
     final String TAG = getClass().getName();
-    private static final String BASE_URL = "http://www.cis.gvsu.edu/~dulimarh/CS163H/CheckOut/";
+    private static final String BASE_URL = "http://www.cis.gvsu.edu/~dulimarh/CS367/CheckOut/";
     private static final String CHECKOUT_URL = BASE_URL + "checkout.php";
     private static final String USER_URL = BASE_URL + "users.php";
 
@@ -107,7 +108,7 @@ public class PhoneCheckoutActivity extends Activity {
         MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
         try {
             entity.addPart("name", new StringBody((String) uid.getSelectedItem()));
-            entity.addPart("device", new StringBody(deviceId));
+            entity.addPart("device", new StringBody(URLEncoder.encode(deviceId)));
             entity.addPart("time", new StringBody(String.valueOf(System.currentTimeMillis())));
             File img = new File (Environment.getExternalStorageDirectory() + "/sig.png");
             entity.addPart("image", new FileBody(img));
