@@ -5,6 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.json.JSONArray;
@@ -18,16 +20,17 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.SimpleAdapter;
 
 
 public class PhoneListActivity extends ListActivity {
     private final String TAG = getClass().getName();
     
     private Button checkout;
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> checkouts;
+    private SimpleAdapter adapter;
+    private ArrayList<Map<String,String>> checkouts;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -37,9 +40,12 @@ public class PhoneListActivity extends ListActivity {
         setContentView(R.layout.phonelist);
         checkout = (Button) findViewById(R.id.checkout);
         checkout.setOnClickListener(checker);
-        checkouts = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(this, 
-                android.R.layout.simple_list_item_1, checkouts);
+        checkouts = new ArrayList<Map<String,String>>();
+        adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
+                new String[] {"dev", "user"},
+                new int[] {android.R.id.text1, android.R.id.text2});
+//        adapter = new ArrayAdapter<String>(this, 
+//                android.R.layout.simple_list_item_2, checkouts);
         setListAdapter(adapter);
     }
 
@@ -104,7 +110,10 @@ public class PhoneListActivity extends ListActivity {
                     JSONObject us = users.getJSONObject(k);
                     String userid = us.getString("name");
                     String device = us.getString("device_id");
-                    checkouts.add(device + " " + userid);
+                    Map<String,String> dev_u = new HashMap<String, String>();
+                    dev_u.put("dev", device);
+                    dev_u.put("user", userid);
+                    checkouts.add(dev_u);
                 }
             } catch (MalformedURLException e) {
                 Log.e(TAG, "MalformedURL " + e);

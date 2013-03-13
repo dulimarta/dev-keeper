@@ -28,4 +28,12 @@
         android:gravity="center"
         android:text="" 
         android:textAppearance="?android:attr/textAppearanceMedium" />
+    <Button
+        android:id="@+id/refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/user"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Refresh" />
 </RelativeLayout>

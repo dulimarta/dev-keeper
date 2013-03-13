@@ -22,11 +22,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,6 +43,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private TextView id, user;
     private ImageView qr;
     private ProgressDialog progress;
+    private Button reload;
     private String devId;
     private URLTask myTask;
     
@@ -51,10 +54,12 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         setContentView(R.layout.main);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
+        reload = (Button) findViewById(R.id.refresh);
+        reload.setVisibility(View.INVISIBLE);
         qr = (ImageView) findViewById(R.id.qr_code);
         qr.setOnClickListener(this);
         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-        devId = wm.getConnectionInfo().getMacAddress();
+        devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
         id.setText(devId);
         myTask = new URLTask();
         myTask.execute();
@@ -129,8 +134,18 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             dismissDialog(0);
             Object[] res = (Object[]) result;
             qr.setImageBitmap((Bitmap)res[0]);
-            if (res[1] != null)
+            if (res[1] != null) {
                 user.setText("Checked out by " + (String) res[1]);
+                reload.setVisibility(View.VISIBLE);
+                reload.setOnClickListener(new OnClickListener() {
+                    
+                    @Override
+                    public void onClick(View v) {
+                        URLTask ut = new URLTask();
+                        ut.execute();
+                    }
+                });
+            }
         }
 
         /* (non-Javadoc)

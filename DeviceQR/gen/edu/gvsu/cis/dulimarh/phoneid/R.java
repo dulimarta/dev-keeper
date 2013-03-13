@@ -17,6 +17,7 @@ public final class R {
         public static final int RelativeLayout1=0x7f050000;
         public static final int id=0x7f050002;
         public static final int qr_code=0x7f050001;
+        public static final int refresh=0x7f050004;
         public static final int user=0x7f050003;
     }
     public static final class layout {
