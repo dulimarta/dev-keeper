@@ -20,8 +20,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
-import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 
@@ -31,6 +34,7 @@ public class PhoneListActivity extends ListActivity {
     private Button checkout;
     private SimpleAdapter adapter;
     private ArrayList<Map<String,String>> checkouts;
+    private ListView theList;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -44,11 +48,20 @@ public class PhoneListActivity extends ListActivity {
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
                 new String[] {"dev", "user"},
                 new int[] {android.R.id.text1, android.R.id.text2});
-//        adapter = new ArrayAdapter<String>(this, 
-//                android.R.layout.simple_list_item_2, checkouts);
+        theList = getListView();
         setListAdapter(adapter);
+        theList.setOnItemLongClickListener(selectionListener);
     }
 
+    private OnItemLongClickListener selectionListener = new OnItemLongClickListener() {
+
+        @Override
+        public boolean onItemLongClick(AdapterView<?> arg0, View itemView,
+                int pos, long id) {
+            Map<String,String> entry = checkouts.get(pos);
+            return false;
+        }
+    };
     
     /* (non-Javadoc)
      * @see android.app.Activity#onResume()
