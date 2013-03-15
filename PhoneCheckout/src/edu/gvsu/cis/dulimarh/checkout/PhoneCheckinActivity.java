@@ -6,7 +6,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.GetDataCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -31,9 +32,10 @@ public class PhoneCheckinActivity extends Activity {
     
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
     private final static int DIALOG_WRONG_DEVICE = 2;
-    private String user_id, dev_id;
+    private String user_id, dev_id, parseObjId;
     private TextView uid, devid, date;
     private ImageView sig;
+    private ParseFile parseSignatureFile;
     private Button checkin;
     
     /* (non-Javadoc)
@@ -51,10 +53,12 @@ public class PhoneCheckinActivity extends Activity {
         devid = (TextView) findViewById(R.id.dev_id);
         date = (TextView) findViewById(R.id.out_date);
         sig = (ImageView) findViewById(R.id.sig_imgview);
+        sig.setVisibility(View.INVISIBLE);
         checkin = (Button) findViewById(R.id.checkin);
         checkin.setEnabled(false);
         devQuery.whereEqualTo("user_id", user_id);
         //        showDialog(DIALOG_PROGRESS);
+        /* TODO: Add "Send email button"? */
         checkin.setOnClickListener(checkinListener);
         devQuery.findInBackground(new FindCallback() {
             
@@ -65,13 +69,15 @@ public class PhoneCheckinActivity extends Activity {
                     if (arg0.size() == 1)
                         try {
                             ParseObject obj = arg0.get(0);
-                            ParseFile f = (ParseFile) obj.get("signature");
+                            parseObjId = obj.getObjectId();
+                            parseSignatureFile = (ParseFile) obj.get("signature");
                             uid.setText(obj.getString("user_id"));
                             devid.setText(obj.getString("dev_id"));
                             date.setText(obj.getCreatedAt().toLocaleString());
-                            ByteArrayInputStream bis = new ByteArrayInputStream(f.getData());
+                            ByteArrayInputStream bis = new ByteArrayInputStream(parseSignatureFile.getData());
                             Drawable d = Drawable.createFromStream(bis, "");
                             sig.setImageDrawable(d);
+                            sig.setVisibility(View.VISIBLE);
                             checkin.setEnabled(true);
                             
                         } catch (ParseException e) {
@@ -92,6 +98,7 @@ public class PhoneCheckinActivity extends Activity {
         });
         
     }
+    
     private OnClickListener checkinListener = new OnClickListener() {
         
         @Override
@@ -102,21 +109,6 @@ public class PhoneCheckinActivity extends Activity {
         }
     };
 
-    private GetDataCallback dataCallback = new GetDataCallback() {
-        
-        @Override
-        public void done(byte[] arg0, ParseException arg1) {
-        }
-    };
-    
-    private ProgressCallback progressCallback = new ProgressCallback() {
-        
-        @Override
-        public void done(Integer val) {
-//            progress.setProgress(val);
-        }
-    };
-    
     /* (non-Javadoc)
      * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
      */
@@ -150,7 +142,21 @@ public class PhoneCheckinActivity extends Activity {
         case DIALOG_CONFIRM_CHECKIN:
             builder.setTitle("Confirmation Required");
             builder.setMessage("Check in device " + args.getString("dev_id") + "?");
-            builder.setPositiveButton("Yes", null);
+            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    ParseQuery qr = new ParseQuery("DevOut");
+                    qr.getInBackground(parseObjId, new GetCallback() {
+
+                        @Override
+                        public void done(ParseObject arg0, ParseException arg1) {
+                            arg0.deleteInBackground();
+                            finish();
+                        }
+                    });
+                }
+            });
             builder.setNegativeButton("No", null);
             break;
         case DIALOG_WRONG_DEVICE:

@@ -70,7 +70,7 @@ public class PhoneListActivity extends ListActivity {
      */
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if (position > 0 && position < checkouts.size())
+        if (position >= 0 && position < checkouts.size())
         {
             Map<String,String> selected = checkouts.get(position);
             String uid = selected.get("user_id");
