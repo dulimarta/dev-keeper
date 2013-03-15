@@ -1,43 +1,12 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Scanner;
-
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.SaveCallback;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.os.AsyncTask;
@@ -47,12 +16,18 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
+
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 public class PhoneCheckoutActivity extends Activity {
     final String TAG = getClass().getName();
@@ -76,8 +51,8 @@ public class PhoneCheckoutActivity extends Activity {
         devId.setText("Device ID: " + deviceId);
         uid = (Spinner) findViewById(R.id.userid);
         clear = (Button) findViewById(R.id.clear);
-        checkout = (Button) findViewById(R.id.checkout);
-        signature = (SignatureView) findViewById(R.id.signature);
+        checkout = (Button) findViewById(R.id.checkin);
+        signature = (SignatureView) findViewById(R.id.sig_imgview);
         adapt = new ArrayAdapter<CharSequence>(PhoneCheckoutActivity.this, 
                 android.R.layout.simple_spinner_item, allUsers);
         adapt.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

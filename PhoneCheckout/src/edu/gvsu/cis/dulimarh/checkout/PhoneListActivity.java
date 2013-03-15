@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -30,11 +31,13 @@ import com.parse.ParseQuery;
 public class PhoneListActivity extends ListActivity {
     private final String TAG = getClass().getName();
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
+//    private static final int DIALOG_PROGRESS = 2;
     
     private Button checkout;
     private SimpleAdapter adapter;
     private ArrayList<Map<String,String>> checkouts;
     
+//    private ProgressDialog progress;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -44,7 +47,7 @@ public class PhoneListActivity extends ListActivity {
         setContentView(R.layout.phonelist);
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
-        checkout = (Button) findViewById(R.id.checkout);
+        checkout = (Button) findViewById(R.id.checkin);
         checkout.setOnClickListener(checker);
         checkouts = new ArrayList<Map<String,String>>();
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
@@ -61,8 +64,25 @@ public class PhoneListActivity extends ListActivity {
         super.onResume();
         new CheckTask().execute();
     }
-
-
+    
+    /* (non-Javadoc)
+     * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
+     */
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        if (position > 0 && position < checkouts.size())
+        {
+            Map<String,String> selected = checkouts.get(position);
+            String uid = selected.get("user_id");
+            String devid = selected.get("dev_id");
+            Intent i = new Intent(this, PhoneCheckinActivity.class);
+            i.putExtra("user_id", uid);
+            i.putExtra("dev_id", devid);
+            startActivity(i);
+        }
+        super.onListItemClick(l, v, position, id);
+    }
+    
     /* (non-Javadoc)
      * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
      */
@@ -114,7 +134,6 @@ public class PhoneListActivity extends ListActivity {
             Intent scan = new Intent ("com.google.zxing.client.android.SCAN");
             scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
             startActivityForResult(scan, 0);
-
         }
     };
     
@@ -169,6 +188,10 @@ public class PhoneListActivity extends ListActivity {
             builder.setTitle("Warning");
             builder.setPositiveButton("OK", null);
             break;
+//        case DIALOG_PROGRESS:
+//            progress = new ProgressDialog(this);
+//            progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+//            return progress;
         }
         return builder.create();
     }

@@ -3,7 +3,7 @@
     package="edu.gvsu.cis.dulimarh.checkout"
     android:versionCode="1"
     android:versionName="1.0" >
-    <uses-sdk android:minSdkVersion="8" />
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -22,5 +22,8 @@
         <activity
             android:name="PhoneCheckoutActivity"
             android:screenOrientation="landscape"></activity>
-    </application>
+        <activity
+            android:name="PhoneCheckinActivity"
+            android:screenOrientation="landscape"></activity>
+        </application>
 </manifest>

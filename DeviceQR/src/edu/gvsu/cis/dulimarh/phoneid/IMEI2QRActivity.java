@@ -37,7 +37,6 @@ import com.parse.ParseQuery;
 
 public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
-    //http://chart.apis.google.com/chart?cht=qr&chs=230x230&chld=L&choe=UTF-8&chl=34%3A56%3A8f%3A73%3A0a
     private static final String CHART_URL = 
         "http://chart.apis.google.com/chart?cht=qr&chld=L&choe=UTF-8";
     
