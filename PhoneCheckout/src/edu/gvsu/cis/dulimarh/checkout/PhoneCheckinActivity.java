@@ -3,6 +3,9 @@ package edu.gvsu.cis.dulimarh.checkout;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -20,12 +23,12 @@ import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.GetDataCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
-import com.parse.ProgressCallback;
+import com.parse.SendCallback;
 
 public class PhoneCheckinActivity extends Activity {
     private final String TAG = getClass().getName();
@@ -36,7 +39,7 @@ public class PhoneCheckinActivity extends Activity {
     private TextView uid, devid, date;
     private ImageView sig;
     private ParseFile parseSignatureFile;
-    private Button checkin;
+    private Button checkin, ping;
     
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -55,11 +58,13 @@ public class PhoneCheckinActivity extends Activity {
         sig = (ImageView) findViewById(R.id.sig_imgview);
         sig.setVisibility(View.INVISIBLE);
         checkin = (Button) findViewById(R.id.checkin);
+        ping = (Button) findViewById(R.id.ping);
         checkin.setEnabled(false);
         devQuery.whereEqualTo("user_id", user_id);
         //        showDialog(DIALOG_PROGRESS);
         /* TODO: Add "Send email button"? */
-        checkin.setOnClickListener(checkinListener);
+        checkin.setOnClickListener(buttonListener);
+        ping.setOnClickListener(buttonListener);
         devQuery.findInBackground(new FindCallback() {
             
             @Override
@@ -99,13 +104,41 @@ public class PhoneCheckinActivity extends Activity {
         
     }
     
-    private OnClickListener checkinListener = new OnClickListener() {
+    private OnClickListener buttonListener = new OnClickListener() {
         
         @Override
         public void onClick(View v) {
-            Intent scan = new Intent ("com.google.zxing.client.android.SCAN");
-            scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
-            startActivityForResult(scan, 0);
+            if (v == checkin) {
+                Intent scan = new Intent("com.google.zxing.client.android.SCAN");
+                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
+                startActivityForResult(scan, 0);
+            } else {
+                try {
+                    JSONObject pingMsg = new JSONObject(
+                            "{\"action\": \"edu.gvsu.cis.checkout.STATUS\"," +
+                            "\"message\" : \"Ping\"}"
+                            );
+                    ParsePush notify = new ParsePush();
+                    notify.setChannel("Hans");
+                    notify.setMessage("Sent from a client...");
+                    notify.sendInBackground(new SendCallback() {
+                        
+                        @Override
+                        public void done(ParseException arg0) {
+                            if (arg0 == null)
+                                Toast.makeText(PhoneCheckinActivity.this, "Ping delivered", 
+                                    Toast.LENGTH_LONG).show();
+                            else
+                                Toast.makeText(PhoneCheckinActivity.this, 
+                                        "ParsePush error: " + arg0.getMessage(), 
+                                        Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
     };
 

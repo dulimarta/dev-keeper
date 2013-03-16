@@ -12,11 +12,8 @@ import android.graphics.Bitmap.CompressFormat;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -28,6 +25,7 @@ import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
+//import android.util.Log;
 
 public class PhoneCheckoutActivity extends Activity {
     final String TAG = getClass().getName();
@@ -57,7 +55,7 @@ public class PhoneCheckoutActivity extends Activity {
                 android.R.layout.simple_spinner_item, allUsers);
         adapt.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         uid.setAdapter(adapt);
-        uid.setOnItemSelectedListener(uidChooser);
+//        uid.setOnItemSelectedListener(uidChooser);
         UserTask uname = new UserTask();
         uname.execute(/*USER_URL*/);
         checkout.setOnClickListener(btnHandler);
@@ -68,7 +66,6 @@ public class PhoneCheckoutActivity extends Activity {
     protected void saveBitmap(String name) {
         super.onDestroy();
         Bitmap bmp = signature.getDrawingCache();
-        Log.d (TAG, "Bitmap dimension: " + bmp.getHeight() + "x" + bmp.getWidth());
         String filename = Environment.getExternalStorageDirectory() + "/" + name;
         FileOutputStream fos;
         try {
@@ -76,9 +73,9 @@ public class PhoneCheckoutActivity extends Activity {
             bmp.compress(CompressFormat.PNG, 90, fos);
             fos.close();
         } catch (FileNotFoundException e) {
-            Log.e(TAG, "FileNotFoundException: " + e);
+//            Log.e(TAG, "FileNotFoundException: " + e);
         } catch (IOException e) {
-            Log.e(TAG, "IOException: " + e);
+//            Log.e(TAG, "IOException: " + e);
         }
     }
     
@@ -114,21 +111,6 @@ public class PhoneCheckoutActivity extends Activity {
         }
     }
     
-    private OnItemSelectedListener uidChooser = new OnItemSelectedListener() {
-
-        @Override
-        public void onItemSelected(AdapterView<?> arg0, View arg1, int pos,
-                long arg3) {
-//            uid.setPrompt(allUsers.get(pos));
-            Log.d(TAG, "User: " + allUsers.get(pos));
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> arg0) {
-            // TODO Auto-generated method stub
-            
-        }
-    };
     private OnClickListener btnHandler = new OnClickListener() {
         
         @Override
@@ -165,7 +147,7 @@ public class PhoneCheckoutActivity extends Activity {
          */
         @Override
         protected void onPostExecute(Void result) {
-            Log.d(TAG, "List has " + allUsers.size() + " items");
+//            Log.d(TAG, "List has " + allUsers.size() + " items");
             adapt.notifyDataSetChanged();
         }
         

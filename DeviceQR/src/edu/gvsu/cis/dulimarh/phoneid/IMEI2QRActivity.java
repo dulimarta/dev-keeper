@@ -32,8 +32,10 @@ import android.widget.TextView;
 
 import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.PushService;
 
 public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
@@ -53,6 +55,9 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
+//        ParseInstallation.getCurrentInstallation().saveInBackground();
+        PushService.subscribe(this, "Hans", IMEI2QRActivity.class);
+        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
         setContentView(R.layout.main);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
