@@ -63,14 +63,21 @@ public class PhoneCheckinActivity extends Activity {
         devQuery.whereEqualTo("user_id", user_id);
         //        showDialog(DIALOG_PROGRESS);
         /* TODO: Add "Send email button"? */
-        checkin.setOnClickListener(buttonListener);
-        ping.setOnClickListener(buttonListener);
+        checkin.setOnClickListener(new OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                Intent scan = new Intent("com.google.zxing.client.android.SCAN");
+                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
+                startActivityForResult(scan, 0);
+            }
+        });
+        ping.setOnClickListener(new PingHandler());
         devQuery.findInBackground(new FindCallback() {
             
             @Override
             public void done(List<ParseObject> arg0, ParseException arg1) {
                 if (arg1 == null) {
-//                    progress.setProgress(0);
                     if (arg0.size() == 1)
                         try {
                             ParseObject obj = arg0.get(0);
@@ -104,44 +111,42 @@ public class PhoneCheckinActivity extends Activity {
         
     }
     
-    private OnClickListener buttonListener = new OnClickListener() {
-        
+    /* Use an inner class in place of direct instance variable declaration
+     * to avoid "Parse.Initialize" error when this class is loaded by JVM
+     */
+    private class PingHandler implements OnClickListener {
+
         @Override
         public void onClick(View v) {
-            if (v == checkin) {
-                Intent scan = new Intent("com.google.zxing.client.android.SCAN");
-                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
-                startActivityForResult(scan, 0);
-            } else {
-                try {
-                    JSONObject pingMsg = new JSONObject(
-                            "{\"action\": \"edu.gvsu.cis.checkout.STATUS\"," +
-                            "\"message\" : \"Ping\"}"
-                            );
-                    ParsePush notify = new ParsePush();
-                    notify.setChannel("Hans");
-                    notify.setMessage("Sent from a client...");
-                    notify.sendInBackground(new SendCallback() {
-                        
-                        @Override
-                        public void done(ParseException arg0) {
-                            if (arg0 == null)
-                                Toast.makeText(PhoneCheckinActivity.this, "Ping delivered", 
+            try {
+                JSONObject pingMsg = new JSONObject(
+                        "{\"action\": \"edu.gvsu.cis.checkout.UPDATE\"," +
+                        "\"message\" : \"Ping\"}"
+                        );
+                ParsePush notify = new ParsePush();
+                notify.setChannel("Hans");
+                notify.setData(pingMsg);
+                Log.d(TAG, "Sending " + pingMsg.toString(3));
+                notify.sendInBackground(new SendCallback() {
+                    
+                    @Override
+                    public void done(ParseException arg0) {
+                        if (arg0 == null)
+                            Toast.makeText(PhoneCheckinActivity.this, "Ping delivered", 
+                                Toast.LENGTH_LONG).show();
+                        else
+                            Toast.makeText(PhoneCheckinActivity.this, 
+                                    "ParsePush error: " + arg0.getMessage(), 
                                     Toast.LENGTH_LONG).show();
-                            else
-                                Toast.makeText(PhoneCheckinActivity.this, 
-                                        "ParsePush error: " + arg0.getMessage(), 
-                                        Toast.LENGTH_LONG).show();
-                        }
-                    });
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+                    }
+                });
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
-    };
-
+        
+    }
     /* (non-Javadoc)
      * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
      */

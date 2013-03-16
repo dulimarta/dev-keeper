@@ -44,15 +44,15 @@ public class PhoneListActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.phonelist);
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
+        setContentView(R.layout.phonelist);
         checkout = (Button) findViewById(R.id.checkin);
         checkout.setOnClickListener(checker);
         checkouts = new ArrayList<Map<String,String>>();
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
                 new String[] {"dev_id", "user_id"},
-                new int[] {android.R.id.text1, android.R.id.text2});
+                new int[] {android.R.id.text1, android.R.id.text2});       
         setListAdapter(adapter);
     }
 

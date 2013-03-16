@@ -28,5 +28,10 @@
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
+        <receiver android:name="edu.gvsu.cis.dulimarh.phoneid.CheckoutReceiver">
+            <intent-filter>
+                <action android:name="edu.gvsu.cis.checkout.UPDATE" />
+            </intent-filter>
+        </receiver>
 </application>
 </manifest>
