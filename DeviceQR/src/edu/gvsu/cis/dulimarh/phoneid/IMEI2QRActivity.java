@@ -149,7 +149,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 user.setText("Checked out by " + (String) res[1]);
             }
             else
-                user.setText("");
+                user.setText("Device is not checked out");
         }
 
         /* (non-Javadoc)

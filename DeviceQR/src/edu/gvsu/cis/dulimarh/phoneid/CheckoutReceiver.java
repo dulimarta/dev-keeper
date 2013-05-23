@@ -13,12 +13,12 @@ public class CheckoutReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification alert = new Notification(R.drawable.ic_launcher, "Checkout Message",
-                System.currentTimeMillis());
-        alert.setLatestEventInfo(context, "From Checkout", 
-                intent.getExtras().getString("com.parse.Data"), null);
-        nm.notify(TAG.hashCode(), alert);
+//        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//        Notification alert = new Notification(R.drawable.ic_launcher, "Checkout Message",
+//                System.currentTimeMillis());
+//        alert.setLatestEventInfo(context, "From Checkout", 
+//                intent.getExtras().getString("com.parse.Data"), null);
+//        nm.notify(TAG.hashCode(), alert);
     }
 
 }
