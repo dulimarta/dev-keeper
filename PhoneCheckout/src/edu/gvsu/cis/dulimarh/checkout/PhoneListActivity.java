@@ -47,7 +47,7 @@ public class PhoneListActivity extends ListActivity {
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
         setContentView(R.layout.phonelist);
-        checkout = (Button) findViewById(R.id.checkin);
+        checkout = (Button) findViewById(R.id.checkout);
         checkout.setOnClickListener(checker);
         checkouts = new ArrayList<Map<String,String>>();
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 

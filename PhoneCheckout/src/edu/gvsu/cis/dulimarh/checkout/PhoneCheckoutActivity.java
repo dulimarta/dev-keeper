@@ -41,7 +41,7 @@ public class PhoneCheckoutActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.checkout);
         Bundle param = getIntent().getExtras();
         deviceId = param.getString("dev_id");
         allUsers = new ArrayList<CharSequence>();
@@ -49,7 +49,7 @@ public class PhoneCheckoutActivity extends Activity {
         devId.setText("Device ID: " + deviceId);
         uid = (Spinner) findViewById(R.id.userid);
         clear = (Button) findViewById(R.id.clear);
-        checkout = (Button) findViewById(R.id.checkin);
+        checkout = (Button) findViewById(R.id.checkout);
         signature = (SignatureView) findViewById(R.id.sig_imgview);
         adapt = new ArrayAdapter<CharSequence>(PhoneCheckoutActivity.this, 
                 android.R.layout.simple_spinner_item, allUsers);
@@ -90,7 +90,7 @@ public class PhoneCheckoutActivity extends Activity {
             sigFile.save();
             ParseObject checkout = new ParseObject("DevOut");
             checkout.put("dev_id", deviceId);
-            checkout.put("user_id", (String)uid.getSelectedItem());
+            checkout.put("user_id", uid.getSelectedItem());
             checkout.put("signature", sigFile);
             checkout.saveInBackground(new SaveCallback() {
                 

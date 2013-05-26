@@ -9,7 +9,6 @@ import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Path.Direction;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -27,7 +26,7 @@ import android.view.View;
  *     being drawn by the user
  */
 public class SignatureView extends View {
-    private final String TAG = getClass().getName();
+//    private final String TAG = getClass().getName();
     private final static int TOLERANCE = 4;
     private final static int WIDTH = 225;
     private final static int HEIGHT = 300;
