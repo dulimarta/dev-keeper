@@ -10,6 +10,7 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,6 +28,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -53,7 +56,7 @@ public class PhoneListActivity extends ListActivity {
         setContentView(R.layout.phonelist);
         checkouts = new ArrayList<Map<String,String>>();
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
-                new String[] {"dev", "user"},
+                new String[] {"dev_id", "user_id"},
                 new int[] {android.R.id.text1, android.R.id.text2});
         theList = getListView();
         setListAdapter(adapter);
@@ -97,50 +100,48 @@ public class PhoneListActivity extends ListActivity {
         super.onListItemClick(l, v, position, id);
     }
     
-    /* (non-Javadoc)
-     * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see android.app.Activity#onActivityResult(int, int,
+     * android.content.Intent)
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 0) {
-            if (resultCode == RESULT_OK) {
-                final String contents = data.getStringExtra("SCAN_RESULT");
-//                String format = data.getStringExtra("SCAN_RESULT_FORMAT");
-                ParseQuery idQuery = new ParseQuery("DevOut");
-                idQuery.whereEqualTo("dev_id",  contents);
-                idQuery.findInBackground(new FindCallback() {
-                    
-                    @Override
-                    public void done(List<ParseObject> result, ParseException ex) {
-                        if (ex == null) {
-                            if (result.size() == 0) {
-                                Intent next = new Intent(
-                                        PhoneListActivity.this,
-                                        PhoneCheckoutActivity.class);
-                                next.putExtra("dev_id", contents);
-                                startActivity(next);
-                            }
-                            else {
-                                showDialog(DIALOG_ALREADY_CHECKEDOUT);
-                                Toast.makeText(PhoneListActivity.this, 
-                                        "The device is already checkout", Toast.LENGTH_LONG).
-                                        show();
-                            }
-                        }
-                        else {
-                            Toast.makeText(PhoneListActivity.this, 
-                                    "Error in querying device id: " + ex.getMessage(), 
-                                    Toast.LENGTH_LONG).show();
-                        }
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(
+                requestCode, resultCode, data);
+        if (scanResult == null)
+            return;
+        final String contents = scanResult.getContents();
+        if (contents == null)
+            return;
+        ParseQuery idQuery = new ParseQuery("DevOut");
+        idQuery.whereEqualTo("dev_id", contents);
+        idQuery.findInBackground(new FindCallback() {
+
+            @Override
+            public void done(List<ParseObject> result, ParseException ex) {
+                if (ex == null) {
+                    if (result.size() == 0) {
+                        Intent next = new Intent(PhoneListActivity.this,
+                                PhoneCheckoutActivity.class);
+                        next.putExtra("dev_id", contents);
+                        startActivity(next);
+                    } else {
+                        showDialog(DIALOG_ALREADY_CHECKEDOUT);
+                        Toast.makeText(PhoneListActivity.this,
+                                "The device is already checkout",
+                                Toast.LENGTH_LONG).show();
                     }
-                });
+                } else {
+                    Toast.makeText(PhoneListActivity.this,
+                            "Error in querying device id: " + ex.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
             }
-            else if (resultCode == RESULT_CANCELED) {
-                Log.d(TAG, "Scanning cancelled");
-            }
-        }
+        });
     }
-    
+
     private class CheckTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -213,9 +214,11 @@ public class PhoneListActivity extends ListActivity {
         switch (item.getItemId())
         {
         case R.id.menu_checkout:
-            Intent scan = new Intent ("com.google.zxing.client.android.SCAN");
-            scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
-            startActivityForResult(scan, 0);
+            IntentIntegrator integrator = new IntentIntegrator(this);
+            integrator.initiateScan();
+//            *                 Intent scan = new Intent("com.google.zxing.client.android.SCAN");
+//                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
+//                startActivityForResult(scan, 0);
             break;
         }
 //        return  super.onMenuItemSelected(featureId, item);
