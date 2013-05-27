@@ -1,4 +1,5 @@
 .DS_Store
+*~
 */bin
 */gen
 doc/*.aux

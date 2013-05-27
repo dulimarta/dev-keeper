@@ -14,6 +14,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -33,7 +36,6 @@ public class PhoneListActivity extends ListActivity {
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
 //    private static final int DIALOG_PROGRESS = 2;
     
-    private Button checkout;
     private SimpleAdapter adapter;
     private ArrayList<Map<String,String>> checkouts;
     
@@ -47,8 +49,6 @@ public class PhoneListActivity extends ListActivity {
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
         setContentView(R.layout.phonelist);
-        checkout = (Button) findViewById(R.id.checkout);
-        checkout.setOnClickListener(checker);
         checkouts = new ArrayList<Map<String,String>>();
         adapter = new SimpleAdapter(this, checkouts, android.R.layout.simple_list_item_2, 
                 new String[] {"dev_id", "user_id"},
@@ -127,16 +127,6 @@ public class PhoneListActivity extends ListActivity {
         }
     }
     
-    private OnClickListener checker = new OnClickListener() {
-        
-        @Override
-        public void onClick(View v) {
-            Intent scan = new Intent ("com.google.zxing.client.android.SCAN");
-            scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
-            startActivityForResult(scan, 0);
-        }
-    };
-    
     private class CheckTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -194,6 +184,28 @@ public class PhoneListActivity extends ListActivity {
 //            return progress;
         }
         return builder.create();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater mn_inflater = getMenuInflater();
+        mn_inflater.inflate(R.menu.action_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        // TODO Auto-generated method stub
+        switch (item.getItemId())
+        {
+        case R.id.menu_checkout:
+            Intent scan = new Intent ("com.google.zxing.client.android.SCAN");
+            scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
+            startActivityForResult(scan, 0);
+            break;
+        }
+//        return  super.onMenuItemSelected(featureId, item);
+        return true;
     }
     
     
