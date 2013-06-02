@@ -1,9 +1,18 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
+//import java.util.List;
 import java.util.Map;
+
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -20,24 +29,50 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
+import com.google.android.gms.auth.GoogleAuthException;
 import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.Drive.Files;
-import com.google.api.services.drive.Drive.Files.List;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.gdata.client.Service.GDataRequestFactory;
+import com.google.gdata.client.spreadsheet.SpreadsheetService;
+import com.google.gdata.data.BaseEntry;
+import com.google.gdata.data.ParseSource;
+import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
+import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
+import com.google.gdata.data.spreadsheet.WorksheetEntry;
+//import com.google.gdata.client.spreadsheet.SpreadsheetService;
+//import com.google.gdata.data.ParseSource;
+//import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
+//import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
+//import com.google.gdata.data.spreadsheet.WorksheetEntry;
+//import com.google.gdata.util.ServiceException;
+import com.google.gdata.util.ServiceException;
 
 public class GoogleDriveListFragment extends ListFragment {
    final static int REQUEST_SELECT_ACCT = 1;
    final static int REQUEST_AUTH = 2;
+   private static String SPREADSHEET_SCOPE = 
+         "https://spreadsheets.google.com/feeds";
+   private static String SPREADSHEET_FEED_URL = 
+         SPREADSHEET_SCOPE + "/spreadsheets/";
    private String TAG = getClass().getName();
    private GoogleAccountCredential credential;
    private Drive service;
+   private SpreadsheetService ssService;
    private String acctName;
    private ArrayList<Map<String, String>> allFiles;
    private SimpleAdapter adapter;
@@ -54,7 +89,7 @@ public class GoogleDriveListFragment extends ListFragment {
       allFiles = new ArrayList<Map<String,String>>();
       adapter = new SimpleAdapter(getActivity(), allFiles, 
             android.R.layout.simple_list_item_2, 
-            new String[] {"name", "type"}, 
+            new String[] {"name", "mod"}, 
             new int[] {android.R.id.text1, android.R.id.text2});
       setListAdapter(adapter);
    }
@@ -67,7 +102,10 @@ public class GoogleDriveListFragment extends ListFragment {
          Bundle savedInstanceState) {
       View view = inflater.inflate(R.layout.fragment_gdrivelist, container, false);
       loadProgress = (ProgressBar) view.findViewById(R.id.gdrive_progress);
-      credential = GoogleAccountCredential.usingOAuth2(getActivity(), DriveScopes.DRIVE);
+      
+      /* Allow multiple scopes: Drive and Spreadsheet APIs */
+      credential = GoogleAccountCredential.usingOAuth2(getActivity(), 
+            DriveScopes.DRIVE, SPREADSHEET_SCOPE);
       SharedPreferences pref = getActivity().getApplicationContext().getSharedPreferences("dev_checkout", Context.MODE_PRIVATE);
       
       /* get the user ID from the shared preference */
@@ -84,9 +122,10 @@ public class GoogleDriveListFragment extends ListFragment {
       super.onViewCreated(view, savedInstanceState);
       if (acctName != null) {
          credential.setSelectedAccountName(acctName);
-         
          /* create a Google Drive service */
          service = getDriveService (credential);
+         ssService = new SpreadsheetService("HansDevCheckout");
+         ssService.setProtocolVersion(SpreadsheetService.Versions.V3);
          new ListFileTask().execute();
       }
       else
@@ -116,13 +155,21 @@ public class GoogleDriveListFragment extends ListFragment {
             String acctName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
             if (acctName != null)
             {
-               credential.setSelectedAccountName(acctName);
-               SharedPreferences.Editor prefEditor;
-               prefEditor = getActivity().getApplicationContext().getSharedPreferences("dev_checkout", Context.MODE_PRIVATE).edit();
-               prefEditor.putString("acctName", acctName);
-               prefEditor.commit();
-               service = getDriveService (credential);
-               new ListFileTask().execute();
+               try {
+                  credential.setSelectedAccountName(acctName);
+                  /* create a Google Drive service */
+                  service = getDriveService (credential);
+                  ssService = new SpreadsheetService("HansDevCheckout");
+                  ssService.setProtocolVersion(SpreadsheetService.Versions.V3);
+                  SharedPreferences.Editor prefEditor;
+                  prefEditor = getActivity().getApplicationContext().getSharedPreferences("dev_checkout", Context.MODE_PRIVATE).edit();
+                  prefEditor.putString("acctName", acctName);
+                  prefEditor.commit();
+                  new ListFileTask().execute();
+               } catch (Exception e) {
+                  Log.e(TAG, "Generated exception: " + e.getMessage());
+                  e.printStackTrace();
+               }
             }
          }
          break;
@@ -134,12 +181,35 @@ public class GoogleDriveListFragment extends ListFragment {
       }
    }
 
+   /* (non-Javadoc)
+    * @see android.app.ListFragment#onListItemClick(android.widget.ListView, android.view.View, int, long)
+    */
+   @Override
+   public void onListItemClick(ListView l, View v, int position, long id) {
+      Map<String,String> selection = allFiles.get(position);
+      Toast.makeText(getActivity(), "Selecting " + selection.get("name"), 
+            Toast.LENGTH_LONG).show();
+//      new FileDownloadTask().execute(selection.get("name"), selection.get("id"),
+//            selection.get("url")); 
+   }
+
    private Drive getDriveService (GoogleAccountCredential cred)
    {
       return new Drive.Builder(AndroidHttp.newCompatibleTransport(), 
             new GsonFactory(), cred).build();
    }
    
+   private Comparator<Map<String,String>> fileNameComparator =
+         new Comparator<Map<String,String>>() {
+
+            @Override
+            public int compare(Map<String, String> obj1,
+                  Map<String, String> obj2) {
+               return obj1.get("name").toLowerCase().
+                     compareTo(obj2.get("name").toLowerCase());
+            }
+         };
+
    private class ListFileTask extends AsyncTask<Void, Integer, Void> {
 
       /* (non-Javadoc)
@@ -155,18 +225,40 @@ public class GoogleDriveListFragment extends ListFragment {
       @Override
       protected Void doInBackground(Void... params) {
          try {
-            Files xfiles = service.files();
-            List request = xfiles.list();
-            FileList files = request.execute();
-            for (File f : files.getItems())
-            {
-               if (f.getMimeType().endsWith("spreadsheet")) {
+            GoogleCredential gc = new GoogleCredential();
+            gc.setAccessToken(credential.getToken());
+            ssService.setOAuth2Credentials(gc);
+            SpreadsheetFeed feed = ssService.getFeed(new URL(SPREADSHEET_FEED_URL), 
+                  SpreadsheetFeed.class);
+            List<SpreadsheetEntry> entries = feed.getEntries();
+            for (SpreadsheetEntry e : entries) {
+               WorksheetEntry ws = e.getDefaultWorksheet();
+               if (ws == null) continue;
+               int cols = ws.getColCount();
+               if (cols >= 2) {
                   Map<String, String> aFile = new HashMap<String, String>();
-                  aFile.put("name", f.getTitle());
-                  aFile.put("type", f.getMimeType());
+                  aFile.put("name", e.getTitle().getPlainText());
+                  aFile.put("mod", e.getUpdated().toUiString());
                   allFiles.add(aFile);
                }
             }
+//            Files xfiles = service.files();
+//            Files.List request = xfiles.list();
+//            FileList files = request.execute();
+//            for (File f : files.getItems()) {
+//               if (f.getMimeType().contains("spreadsheet")) {
+//                  Map<String, String> aFile;
+//                  aFile = new HashMap<String, String>();
+//                  aFile.put("name", f.getTitle());
+//                  String link = f.getDownloadUrl() != null ? f.getDownloadUrl() : f
+//                        .getAlternateLink();
+//                  aFile.put("mod", f.getModifiedDate().toStringRfc3339());
+//                  aFile.put("id", f.getId());
+//                  aFile.put("url", link);
+//                  allFiles.add(aFile);
+//               }
+//            }
+            Collections.sort(allFiles, fileNameComparator);
          } 
          catch (UserRecoverableAuthIOException ioauth)
          {
@@ -175,6 +267,12 @@ public class GoogleDriveListFragment extends ListFragment {
          catch (IOException e) {
             Log.e(TAG, "Drive API generated an exception " + e.getMessage());
             e.printStackTrace();
+         } catch (ServiceException e) {
+            Log.e(TAG, "Spreadsheet API generated an exception " + e.getMessage());
+            e.printStackTrace();
+         } catch (GoogleAuthException e1) {
+            Log.e(TAG, "Credential related exception " + e1.getMessage());
+            e1.printStackTrace();
          }
         return null;
       }
@@ -188,8 +286,51 @@ public class GoogleDriveListFragment extends ListFragment {
          loadProgress.setVisibility(View.GONE);
          adapter.notifyDataSetChanged();
       }
-      
-      
    }
-   
+
+   private class FileDownloadTask extends AsyncTask<String, Void, Void>
+   {
+      /* (non-Javadoc)
+       * @see android.os.AsyncTask#onPreExecute()
+       */
+      @Override
+      protected void onPreExecute() {
+         loadProgress.setVisibility(View.VISIBLE);
+      }
+
+      @Override
+      protected Void doInBackground(String... params) {
+         try {
+            HttpRequestFactory reqFactory = service.getRequestFactory();
+//            URL spreadsheetURL = new URL(SPREADSHEET_FEED_URL + params[1]);
+//            GenericUrl ssURL = new GenericUrl(SPREADSHEET_FEED_URL + params[1]);
+            GenericUrl ssURL = new GenericUrl(params[2]);
+            HttpRequest req = reqFactory.buildGetRequest(ssURL);
+            HttpResponse resp = req.execute();
+            if (resp.getStatusCode() == HttpStatusCodes.STATUS_CODE_OK)
+            {
+               Scanner scan = new Scanner (resp.getContent());
+               while (scan.hasNextLine())
+               {
+                  Log.d(TAG, scan.nextLine());
+               }
+               ParseSource ps = new ParseSource(resp.getContent());
+               SpreadsheetEntry ssEntry = new SpreadsheetEntry(SpreadsheetEntry.readEntry(ps));
+               Log.d(TAG, "PlainText " + ssEntry.getPlainTextContent());
+               Log.d(TAG, "Text " + ssEntry.getTextContent().toString());
+            }
+         } catch (Exception e) {
+            Log.e(TAG, "Exception generated: " + e.getMessage());
+            e.printStackTrace();
+         }
+         return null;
+      }
+
+      @Override
+      protected void onPostExecute(Void result) {
+//         theList.setVisibility(View.VISIBLE);
+         loadProgress.setVisibility(View.GONE);
+//         adapter.notifyDataSetChanged();
+      }
+   }
 }
