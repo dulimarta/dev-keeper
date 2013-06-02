@@ -220,6 +220,9 @@ public class PhoneListActivity extends ListActivity {
 //                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
 //                startActivityForResult(scan, 0);
             break;
+        case R.id.menu_user_upload:
+           Intent i = new Intent (this, UploadUsersActivity.class);
+           startActivity(i);
         }
 //        return  super.onMenuItemSelected(featureId, item);
         return true;

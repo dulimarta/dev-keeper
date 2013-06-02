@@ -13,4 +13,5 @@
     <string name="sign">Sign in the box</string>
     <string name="menu_checkout">Checkout</string>
     <string name="menu_upload_users">Upload Users</string>
+    <string name="label_gdrive_select">Select a spreadsheet</string>
 </resources>
