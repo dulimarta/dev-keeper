@@ -5,10 +5,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <ListView
-        android:id="@android:id/list"
+    <fragment
+        android:name="edu.gvsu.cis.dulimarh.checkout.DeviceListFragment"
+        android:id="@+id/devlist"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>
