@@ -1,7 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -10,14 +9,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
-//import java.util.List;
 import java.util.Map;
-
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
@@ -38,35 +36,24 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.Drive.Files;
 import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
-import com.google.gdata.client.Service.GDataRequestFactory;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
-import com.google.gdata.data.BaseEntry;
-import com.google.gdata.data.ParseSource;
+import com.google.gdata.data.spreadsheet.Cell;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
-import com.google.gdata.data.spreadsheet.ListEntry;
-import com.google.gdata.data.spreadsheet.ListFeed;
 import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
+import com.google.gdata.util.ServiceException;
+//import java.util.List;
 //import com.google.gdata.client.spreadsheet.SpreadsheetService;
 //import com.google.gdata.data.ParseSource;
 //import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 //import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 //import com.google.gdata.data.spreadsheet.WorksheetEntry;
 //import com.google.gdata.util.ServiceException;
-import com.google.gdata.util.ServiceException;
 
 public class GoogleDriveListFragment extends ListFragment {
    final static int REQUEST_SELECT_ACCT = 1;
@@ -81,10 +68,13 @@ public class GoogleDriveListFragment extends ListFragment {
    private SpreadsheetService ssService;
    private String acctName;
    private ArrayList<Map<String, String>> allFiles;
+//   private ArrayList<WorksheetEntry> allWorksheets;
    private SimpleAdapter adapter;
    private ListView theList;
    private ProgressBar loadProgress;
-
+   private boolean listFileTaskRunning;
+   private String[] users;
+   
    /* (non-Javadoc)
     * @see android.app.Fragment#onCreate(android.os.Bundle)
     */
@@ -93,9 +83,11 @@ public class GoogleDriveListFragment extends ListFragment {
       // TODO Auto-generated method stub
       super.onCreate(savedInstanceState);
       allFiles = new ArrayList<Map<String,String>>();
+//      allWorksheets = new ArrayList<WorksheetEntry>();
+      listFileTaskRunning = false;
       adapter = new SimpleAdapter(getActivity(), allFiles, 
             android.R.layout.simple_list_item_2, 
-            new String[] {"name", "mod"}, 
+            new String[] {"name", "columns"}, 
             new int[] {android.R.id.text1, android.R.id.text2});
       setListAdapter(adapter);
    }
@@ -144,7 +136,7 @@ public class GoogleDriveListFragment extends ListFragment {
     */
    @Override
    public void onPause() {
-      // TODO Auto-generated method stub
+      // TODO How to store the running status of the current AsyncTask...
       super.onPause();
    }
 
@@ -163,7 +155,7 @@ public class GoogleDriveListFragment extends ListFragment {
             {
                try {
                   credential.setSelectedAccountName(acctName);
-                  /* create a Google Drive service */
+                  /* create a Google Drive and SpreadSheet services */
                   service = getDriveService (credential);
                   ssService = new SpreadsheetService("HansDevCheckout");
                   ssService.setProtocolVersion(SpreadsheetService.Versions.V3);
@@ -195,8 +187,8 @@ public class GoogleDriveListFragment extends ListFragment {
       Map<String,String> selection = allFiles.get(position);
       Toast.makeText(getActivity(), "Selecting " + selection.get("name"), 
             Toast.LENGTH_LONG).show();
-//      new FileDownloadTask().execute(selection.get("name"), selection.get("id"),
-//            selection.get("url")); 
+      new FileDownloadTask().execute(selection.get("name"),
+            selection.get("url"), selection.get("rowCount")); 
    }
 
    private Drive getDriveService (GoogleAccountCredential cred)
@@ -223,6 +215,7 @@ public class GoogleDriveListFragment extends ListFragment {
        */
       @Override
       protected void onPreExecute() {
+         listFileTaskRunning = true;
          theList = getListView();
          theList.setVisibility(View.GONE);
          loadProgress.setVisibility(View.VISIBLE);
@@ -231,19 +224,28 @@ public class GoogleDriveListFragment extends ListFragment {
       @Override
       protected Void doInBackground(Void... params) {
          try {
+            
+            /* build the GoogleCredential from GoogleAccountCredential */
             GoogleCredential gc = new GoogleCredential();
             gc.setAccessToken(credential.getToken());
             ssService.setOAuth2Credentials(gc);
+            
+            /* Get the URL to the list of spreadsheets */
             SpreadsheetFeed ssFeed = ssService.getFeed(new URL(SPREADSHEET_FEED_URL), 
                   SpreadsheetFeed.class);
             List<SpreadsheetEntry> entries = ssFeed.getEntries();
             StringBuilder sb = new StringBuilder();
             int totalEntries = entries.size();
             int k = 0;
+            allFiles.clear();
+//            allWorksheets.clear();
             for (SpreadsheetEntry e : entries) {
                publishProgress(k, totalEntries);
                WorksheetEntry ws = e.getDefaultWorksheet();
+//               allWorksheets.add(ws);
                if (ws == null) continue;
+               /* get the URL to the list of cells (only the first 
+                * two columns on the first row */
                URL cFeedURL = new URI(ws.getCellFeedUrl().toString() +
                         "?max-row=1&max-col=2").toURL();
                CellFeed cFeed = ssService.getFeed(cFeedURL, CellFeed.class);
@@ -252,10 +254,16 @@ public class GoogleDriveListFragment extends ListFragment {
                if (colList.size() >= 2)
                {
                   Map<String, String> aFile = new HashMap<String, String>();
+                  /* The name of the spreadsheet */
                   aFile.put("name", e.getTitle().getPlainText());
+                  sb.append("First 2 columns: ");
+                  /* the name of the first two column */
                   sb.append(" " + colList.get(0).getCell().getInputValue());
                   sb.append(" " + colList.get(1).getCell().getInputValue());
-                  aFile.put("mod", sb.toString());
+                  aFile.put("columns", sb.toString());
+                  aFile.put("url", ws.getCellFeedUrl().toString());
+                  aFile.put("rowCount", String.valueOf(ws.getRowCount()));
+                  aFile.put("colCount", String.valueOf(ws.getColCount()));
                   allFiles.add(aFile);
                }
                k++;
@@ -297,13 +305,14 @@ public class GoogleDriveListFragment extends ListFragment {
        */
       @Override
       protected void onPostExecute(Void result) {
+         listFileTaskRunning = false;
          theList.setVisibility(View.VISIBLE);
          loadProgress.setVisibility(View.GONE);
          adapter.notifyDataSetChanged();
       }
    }
 
-   private class FileDownloadTask extends AsyncTask<String, Void, Void>
+   private class FileDownloadTask extends AsyncTask<String, Integer, Integer>
    {
       /* (non-Javadoc)
        * @see android.os.AsyncTask#onPreExecute()
@@ -314,38 +323,107 @@ public class GoogleDriveListFragment extends ListFragment {
       }
 
       @Override
-      protected Void doInBackground(String... params) {
+      protected Integer doInBackground(String... params) {
+         int rows = Integer.parseInt(params[2]);
+         String[][] tempUsers = new String [rows][2];
+         users = new String[rows];
          try {
-            HttpRequestFactory reqFactory = service.getRequestFactory();
-//            URL spreadsheetURL = new URL(SPREADSHEET_FEED_URL + params[1]);
-//            GenericUrl ssURL = new GenericUrl(SPREADSHEET_FEED_URL + params[1]);
-            GenericUrl ssURL = new GenericUrl(params[2]);
-            HttpRequest req = reqFactory.buildGetRequest(ssURL);
-            HttpResponse resp = req.execute();
-            if (resp.getStatusCode() == HttpStatusCodes.STATUS_CODE_OK)
+            URL cFeedURL = new URI(params[1] +
+                  "?max-col=2&min-row=2&max-row=" + params[2]).toURL();
+            CellFeed cFeed = ssService.getFeed(cFeedURL, CellFeed.class);
+            int k = 0;
+            for (CellEntry e: cFeed.getEntries())
             {
-               Scanner scan = new Scanner (resp.getContent());
-               while (scan.hasNextLine())
-               {
-                  Log.d(TAG, scan.nextLine());
-               }
-               ParseSource ps = new ParseSource(resp.getContent());
-               SpreadsheetEntry ssEntry = new SpreadsheetEntry(SpreadsheetEntry.readEntry(ps));
-               Log.d(TAG, "PlainText " + ssEntry.getPlainTextContent());
-               Log.d(TAG, "Text " + ssEntry.getTextContent().toString());
+               Cell c = e.getCell();
+               Log.d(TAG, "R" + c.getRow() + "C" + c.getCol() + " => " +
+                     c.getValue());
+               /* since we begin at row 2, we want to subtract row index by 2 */
+               tempUsers[c.getRow()-2][c.getCol()-1] = c.getValue();
+               publishProgress(k, rows);
+               k++;
             }
+            for (k = 0; k < tempUsers.length; k++)
+               users[k] = tempUsers[k][0] + "#::#" + tempUsers[k][1];
+               
          } catch (Exception e) {
             Log.e(TAG, "Exception generated: " + e.getMessage());
             e.printStackTrace();
          }
-         return null;
+         return users.length;
+      }
+
+      /* (non-Javadoc)
+       * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+       */
+      @Override
+      protected void onProgressUpdate(Integer... values) {
+         loadProgress.setProgress(values[0]);
+         loadProgress.setMax(values[1]);
       }
 
       @Override
-      protected void onPostExecute(Void result) {
+      protected void onPostExecute(Integer result) {
 //         theList.setVisibility(View.VISIBLE);
          loadProgress.setVisibility(View.GONE);
-//         adapter.notifyDataSetChanged();
+         showDialog(result);
       }
+   }
+   
+   private void showDialog(int numRows)
+   {
+      DialogFragment diafrag;
+      if (numRows > 0)
+         diafrag = UploadConfirmDialog.newInstance(users);
+      else
+         diafrag = EmptyListWarningDialog.newInstance();
+      diafrag.show(getFragmentManager(), "dialog");
+   }
+   
+   public static class UploadConfirmDialog extends DialogFragment {
+
+      public static UploadConfirmDialog newInstance(String[] _userList)
+      {
+         UploadConfirmDialog frag = new UploadConfirmDialog();
+         Bundle args = new Bundle();
+         args.putStringArray("users", _userList);
+         frag.setArguments(args);
+         return frag;
+      }
+      
+      /* (non-Javadoc)
+       * @see android.app.DialogFragment#onCreateDialog(android.os.Bundle)
+       */
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+         String[] usrList;
+         usrList = getArguments().getStringArray("users");
+         String[] toks = usrList[0].split("#::#");
+         builder.setTitle("Select column layout");
+         builder.setItems(new String[] {
+               "userid:" + toks[0] + " username:" + toks[1],
+               "userid:" + toks[1] + " username:" + toks[0],
+         }, null);
+         builder.setNegativeButton("Cancel", null);
+         builder.setPositiveButton("Upload", null);
+         return builder.create();
+      }
+   }
+   
+   public static class EmptyListWarningDialog extends DialogFragment {
+      public static EmptyListWarningDialog newInstance()
+      {
+         EmptyListWarningDialog frag = new EmptyListWarningDialog();
+         return frag;
+      }
+
+      @Override
+      public Dialog onCreateDialog(Bundle savedInstanceState) {
+         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+         builder.setMessage("Cannot upload from an empty spreadsheet");
+         builder.setPositiveButton("OK", null);
+         return builder.create();
+      }
+      
    }
 }

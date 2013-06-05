@@ -211,14 +211,14 @@ public class DeviceDetailsFragment extends Fragment {
     private void showDialog (int which, String ... parms)
     {
         DialogFragment diafrag;
-        diafrag = ConfirmDialog.newInstance (parms[0], parms[1]);
+        diafrag = CheckinConfirmDialog.newInstance (parms[0], parms[1]);
         diafrag.show(getFragmentManager(), "dialog");
     }
 
-    public static class ConfirmDialog extends DialogFragment {
-        public static ConfirmDialog newInstance (String devId, String parseId)
+    public static class CheckinConfirmDialog extends DialogFragment {
+        public static CheckinConfirmDialog newInstance (String devId, String parseId)
         {
-            ConfirmDialog frag = new ConfirmDialog();
+            CheckinConfirmDialog frag = new CheckinConfirmDialog();
             Bundle args = new Bundle();
             args.putString("dev_id", devId);
             args.putString("parse_id", parseId);
