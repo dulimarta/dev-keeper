@@ -2,6 +2,8 @@ package edu.gvsu.cis.dulimarh.checkout;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +53,10 @@ import com.google.gdata.client.Service.GDataRequestFactory;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.ParseSource;
+import com.google.gdata.data.spreadsheet.CellEntry;
+import com.google.gdata.data.spreadsheet.CellFeed;
+import com.google.gdata.data.spreadsheet.ListEntry;
+import com.google.gdata.data.spreadsheet.ListFeed;
 import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
@@ -228,36 +234,32 @@ public class GoogleDriveListFragment extends ListFragment {
             GoogleCredential gc = new GoogleCredential();
             gc.setAccessToken(credential.getToken());
             ssService.setOAuth2Credentials(gc);
-            SpreadsheetFeed feed = ssService.getFeed(new URL(SPREADSHEET_FEED_URL), 
+            SpreadsheetFeed ssFeed = ssService.getFeed(new URL(SPREADSHEET_FEED_URL), 
                   SpreadsheetFeed.class);
-            List<SpreadsheetEntry> entries = feed.getEntries();
+            List<SpreadsheetEntry> entries = ssFeed.getEntries();
+            StringBuilder sb = new StringBuilder();
+            int totalEntries = entries.size();
+            int k = 0;
             for (SpreadsheetEntry e : entries) {
+               publishProgress(k, totalEntries);
                WorksheetEntry ws = e.getDefaultWorksheet();
                if (ws == null) continue;
-               int cols = ws.getColCount();
-               if (cols >= 2) {
+               URL cFeedURL = new URI(ws.getCellFeedUrl().toString() +
+                        "?max-row=1&max-col=2").toURL();
+               CellFeed cFeed = ssService.getFeed(cFeedURL, CellFeed.class);
+               sb.setLength(0);
+               List<CellEntry> colList = cFeed.getEntries();
+               if (colList.size() >= 2)
+               {
                   Map<String, String> aFile = new HashMap<String, String>();
                   aFile.put("name", e.getTitle().getPlainText());
-                  aFile.put("mod", e.getUpdated().toUiString());
+                  sb.append(" " + colList.get(0).getCell().getInputValue());
+                  sb.append(" " + colList.get(1).getCell().getInputValue());
+                  aFile.put("mod", sb.toString());
                   allFiles.add(aFile);
                }
+               k++;
             }
-//            Files xfiles = service.files();
-//            Files.List request = xfiles.list();
-//            FileList files = request.execute();
-//            for (File f : files.getItems()) {
-//               if (f.getMimeType().contains("spreadsheet")) {
-//                  Map<String, String> aFile;
-//                  aFile = new HashMap<String, String>();
-//                  aFile.put("name", f.getTitle());
-//                  String link = f.getDownloadUrl() != null ? f.getDownloadUrl() : f
-//                        .getAlternateLink();
-//                  aFile.put("mod", f.getModifiedDate().toStringRfc3339());
-//                  aFile.put("id", f.getId());
-//                  aFile.put("url", link);
-//                  allFiles.add(aFile);
-//               }
-//            }
             Collections.sort(allFiles, fileNameComparator);
          } 
          catch (UserRecoverableAuthIOException ioauth)
@@ -273,8 +275,21 @@ public class GoogleDriveListFragment extends ListFragment {
          } catch (GoogleAuthException e1) {
             Log.e(TAG, "Credential related exception " + e1.getMessage());
             e1.printStackTrace();
+         } catch (URISyntaxException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
          }
         return null;
+      }
+
+      
+      /* (non-Javadoc)
+       * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+       */
+      @Override
+      protected void onProgressUpdate(Integer... values) {
+         loadProgress.setProgress(values[0]);
+         loadProgress.setMax(values[1]);
       }
 
       /* (non-Javadoc)
