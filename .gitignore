@@ -2,6 +2,7 @@
 *~
 */bin
 */gen
+build
 doc/*.aux
 doc/*.log
 DeviceQR/libs/Parse-1.1.15-javadoc

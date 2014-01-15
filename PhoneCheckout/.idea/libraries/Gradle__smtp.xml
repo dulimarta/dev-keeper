@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: smtp">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/smtp.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
