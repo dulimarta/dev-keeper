@@ -1,7 +1,15 @@
 .DS_Store
 *~
-*/bin
-*/gen
+build
+bin
+gen
 doc/*.aux
 doc/*.log
 DeviceQR/libs/Parse-1.1.15-javadoc
+.gradle/
+local.properties
+*.apk
+*.ap_
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml
