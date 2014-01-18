@@ -231,11 +231,6 @@ public class GoogleDriveListFragment extends ListFragment {
       @Override
       protected Integer doInBackground(Void... params) {
          try {
-            FileList fList = service.files().list().execute();
-            for (File f : fList.getItems())
-            {
-               Log.d("HANS", f.getTitle() + " " + f.getMimeType());
-            }
             /* build the GoogleCredential from GoogleAccountCredential */
             GoogleCredential gc = new GoogleCredential();
             gc.setAccessToken(credential.getToken());
