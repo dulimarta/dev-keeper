@@ -37,24 +37,25 @@ public class DeviceListFragment extends ListFragment {
         View v = getActivity().findViewById(R.id.devdetails);
         isDualPane = v != null && v.getVisibility() == View.VISIBLE;
         Log.d(TAG, "Dual pane = " + isDualPane);
-        if (savedInstanceState != null)
-        {
-            Log.d(TAG, "Restoring instance variables");
-            currentPos = savedInstanceState.getInt("currDevice", 0);
-            checkouts = (ArrayList<Map<String, String>>) savedInstanceState.getSerializable("deviceList");
-        }
-        else {
             currentPos = 0;
             checkouts = new ArrayList<Map<String,String>>();
             Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
-            new CheckTask().execute();
-        }
-        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2, 
-                new String[] {"dev_id", "user_id"},
-                new int[] {android.R.id.text1, android.R.id.text2});
-        setListAdapter(adapter);
-        if (isDualPane)
-            showDetails (currentPos);
+            adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2, 
+                    new String[] {"dev_id", "user_id"},
+                    new int[] {android.R.id.text1, android.R.id.text2});
+            setListAdapter(adapter);
+            if (isDualPane)
+                showDetails (currentPos);
+    }
+
+    /* (non-Javadoc)
+     * @see android.app.Fragment#onResume()
+     */
+    @Override
+    public void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+        new CheckTask().execute();
     }
 
     @Override
@@ -64,12 +65,12 @@ public class DeviceListFragment extends ListFragment {
         return v;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("currDevice", currentPos);
-        outState.putSerializable("deviceList", checkouts);
-    }
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putInt("currDevice", currentPos);
+//        outState.putSerializable("deviceList", checkouts);
+//    }
 
     /* (non-Javadoc)
      * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)

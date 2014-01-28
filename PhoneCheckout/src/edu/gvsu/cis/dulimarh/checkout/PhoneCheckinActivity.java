@@ -31,7 +31,11 @@ import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.SendCallback;
 
-public class PhoneCheckinActivity extends Activity {
+import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
+
+public class PhoneCheckinActivity extends Activity 
+    implements DeviceRemovalListener
+{
 
     private final String TAG = getClass().getName();
     
@@ -86,6 +90,11 @@ public class PhoneCheckinActivity extends Activity {
             d.setMessage("Scanned id: " + args.getString("scan_result") + 
                     " device id: " + args.getString("dev_id"));
 //        }
+    }
+
+    @Override
+    public void deviceRemoved(String dev_id) {
+        finish();
     }
 
     

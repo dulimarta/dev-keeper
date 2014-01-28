@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -119,7 +121,7 @@ public class PhoneCheckoutActivity extends Activity {
                 signature.reset();
             } else {
                 post();
-                finish();
+                //finish();
             }
         }
     };
@@ -148,7 +150,17 @@ public class PhoneCheckoutActivity extends Activity {
         @Override
         protected void onPostExecute(Void result) {
 //            Log.d(TAG, "List has " + allUsers.size() + " items");
+            Collections.sort(allUsers, new IDComparator());
             adapt.notifyDataSetChanged();
+        }
+        
+    }
+    
+    private class IDComparator implements Comparator<CharSequence> {
+
+        @Override
+        public int compare(CharSequence lhs, CharSequence rhs) {
+            return lhs.toString().compareTo(rhs.toString());
         }
         
     }
