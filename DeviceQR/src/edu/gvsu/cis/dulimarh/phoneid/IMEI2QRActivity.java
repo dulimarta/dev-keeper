@@ -12,12 +12,16 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -29,6 +33,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -46,7 +51,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private ImageView qr;
     private ProgressDialog progress;
     private Button reload;
-    private String devId;
+    private String devId, userId;
+    private Bitmap qrCodeImg;
     private URLTask myTask;
     
     /** Called when the activity is first created. */
@@ -67,8 +73,20 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
         devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
         id.setText(devId);
-        myTask = new URLTask();
-        myTask.execute();
+        if (savedInstanceState != null) {
+            userId = savedInstanceState.getString("userId");
+            devId = savedInstanceState.getString("devId");
+            qrCodeImg = savedInstanceState.getParcelable("qrcode");
+            qr.setImageBitmap(qrCodeImg);
+            id.setText(devId);
+            if (userId.length() > 0)
+                user.setText("Checked out by " + userId);
+            else
+                user.setText ("Device is not checked out");
+        }
+        else {
+            qrCodeImg = null;
+        }
         reload.setOnClickListener(new OnClickListener() {
             
             @Override
@@ -79,23 +97,73 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         });
     }
     
+    
+    /* (non-Javadoc)
+     * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("qrcode", qrCodeImg);
+        outState.putString("userId", userId);
+        outState.putString("devId", devId);
+    }
+
+    
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onResume()
+     */
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+        if (qrCodeImg != null) return;
+        if (isNetworkAvailable()) {
+            myTask = new URLTask();
+            myTask.execute();
+        } else {
+            showDialog(1);
+        }
+    }
+
+
     /* (non-Javadoc)
      * @see android.app.Activity#onCreateDialog(int)
      */
     @Override
     protected Dialog onCreateDialog(int id) {
-        progress = new ProgressDialog(this);
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setOnCancelListener(new OnCancelListener() {
-            
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                myTask.cancel(true);
-                finish();
-            }
-        });
-        progress.setTitle("Please wait ...");
-        return progress;
+        AlertDialog.Builder builder;
+        switch (id) {
+        case 0:
+            progress = new ProgressDialog(this);
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setOnCancelListener(new OnCancelListener() {
+
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    myTask.cancel(true);
+                    finish();
+                }
+            });
+            progress.setTitle("Please wait ...");
+            return progress;
+        case 1:
+            builder = new AlertDialog.Builder(this);
+            builder.setTitle("Network Error");
+            builder.setMessage("This app requires Internet connection. "
+                    + "Please setup your network and try again.");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+            return builder.create();
+        default:
+            return null;
+        }
     }
 
     private class URLTask extends AsyncTask<Void, Void, Object> {
@@ -114,8 +182,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             try {
                 HttpResponse res = client.execute(req);
                 InputStream istr = res.getEntity().getContent();
-                Bitmap img = BitmapFactory.decodeStream(istr);
-                result[0] = img;
+                qrCodeImg = BitmapFactory.decodeStream(istr);
+                result[0] = qrCodeImg;
                 ParseQuery devQuery = new ParseQuery("DevOut");
                 devQuery.whereEqualTo("dev_id", devId);
                 List<ParseObject> qRes = devQuery.find();
@@ -147,9 +215,13 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             qr.setImageBitmap((Bitmap)res[0]);
             if (res[1] != null) {
                 user.setText("Checked out by " + (String) res[1]);
+                userId = (String) res[1];
             }
-            else
+            else {
                 user.setText("Device is not checked out");
+                userId = "";
+            }
+            
         }
 
         /* (non-Javadoc)
@@ -175,4 +247,12 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         new URLTask().execute();
     }
+    
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager 
+              = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
 }
