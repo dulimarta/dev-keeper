@@ -123,7 +123,7 @@ public class DeviceDetailsFragment extends Fragment {
             }
         });
 //        ping.setOnClickListener(new PingHandler());
-        devQuery.findInBackground(new FindCallback() {
+        devQuery.findInBackground(new FindCallback<ParseObject>() {
             
             @Override
             public void done(List<ParseObject> arg0, ParseException arg1) {

@@ -1,11 +1,5 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Intent;
@@ -17,10 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+
+import java.util.*;
 
 public class DeviceListFragment extends ListFragment {
     private final String TAG = getClass().getName();
@@ -28,10 +23,9 @@ public class DeviceListFragment extends ListFragment {
     private SimpleAdapter adapter;
     private boolean isDualPane;
     private int currentPos;
-    
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
         Log.d(TAG, "Hosting activity created");
         super.onActivityCreated(savedInstanceState);
         View v = getActivity().findViewById(R.id.devdetails);
@@ -40,7 +34,7 @@ public class DeviceListFragment extends ListFragment {
             currentPos = 0;
             checkouts = new ArrayList<Map<String,String>>();
             Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
-            adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2, 
+            adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
                     new String[] {"dev_id", "user_id"},
                     new int[] {android.R.id.text1, android.R.id.text2});
             setListAdapter(adapter);
@@ -79,7 +73,7 @@ public class DeviceListFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         showDetails (position);
     }
-    
+
     private void showDetails (int pos)
     {
         Log.d(TAG, "Data size is " + checkouts.size());
@@ -111,13 +105,13 @@ public class DeviceListFragment extends ListFragment {
         }
 //        super.onListItemClick(l, v, position, id);
     }
-    
+
     private class CheckTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                ParseQuery checkOutQuery = new ParseQuery("DevOut");
+                ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>("DevOut");
                 checkouts.clear();
                 for (ParseObject obj : checkOutQuery.find())
                 {
@@ -148,7 +142,7 @@ public class DeviceListFragment extends ListFragment {
         protected void onPostExecute(Void result) {
             adapter.notifyDataSetChanged();
         }
-        
+
     }
 
 }

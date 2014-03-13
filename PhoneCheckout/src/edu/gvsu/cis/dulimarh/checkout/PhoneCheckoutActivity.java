@@ -131,7 +131,7 @@ public class PhoneCheckoutActivity extends Activity {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                ParseQuery userQuery = new ParseQuery("Users");
+                ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>("Users");
                 allUsers.clear();
                 for (ParseObject obj : userQuery.find())
                 {

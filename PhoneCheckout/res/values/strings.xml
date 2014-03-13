@@ -11,7 +11,8 @@
     <string name="btn_checkin">Checkin</string>
     <string name="btn_ping">Ping</string>
     <string name="sign">Sign in the box</string>
-    <string name="menu_checkout">Checkout</string>
+    <string name="menu_checkin">Device Checkin</string>
+    <string name="menu_checkout">Device Checkout</string>
     <string name="menu_upload_users">Upload Users</string>
     <string name="label_gdrive_select">Select a spreadsheet.\nFirst row is header row, userid/username data must begin at the second row.</string>
     <string name="label_gdrive_loading">Loading your spreadsheets ...</string>

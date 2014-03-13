@@ -21,8 +21,10 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
 
-public class PhoneListActivity extends Activity {
+
+public class PhoneListActivity extends Activity implements DeviceRemovalListener {
     private final String TAG = getClass().getName();
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
 //    private static final int DIALOG_PROGRESS = 2;
@@ -34,8 +36,6 @@ public class PhoneListActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
-                "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
         setContentView(R.layout.activity_devlist);
 //        theList = getListView();
 //        theList.setOnItemLongClickListener(selectionListener);
@@ -61,7 +61,7 @@ public class PhoneListActivity extends Activity {
         idQuery.findInBackground(new FindCallback() {
 
             @Override
-            public void done(List<ParseObject> result, ParseException ex) {
+            public void done(List result, ParseException ex) {
                 if (ex == null) {
                     if (result.size() == 0) {
                         Intent next = new Intent(PhoneListActivity.this,
@@ -105,6 +105,7 @@ public class PhoneListActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         MenuInflater mn_inflater = getMenuInflater();
         mn_inflater.inflate(R.menu.action_menu, menu);
         return true;
@@ -128,6 +129,10 @@ public class PhoneListActivity extends Activity {
         }
 //        return  super.onMenuItemSelected(featureId, item);
         return true;
+    }
+
+    @Override
+    public void deviceRemoved(String dev_id) {
     }
     
     
