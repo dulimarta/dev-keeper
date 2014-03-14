@@ -36,6 +36,8 @@
             android:screenOrientation="landscape"></activity>
         <activity
             android:name="UploadUsersActivity"></activity>
+        <activity
+            android:name="SelectUserActivity"></activity>
         </application>
 
 </manifest>

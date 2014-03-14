@@ -16,9 +16,7 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.parse.FindCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
@@ -117,9 +115,11 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
         switch (item.getItemId())
         {
         case R.id.menu_checkout:
-            IntentIntegrator integrator = new IntentIntegrator(this);
-            integrator.initiateScan();
-//            *                 Intent scan = new Intent("com.google.zxing.client.android.SCAN");
+            Intent userSelect = new Intent(this, SelectUserActivity.class);
+            startActivity(userSelect);
+//            IntentIntegrator integrator = new IntentIntegrator(this);
+//            integrator.initiateScan();
+//                Intent scan = new Intent("com.google.zxing.client.android.SCAN");
 //                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
 //                startActivityForResult(scan, 0);
             break;

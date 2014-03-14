@@ -2,6 +2,7 @@
 *~
 */bin
 */gen
+*.class
 build
 doc/*.aux
 doc/*.log
