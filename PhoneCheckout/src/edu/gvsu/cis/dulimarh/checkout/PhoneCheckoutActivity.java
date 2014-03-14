@@ -34,11 +34,8 @@ public class PhoneCheckoutActivity extends Activity {
 
     private SignatureView signature;
     private Button checkout, clear;
-    private TextView devId;
-    private Spinner uid;
-    private ArrayList<CharSequence> allUsers;
-    private ArrayAdapter<CharSequence> adapt;
-    private String deviceId;
+    private TextView devId, userInfo;
+    private String userId, userName, deviceId;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,20 +43,15 @@ public class PhoneCheckoutActivity extends Activity {
         setContentView(R.layout.checkout);
         Bundle param = getIntent().getExtras();
         deviceId = param.getString("dev_id");
-        allUsers = new ArrayList<CharSequence>();
+        userId = param.getString("user_id");
+        userName = param.getString("user_name");
         devId = (TextView) findViewById(R.id.dev_id);
-        devId.setText("Device ID: " + deviceId);
-        uid = (Spinner) findViewById(R.id.userid);
+        userInfo = (TextView) findViewById(R.id.user_info);
+        devId.setText("What: " + deviceId);
+        userInfo.setText("User: " + userName + " (" + userId + ")");
         clear = (Button) findViewById(R.id.clear);
         checkout = (Button) findViewById(R.id.checkout);
         signature = (SignatureView) findViewById(R.id.sig_imgview);
-        adapt = new ArrayAdapter<CharSequence>(PhoneCheckoutActivity.this, 
-                android.R.layout.simple_spinner_item, allUsers);
-        adapt.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        uid.setAdapter(adapt);
-//        uid.setOnItemSelectedListener(uidChooser);
-        UserTask uname = new UserTask();
-        uname.execute(/*USER_URL*/);
         checkout.setOnClickListener(btnHandler);
         clear.setOnClickListener(btnHandler);
         signature.setDrawingCacheEnabled(true);
@@ -86,13 +78,13 @@ public class PhoneCheckoutActivity extends Activity {
         Bitmap sig = signature.getDrawingCache();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         sig.compress(CompressFormat.PNG, 90, stream);
-        ParseFile sigFile = new ParseFile ((String) uid.getSelectedItem() + ".png",
+        ParseFile sigFile = new ParseFile (userId + ".png",
                 stream.toByteArray());
         try {
             sigFile.save();
             ParseObject checkout = new ParseObject("DevOut");
             checkout.put("dev_id", deviceId);
-            checkout.put("user_id", uid.getSelectedItem());
+            checkout.put("user_id", userId);
             checkout.put("signature", sigFile);
             checkout.saveInBackground(new SaveCallback() {
                 
@@ -121,47 +113,16 @@ public class PhoneCheckoutActivity extends Activity {
                 signature.reset();
             } else {
                 post();
-                //finish();
             }
         }
     };
 
-    private class UserTask extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... params) {
-            try {
-                ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>("Users");
-                allUsers.clear();
-                for (ParseObject obj : userQuery.find())
-                {
-                    allUsers.add(obj.getString("user_id"));
-                }
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see android.os.AsyncTask#onPreExecute()
-         */
-        @Override
-        protected void onPostExecute(Void result) {
-//            Log.d(TAG, "List has " + allUsers.size() + " items");
-            Collections.sort(allUsers, new IDComparator());
-            adapt.notifyDataSetChanged();
-        }
-        
-    }
-    
-    private class IDComparator implements Comparator<CharSequence> {
-
-        @Override
-        public int compare(CharSequence lhs, CharSequence rhs) {
-            return lhs.toString().compareTo(rhs.toString());
-        }
-        
-    }
+//    private class IDComparator implements Comparator<CharSequence> {
+//
+//        @Override
+//        public int compare(CharSequence lhs, CharSequence rhs) {
+//            return lhs.toString().compareTo(rhs.toString());
+//        }
+//        
+//    }
 }
