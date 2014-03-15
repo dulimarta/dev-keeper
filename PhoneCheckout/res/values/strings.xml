@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">PhoneCheckout</string>
     <string name="checkout">Checkout</string>
     <string name="uid_prompt">Select student</string>
@@ -14,7 +13,5 @@
     <string name="menu_checkin">Device Checkin</string>
     <string name="menu_checkout">Device Checkout</string>
     <string name="menu_upload_users">Upload Users</string>
-    <string name="label_gdrive_select">Select a spreadsheet.\nFirst row is header row, userid/username data must begin at the second row.</string>
-    <string name="label_gdrive_loading">Loading your spreadsheets ...</string>
     <string name="user_name">Name</string>
 </resources>

@@ -103,7 +103,7 @@ public class DeviceDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_devdetails, container, false);
-        ParseQuery devQuery = new ParseQuery("DevOut");
+        ParseQuery<ParseObject> devQuery = new ParseQuery<ParseObject>("DevOut");
         uid = (TextView) v.findViewById(R.id.user_id);
         devid = (TextView) v.findViewById(R.id.dev_id);
         date = (TextView) v.findViewById(R.id.out_date);
@@ -261,8 +261,8 @@ public class DeviceDetailsFragment extends Fragment {
                         
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    ParseQuery qr = new ParseQuery("DevOut");
-                    qr.getInBackground(parseId, new GetCallback() {
+                    ParseQuery<ParseObject> qr = new ParseQuery<ParseObject>("DevOut");
+                    qr.getInBackground(parseId, new GetCallback<ParseObject>() {
 
                         @Override
                         public void done(ParseObject arg0, ParseException arg1) {

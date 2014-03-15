@@ -37,7 +37,7 @@ public class PhoneCheckinActivity extends Activity
     implements DeviceRemovalListener
 {
 
-    private final String TAG = getClass().getName();
+    //private final String TAG = getClass().getName();
     
 //    private String user_id, dev_id, parseObjId;
     

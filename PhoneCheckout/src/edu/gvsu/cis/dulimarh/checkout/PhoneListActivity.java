@@ -11,10 +11,10 @@ import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListene
 
 
 public class PhoneListActivity extends Activity implements DeviceRemovalListener {
-    private final String TAG = getClass().getName();
+   // private final String TAG = getClass().getName();
 //    private static final int DIALOG_PROGRESS = 2;
     
-    private ListView theList;
+   // private ListView theList;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */

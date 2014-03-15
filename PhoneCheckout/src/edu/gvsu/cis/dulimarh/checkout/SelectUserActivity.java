@@ -88,7 +88,7 @@ public class SelectUserActivity extends Activity implements SelectUserFragment.O
         idQuery.findInBackground(new FindCallback<ParseObject>() {
 
             @Override
-            public void done(List result, ParseException ex) {
+            public void done(List<ParseObject> result, ParseException ex) {
                 if (ex == null) {
                     if (result.size() == 0) {
                         /* Pass userid, username, and device id to the next activity */

@@ -12,7 +12,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
 public class NewUserActivity extends Activity {
-    private String TAG = getClass().getName();
+    //private String TAG = getClass().getName();
 
     /*
      * (non-Javadoc)

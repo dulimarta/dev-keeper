@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PhoneCheckout.iml" filepath="$PROJECT_DIR$/PhoneCheckout.iml" />
-      <module fileurl="file://$USER_HOME$/workspace/google-play-services_lib/google-play-services_lib.iml" filepath="$USER_HOME$/workspace/google-play-services_lib/google-play-services_lib.iml" />
     </modules>
   </component>
 </project>
