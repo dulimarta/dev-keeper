@@ -16,4 +16,5 @@
     <string name="menu_upload_users">Upload Users</string>
     <string name="label_gdrive_select">Select a spreadsheet.\nFirst row is header row, userid/username data must begin at the second row.</string>
     <string name="label_gdrive_loading">Loading your spreadsheets ...</string>
+    <string name="user_name">Name</string>
 </resources>

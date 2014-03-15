@@ -1,7 +1,21 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import java.util.List;
-import java.util.Map;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -9,13 +23,6 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.Toast;
 
 
 public class SelectUserActivity extends Activity implements SelectUserFragment.OnUserSelectedListener {
@@ -30,9 +37,43 @@ public class SelectUserActivity extends Activity implements SelectUserFragment.O
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_ACTION_BAR);
+        Window win = getWindow();
+        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        LayoutParams params = win.getAttributes();
+        params.width = 800;
+        params.dimAmount = 0.3f;
+        win.setAttributes(params);
         setContentView(R.layout.activity_selectuser);
+        setTitle("Select User");
     }
     
+    
+    /* (non-Javadoc)
+     * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater pump = getMenuInflater();
+        pump.inflate(R.menu.select_user_add, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.add_user_menu)
+        {
+            startActivity(new Intent(this, NewUserActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
     /* (non-Javadoc)
      * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
      */

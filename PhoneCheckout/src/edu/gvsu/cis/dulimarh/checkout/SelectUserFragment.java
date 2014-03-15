@@ -120,8 +120,8 @@ public class SelectUserFragment extends ListFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater pump) {
+        pump.inflate(R.menu.select_user_add, menu);
         super.onCreateOptionsMenu(menu, pump);
-        pump.inflate(R.menu.add_user_menu, menu);
     }
     
     
@@ -133,7 +133,7 @@ public class SelectUserFragment extends ListFragment {
         // TODO Auto-generated method stub
         switch (item.getItemId()) {
         case R.id.add_user_menu:
-            Intent i = new Intent(getActivity(), UploadUsersActivity.class);
+            Intent i = new Intent(getActivity(), NewUserActivity.class);
             startActivity(i);
             return true;
         }
