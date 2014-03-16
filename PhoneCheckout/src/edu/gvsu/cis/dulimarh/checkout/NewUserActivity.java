@@ -12,9 +12,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.SaveCallback;
+
+import java.util.List;
 
 public class NewUserActivity extends Activity implements View.OnClickListener {
     //private String TAG = getClass().getName();
@@ -68,23 +72,47 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
                             .show();
                     return true;
                 }
-                ParseObject newUser = new ParseObject(Consts.USER_TABLE);
-                newUser.put("user_id", email);
-                newUser.put("user_name", uname);
-                newUser.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        newUserAdded = true;
-                        setResult(Activity.RESULT_OK);
-                        finish();
-
-                    }
-                });
+                saveUser (email, uname);
                 return true;
+
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void saveUser (final String email, final String uname)
+    {
+        ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>(Consts.USER_TABLE);
+        userQuery.whereEqualTo("user_id", email);
+        userQuery.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e == null) {
+                    if (parseObjects.isEmpty()) {
+                        ParseObject newUser = new ParseObject(Consts.USER_TABLE);
+                        newUser.put("user_id", email);
+                        newUser.put("user_name", uname);
+                        newUser.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                newUserAdded = true;
+                                setResult(Activity.RESULT_OK);
+                                finish();
+
+                            }
+                        });
+                    } else {
+                        Toast.makeText(NewUserActivity.this,
+                                "User with the same email already exists",
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                } else
+                    Toast.makeText(NewUserActivity.this,
+                            "Unable to load user table", Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
     @Override
     public void onClick(View v) {
         /* TODO: capture image */
