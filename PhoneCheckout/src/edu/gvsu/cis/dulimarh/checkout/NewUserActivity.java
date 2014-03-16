@@ -18,7 +18,6 @@ import com.parse.SaveCallback;
 
 public class NewUserActivity extends Activity implements View.OnClickListener {
     //private String TAG = getClass().getName();
-
     private EditText uname, email;
     private ImageView uphoto;
     private boolean newUserAdded;
@@ -57,12 +56,6 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        setResult(newUserAdded ? Activity.RESULT_OK : Activity.RESULT_CANCELED);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         String uname, email;
         switch (item.getItemId())
@@ -75,13 +68,14 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
                             .show();
                     return true;
                 }
-                ParseObject newUser = new ParseObject("Users");
+                ParseObject newUser = new ParseObject(Consts.USER_TABLE);
                 newUser.put("user_id", email);
                 newUser.put("user_name", uname);
                 newUser.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
                         newUserAdded = true;
+                        setResult(Activity.RESULT_OK);
                         finish();
 
                     }

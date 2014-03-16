@@ -1,32 +1,25 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.SaveCallback;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 //import android.util.Log;
 
 public class PhoneCheckoutActivity extends Activity {
@@ -82,7 +75,7 @@ public class PhoneCheckoutActivity extends Activity {
                 stream.toByteArray());
         try {
             sigFile.save();
-            ParseObject checkout = new ParseObject("DevOut");
+            ParseObject checkout = new ParseObject(Consts.DEVICE_LOAN_TABLE);
             checkout.put("dev_id", deviceId);
             checkout.put("user_id", userId);
             checkout.put("signature", sigFile);

@@ -1,8 +1,5 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.io.ByteArrayInputStream;
-import java.util.List;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -28,6 +25,9 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
 
 public class DeviceDetailsFragment extends Fragment {
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
@@ -103,7 +103,7 @@ public class DeviceDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_devdetails, container, false);
-        ParseQuery<ParseObject> devQuery = new ParseQuery<ParseObject>("DevOut");
+        ParseQuery<ParseObject> devQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
         uid = (TextView) v.findViewById(R.id.user_id);
         devid = (TextView) v.findViewById(R.id.dev_id);
         date = (TextView) v.findViewById(R.id.out_date);
@@ -261,7 +261,7 @@ public class DeviceDetailsFragment extends Fragment {
                         
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    ParseQuery<ParseObject> qr = new ParseQuery<ParseObject>("DevOut");
+                    ParseQuery<ParseObject> qr = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
                     qr.getInBackground(parseId, new GetCallback<ParseObject>() {
 
                         @Override

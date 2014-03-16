@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,12 +13,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -25,6 +28,8 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,7 +38,8 @@ import java.util.TreeMap;
 public class SelectUserActivity extends ListActivity {
 
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
-    private static final int ADD_NEW_USER = 0xD001;
+    private static final int MENU_ADD_NEW_USER = Menu.FIRST;
+    private final static int MENU_DELETE_USER = Menu.FIRST + 1;
     private ArrayList<Map<String, Object>> allUsers;
     private SimpleAdapter uAdapter;
     private int selectedPosition;
@@ -73,6 +79,7 @@ public class SelectUserActivity extends ListActivity {
             selectedPosition = -1;
             loadAllUsers();
         }
+        registerForContextMenu(getListView());
     }
 
     /* (non-Javadoc)
@@ -84,8 +91,8 @@ public class SelectUserActivity extends ListActivity {
         ArrayList<Bundle> bdl = new ArrayList<Bundle>();
         for (Map<String,Object> u : allUsers) {
             Bundle b = new Bundle();
-            b.putString("user_id", (String)u.get("user_id"));
-            b.putString("user_name", (String)u.get("user_name"));
+            for (String key : u.keySet())
+                b.putString(key, (String)u.get(key));
             bdl.add(b);
         }
         outState.putParcelableArrayList("allUsers", bdl);
@@ -93,7 +100,7 @@ public class SelectUserActivity extends ListActivity {
     }
 
     private void loadAllUsers() {
-        ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>("Users");
+        ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>(Consts.USER_TABLE);
         userQuery.findInBackground(new FindCallback<ParseObject>() {
 
             @Override
@@ -105,12 +112,21 @@ public class SelectUserActivity extends ListActivity {
                         Map<String, Object> uMap = new TreeMap<String, Object>();
                         uMap.put("user_id", u.getString("user_id"));
                         uMap.put("user_name", u.getString("user_name"));
+                        uMap.put("objectId", u.getObjectId());
                         ParseFile uImg = u.getParseFile("user_photo");
                         if (uImg != null) {
                             uMap.put("user_photo", uImg);
                         }
                         allUsers.add(uMap);
                     }
+                    Collections.sort(allUsers, new Comparator<Map<String, Object>>() {
+                        @Override
+                        public int compare(Map<String, Object> one, Map<String, Object> two) {
+                            String one_id = (String) one.get("user_id");
+                            String two_id = (String) two.get("user_id");
+                            return one_id.compareTo(two_id);
+                        }
+                    });
                     uAdapter.notifyDataSetChanged();
                 } else {
                     Toast.makeText(SelectUserActivity.this,
@@ -140,7 +156,7 @@ public class SelectUserActivity extends ListActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.add_user_menu)
         {
-            startActivityForResult(new Intent(this, NewUserActivity.class), ADD_NEW_USER);
+            startActivityForResult(new Intent(this, NewUserActivity.class), MENU_ADD_NEW_USER);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -151,7 +167,7 @@ public class SelectUserActivity extends ListActivity {
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ADD_NEW_USER) {
+        if (requestCode == MENU_ADD_NEW_USER) {
             if (resultCode == RESULT_OK)
                 loadAllUsers();
         }
@@ -160,7 +176,7 @@ public class SelectUserActivity extends ListActivity {
             if (scanResult == null) return;
             final String contents = scanResult.getContents();
             if (contents == null) return;
-            ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>("DevOut");
+            ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
             idQuery.whereEqualTo("dev_id", contents);
             idQuery.findInBackground(new FindCallback<ParseObject>() {
 
@@ -225,5 +241,44 @@ public class SelectUserActivity extends ListActivity {
         IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.initiateScan();
     }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        if (item.getItemId() == MENU_DELETE_USER) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            Map<String,Object> umap = allUsers.get(info.position);
+            String userId = (String) umap.get("user_id");
+            ParseQuery<ParseObject> registeredDev = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
+            registeredDev.whereEqualTo("user_id", userId);
+            try {
+                if (registeredDev.find().isEmpty()) {
+                    String delObjetId = (String) umap.get("objectId");
+                    ParseQuery<ParseObject> delUser = new ParseQuery<ParseObject>(Consts.USER_TABLE);
+                    delUser.get(delObjetId).deleteInBackground(new DeleteCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            loadAllUsers();
+                        }
+                    });
+                }
+                else {
+                    Toast.makeText(this, "Can't delete user that has a device checked out",
+                            Toast.LENGTH_LONG).show();
+                }
+            } catch (ParseException e) {
+                String username = (String) allUsers.get(info.position).get("user_name");
+                Toast.makeText(this, "Unable to delete " + username, Toast.LENGTH_LONG).show();
+            }
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(0, MENU_DELETE_USER, 0, "Delete User");
+    }
+
 
 }

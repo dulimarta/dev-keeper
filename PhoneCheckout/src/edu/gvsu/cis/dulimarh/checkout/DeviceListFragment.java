@@ -111,7 +111,7 @@ public class DeviceListFragment extends ListFragment {
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>("DevOut");
+                ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
                 checkouts.clear();
                 for (ParseObject obj : checkOutQuery.find())
                 {
