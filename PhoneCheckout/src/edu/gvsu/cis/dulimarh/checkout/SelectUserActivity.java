@@ -1,34 +1,42 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.util.List;
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-public class SelectUserActivity extends Activity implements SelectUserFragment.OnUserSelectedListener {
+
+public class SelectUserActivity extends ListActivity {
 
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
-    
+    private static final int ADD_NEW_USER = 0xD001;
+    private ArrayList<Map<String, Object>> allUsers;
+    private SimpleAdapter uAdapter;
+    private int selectedPosition;
     private String selectedUid, selectedUname;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -44,11 +52,76 @@ public class SelectUserActivity extends Activity implements SelectUserFragment.O
         params.width = 800;
         params.dimAmount = 0.3f;
         win.setAttributes(params);
-        setContentView(R.layout.activity_selectuser);
+//        setContentView(R.layout.activity_selectuser);
         setTitle("Select User");
+        allUsers = new ArrayList<Map<String, Object>>();
+        uAdapter = new SimpleAdapter(this, allUsers,
+                android.R.layout.simple_list_item_2,
+                new String[] {"user_name", "user_id"},
+                new int[] {android.R.id.text1, android.R.id.text2});
+        setListAdapter(uAdapter);
+        if (savedInstanceState != null) {
+            selectedPosition = savedInstanceState.getInt("selection");
+            ArrayList<Bundle> bdl = savedInstanceState.getParcelableArrayList("allUsers");
+            for (Bundle b : bdl) {
+                Map<String,Object> uMap = new TreeMap<String, Object>();
+                for (String key : b.keySet())
+                    uMap.put(key, b.get(key));
+                allUsers.add(uMap);
+            }
+        } else {
+            selectedPosition = -1;
+            loadAllUsers();
+        }
     }
-    
-    
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        ArrayList<Bundle> bdl = new ArrayList<Bundle>();
+        for (Map<String,Object> u : allUsers) {
+            Bundle b = new Bundle();
+            b.putString("user_id", (String)u.get("user_id"));
+            b.putString("user_name", (String)u.get("user_name"));
+            bdl.add(b);
+        }
+        outState.putParcelableArrayList("allUsers", bdl);
+        outState.putInt("selection", selectedPosition);
+    }
+
+    private void loadAllUsers() {
+        ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>("Users");
+        userQuery.findInBackground(new FindCallback<ParseObject>() {
+
+            @Override
+            public void done(List<ParseObject> uList, ParseException e) {
+                if (e == null) {
+                    allUsers.clear();
+                    uAdapter.notifyDataSetInvalidated();
+                    for (ParseObject u : uList) {
+                        Map<String, Object> uMap = new TreeMap<String, Object>();
+                        uMap.put("user_id", u.getString("user_id"));
+                        uMap.put("user_name", u.getString("user_name"));
+                        ParseFile uImg = u.getParseFile("user_photo");
+                        if (uImg != null) {
+                            uMap.put("user_photo", uImg);
+                        }
+                        allUsers.add(uMap);
+                    }
+                    uAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(SelectUserActivity.this,
+                            "Unable to retrieve user data: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+
     /* (non-Javadoc)
      * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
      */
@@ -67,53 +140,58 @@ public class SelectUserActivity extends Activity implements SelectUserFragment.O
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.add_user_menu)
         {
-            startActivity(new Intent(this, NewUserActivity.class));
+            startActivityForResult(new Intent(this, NewUserActivity.class), ADD_NEW_USER);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-
     /* (non-Javadoc)
      * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
      */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (scanResult == null) return;
-        final String contents = scanResult.getContents();
-        if (contents == null) return;
-        ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>("DevOut");
-        idQuery.whereEqualTo("dev_id", contents);
-        idQuery.findInBackground(new FindCallback<ParseObject>() {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ADD_NEW_USER) {
+            if (resultCode == RESULT_OK)
+                loadAllUsers();
+        }
+        else {
+            IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            if (scanResult == null) return;
+            final String contents = scanResult.getContents();
+            if (contents == null) return;
+            ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>("DevOut");
+            idQuery.whereEqualTo("dev_id", contents);
+            idQuery.findInBackground(new FindCallback<ParseObject>() {
 
-            @Override
-            public void done(List<ParseObject> result, ParseException ex) {
-                if (ex == null) {
-                    if (result.size() == 0) {
+                @Override
+                public void done(List<ParseObject> result, ParseException ex) {
+                    if (ex == null) {
+                        if (result.size() == 0) {
                         /* Pass userid, username, and device id to the next activity */
-                        Intent next = new Intent(SelectUserActivity.this,
-                                PhoneCheckoutActivity.class);
-                        //Map<String,Object> uMap = allUsers.get(selectedPosition);
-                        next.putExtra("user_id", selectedUid); 
-                        next.putExtra("user_name", selectedUname); 
-                        next.putExtra("dev_id", contents);
-                        startActivity(next);
-                        finish();
+                            Intent next = new Intent(SelectUserActivity.this,
+                                    PhoneCheckoutActivity.class);
+                            //Map<String,Object> uMap = allUsers.get(selectedPosition);
+                            next.putExtra("user_id", selectedUid);
+                            next.putExtra("user_name", selectedUname);
+                            next.putExtra("dev_id", contents);
+                            startActivity(next);
+                            finish();
+                        } else {
+                            showDialog(DIALOG_ALREADY_CHECKEDOUT);
+                            Toast.makeText(SelectUserActivity.this,
+                                    "The device is already checkout",
+                                    Toast.LENGTH_LONG).show();
+                        }
                     } else {
-                        showDialog(DIALOG_ALREADY_CHECKEDOUT);
                         Toast.makeText(SelectUserActivity.this,
-                                "The device is already checkout",
+                                "Error in querying device id: " + ex.getMessage(),
                                 Toast.LENGTH_LONG).show();
                     }
-                } else {
-                    Toast.makeText(SelectUserActivity.this,
-                            "Error in querying device id: " + ex.getMessage(),
-                            Toast.LENGTH_LONG).show();
                 }
-            }
-        });
-        //super.onActivityResult(requestCode, resultCode, data);
+            });
+            //super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     /* (non-Javadoc)
@@ -136,14 +214,16 @@ public class SelectUserActivity extends Activity implements SelectUserFragment.O
         return builder.create();
     }
 
-
+    /* (non-Javadoc)
+     * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
+     */
     @Override
-    public void onUserSelected(String uid, String uname) {
-        selectedUid = uid;
-        selectedUname = uname;
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        selectedPosition = position;
+        String uid = (String) allUsers.get(position).get("user_id");
+        String uname = (String) allUsers.get(position).get("user_name");
         IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.initiateScan();
     }
-
 
 }
