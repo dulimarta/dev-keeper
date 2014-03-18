@@ -1,7 +1,10 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,16 +17,20 @@ import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 public class NewUserActivity extends Activity implements View.OnClickListener {
     //private String TAG = getClass().getName();
+    private final static int REQUEST_CAPTURE_USER_PHOTO = 0xD0001;
     private EditText uname, email;
-    private ImageView uphoto;
+    private ImageView uPhoto;
+    private Bitmap photoBitmap;
     private boolean newUserAdded;
     /*
      * (non-Javadoc)
@@ -43,8 +50,8 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_newuser);
         uname = (EditText) findViewById(R.id.newuser_name);
         email = (EditText) findViewById(R.id.newuser_email);
-        uphoto = (ImageView) findViewById(R.id.newuser_photo);
-        uphoto.setOnClickListener(this);
+        uPhoto = (ImageView) findViewById(R.id.newuser_photo);
+        uPhoto.setOnClickListener(this);
         newUserAdded = false;
     }
 
@@ -72,7 +79,7 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
                             .show();
                     return true;
                 }
-                saveUser (email, uname);
+                saveUser(email, uname);
                 return true;
 
         }
@@ -81,6 +88,7 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
 
     private void saveUser (final String email, final String uname)
     {
+        /* Check for duplicate userid */
         ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>(Consts.USER_TABLE);
         userQuery.whereEqualTo("user_id", email);
         userQuery.findInBackground(new FindCallback<ParseObject>() {
@@ -88,18 +96,19 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if (e == null) {
                     if (parseObjects.isEmpty()) {
+                        /* Query returns nothing, no duplicate user id */
                         ParseObject newUser = new ParseObject(Consts.USER_TABLE);
                         newUser.put("user_id", email);
                         newUser.put("user_name", uname);
-                        newUser.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                newUserAdded = true;
-                                setResult(Activity.RESULT_OK);
-                                finish();
-
-                            }
-                        });
+                        if (photoBitmap != null) {
+                            /* Save the image as PNG */
+                            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                            photoBitmap.compress(Bitmap.CompressFormat.PNG, 90, byteStream);
+                            ParseFile userPhoto = new ParseFile(byteStream.toByteArray());
+                            userPhoto.saveInBackground();
+                            newUser.put("user_photo", userPhoto);
+                        }
+                        newUser.saveInBackground(postSave);
                     } else {
                         Toast.makeText(NewUserActivity.this,
                                 "User with the same email already exists",
@@ -115,6 +124,42 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
-        /* TODO: capture image */
+        Intent takePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePhoto.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePhoto, REQUEST_CAPTURE_USER_PHOTO);
+        }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CAPTURE_USER_PHOTO) {
+            if (resultCode == RESULT_OK) {
+                Bundle extras = data.getExtras();
+                photoBitmap = (Bitmap) extras.get("data");
+                uPhoto.setImageBitmap(photoBitmap);
+            }
+            else {
+                Toast.makeText(this, "Photo was not taken", Toast.LENGTH_LONG).show();
+            }
+        }
+        else
+            super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private final SaveCallback postSave = new SaveCallback() {
+        @Override
+        public void done(ParseException e) {
+            if (e == null) {
+                newUserAdded = true;
+                setResult(Activity.RESULT_OK);
+                finish();
+            }
+            else {
+                Toast.makeText(NewUserActivity.this,
+                        "Unable to save new user: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+
+        }
+    };
 }

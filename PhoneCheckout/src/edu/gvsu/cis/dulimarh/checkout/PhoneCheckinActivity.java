@@ -1,36 +1,11 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.io.ByteArrayInputStream;
-import java.util.List;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.parse.FindCallback;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseObject;
-import com.parse.ParsePush;
-import com.parse.ParseQuery;
-import com.parse.SendCallback;
-
 import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
 
 public class PhoneCheckinActivity extends Activity 

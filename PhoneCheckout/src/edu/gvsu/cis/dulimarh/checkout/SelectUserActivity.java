@@ -263,7 +263,7 @@ public class SelectUserActivity extends ListActivity {
                     });
                 }
                 else {
-                    Toast.makeText(this, "Can't delete user that has a device checked out",
+                    Toast.makeText(this, "Can't delete user who loaned a device",
                             Toast.LENGTH_LONG).show();
                 }
             } catch (ParseException e) {
