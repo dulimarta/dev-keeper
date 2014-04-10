@@ -1,8 +1,13 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.util.Log;
+
 import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 import com.parse.ParseQuery;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by dulimarh on 04/09/14.
@@ -14,10 +19,15 @@ public class ParsePushUtils {
         ParseQuery pushQuery = ParseInstallation.getQuery();
         pushQuery.whereEqualTo("dev_id", id);
 
-        pushNotification.setQuery(pushQuery);
-        pushNotification.setChannel(Consts.PUSH_CHANNEL);
-        pushNotification.setMessage(msg);
-        pushNotification.sendInBackground();
+        try {
+            JSONObject data = new JSONObject("{\"action\":\"edu.gvsu.cis.checkout.UPDATE\"," +
+                    "\"message\":\"" + msg + "\"}");
+            pushNotification.setQuery(pushQuery);
+            pushNotification.setData(data);
+            pushNotification.sendInBackground();
+        } catch (JSONException e) {
+            Log.e("HANS", "Unable to parse JSON string: " + e.getMessage());
+        }
 
     }
 }

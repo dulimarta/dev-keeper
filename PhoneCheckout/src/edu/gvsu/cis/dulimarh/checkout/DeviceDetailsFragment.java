@@ -112,7 +112,7 @@ public class DeviceDetailsFragment extends Fragment {
         checkin = (Button) v.findViewById(R.id.checkin);
 //        ping = (Button) v.findViewById(R.id.ping);
         checkin.setEnabled(false);
-        devQuery.whereEqualTo("user_id", user_id);
+        devQuery.whereEqualTo("dev_id", dev_id);
         checkin.setOnClickListener(new OnClickListener() {
             
             @Override

@@ -84,7 +84,7 @@ public class PhoneCheckoutActivity extends Activity {
                 @Override
                 public void done(ParseException e) {
                     if (e == null) {
-                        ParsePushUtils.pushTo(deviceId, "ADDED");
+                        ParsePushUtils.pushTo(deviceId, "Registered to " + userId);
                         finish();
                     }
                     else

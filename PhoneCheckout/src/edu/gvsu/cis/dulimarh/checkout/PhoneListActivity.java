@@ -33,7 +33,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
     private String borrowerId, borrowerName;
 //    private static final int DIALOG_PROGRESS = 2;
 
-    private DevTask currentTask = DevTask.NONE;
+    private DevTask currentTask;
 
     // private ListView theList;
     /* (non-Javadoc)
@@ -43,8 +43,19 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devlist);
+        if (savedInstanceState == null)
+            currentTask = DevTask.NONE;
+        else {
+            currentTask = DevTask.valueOf(savedInstanceState.getString("currentTask"));
+        }
 //        theList = getListView();
 //        theList.setOnItemLongClickListener(selectionListener);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("currentTask", currentTask.toString());
     }
 
     @Override
@@ -97,7 +108,9 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
                     break;
                 case CHECKOUT:
                     doCheckOut (scannedDevId, borrowerId, borrowerName);
+                    break;
             }
+            currentTask = DevTask.NONE;
         }
     }
 
@@ -156,7 +169,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
                         next.putExtra("user_name", borrowerName);
                         next.putExtra("dev_id", devId);
                         startActivity(next);
-                        finish();
+                        //finish();
                     } else {
                         showDialog(DIALOG_ALREADY_CHECKEDOUT);
                         Toast.makeText(PhoneListActivity.this,
@@ -173,11 +186,6 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
 
     }
 
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
-        super.onPrepareDialog(id, dialog, args);
-    }
-
     /* (non-Javadoc)
          * @see android.app.Activity#onCreateDialog(int)
          */
@@ -190,10 +198,6 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
                 builder.setTitle("Warning");
                 builder.setPositiveButton("OK", null);
                 break;
-//        case DIALOG_PROGRESS:
-//            progress = new ProgressDialog(this);
-//            progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//            return progress;
         }
         return builder.create();
     }
@@ -203,7 +207,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
     public void deviceRemoved(String dev_id) {
         /* TODO: Complete this method */
 
-        ParsePushUtils.pushTo(dev_id, "REMOVED");
+        ParsePushUtils.pushTo(dev_id, "Deregistered from " + borrowerId);
     }
 
 

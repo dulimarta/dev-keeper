@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -60,6 +63,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
+        Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
         ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
         Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
         setContentView(R.layout.main);
@@ -85,10 +89,11 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             qrCodeImg = null;
         }
         id.setText(devId);
-        PushService.subscribe(this, "Hans", IMEI2QRActivity.class);
+        /* TODO: Make sure the channel name here is the SAME as the companion app */
+        //PushService.subscribe(this, "HansDulimarta", IMEI2QRActivity.class);
         thisInstall.put("dev_id", devId);
         thisInstall.saveInBackground();
-        //PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
+        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
         reload.setOnClickListener(new OnClickListener() {
             
             @Override
@@ -121,6 +126,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         // TODO Auto-generated method stub
         super.onResume();
         if (qrCodeImg != null) return;
+        registerReceiver(localReceiver, new IntentFilter(getPackageName() + ".HansLocalBroadcast"));
         if (isNetworkAvailable()) {
             myTask = new URLTask();
             myTask.execute();
@@ -130,9 +136,15 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     }
 
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(localReceiver);
+    }
+
     /* (non-Javadoc)
-     * @see android.app.Activity#onCreateDialog(int)
-     */
+         * @see android.app.Activity#onCreateDialog(int)
+         */
     @Override
     protected Dialog onCreateDialog(int id) {
         AlertDialog.Builder builder;
@@ -257,4 +269,11 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+    private BroadcastReceiver localReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            user.setText(intent.getStringExtra("message"));
+        }
+    };
 }
