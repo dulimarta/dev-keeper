@@ -4,9 +4,9 @@
     <string name="checkout">Checkout</string>
     <string name="uid_prompt">Select student</string>
     <string name="clear_sig">Clear Signature</string>
-    <string name="text_dev_id">Device ID</string>
+    <string name="text_dev_id">ID:</string>
     <string name="checkout_by">Checkout by:</string>
-    <string name="checkout_on">Checked Out on:</string>
+    <string name="checkout_on">Checkout date:</string>
     <string name="btn_checkin">Checkin</string>
     <string name="btn_ping">Ping</string>
     <string name="sign">Sign in the box</string>

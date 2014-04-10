@@ -83,8 +83,10 @@ public class PhoneCheckoutActivity extends Activity {
                 
                 @Override
                 public void done(ParseException e) {
-                    if (e == null)
+                    if (e == null) {
+                        ParsePushUtils.pushTo(deviceId, "ADDED");
                         finish();
+                    }
                     else
                         Toast.makeText(PhoneCheckoutActivity.this, 
                                 "Cannot checkout device: " + e.getMessage(), 

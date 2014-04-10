@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 public class CheckoutReceiver extends BroadcastReceiver {
     private final String TAG = getClass().getName();
@@ -13,7 +12,12 @@ public class CheckoutReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-//        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification.Builder noteBuilder = new Notification.Builder(context);
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        noteBuilder.setSmallIcon(R.drawable.ic_thumbup);
+        noteBuilder.setContentTitle("Parse push");
+        noteBuilder.setContentText("Registered " + intent.getAction());
+        nm.notify(0xC0DE, noteBuilder.getNotification());
 //        Notification alert = new Notification(R.drawable.ic_launcher, "Checkout Message",
 //                System.currentTimeMillis());
 //        alert.setLatestEventInfo(context, "From Checkout", 

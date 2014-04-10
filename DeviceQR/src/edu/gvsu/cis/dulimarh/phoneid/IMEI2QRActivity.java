@@ -1,16 +1,5 @@
 package edu.gvsu.cis.dulimarh.phoneid;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.util.List;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -33,7 +22,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -41,6 +29,17 @@ import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.PushService;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.List;
 
 public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
@@ -61,18 +60,14 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
-//        ParseInstallation.getCurrentInstallation().saveInBackground();
-        PushService.subscribe(this, "Hans", IMEI2QRActivity.class);
-        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
+        ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
+        Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
         setContentView(R.layout.main);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
         reload = (Button) findViewById(R.id.refresh);
         qr = (ImageView) findViewById(R.id.qr_code);
         qr.setOnClickListener(this);
-        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-        devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
-        id.setText(devId);
         if (savedInstanceState != null) {
             userId = savedInstanceState.getString("userId");
             devId = savedInstanceState.getString("devId");
@@ -85,8 +80,15 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 user.setText ("Device is not checked out");
         }
         else {
+            WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+            devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
             qrCodeImg = null;
         }
+        id.setText(devId);
+        PushService.subscribe(this, "Hans", IMEI2QRActivity.class);
+        thisInstall.put("dev_id", devId);
+        thisInstall.saveInBackground();
+        //PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
         reload.setOnClickListener(new OnClickListener() {
             
             @Override

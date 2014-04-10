@@ -256,7 +256,7 @@ public class DeviceDetailsFragment extends Fragment {
             final String parseId = getArguments().getString("parse_id");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Confirmation Required");
-            builder.setMessage("Check in device + " + dev_id + "?");
+            builder.setMessage("Deregister device + " + dev_id + "?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         
                 @Override

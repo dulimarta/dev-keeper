@@ -31,15 +31,15 @@ public class DeviceListFragment extends ListFragment {
         View v = getActivity().findViewById(R.id.devdetails);
         isDualPane = v != null && v.getVisibility() == View.VISIBLE;
         Log.d(TAG, "Dual pane = " + isDualPane);
-            currentPos = 0;
-            checkouts = new ArrayList<Map<String,String>>();
-            Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
-            adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
-                    new String[] {"dev_id", "user_id"},
-                    new int[] {android.R.id.text1, android.R.id.text2});
-            setListAdapter(adapter);
-            if (isDualPane)
-                showDetails (currentPos);
+        currentPos = 0;
+        checkouts = new ArrayList<Map<String, String>>();
+        Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
+        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
+                new String[]{"dev_id", "user_id"},
+                new int[]{android.R.id.text1, android.R.id.text2});
+        setListAdapter(adapter);
+        if (isDualPane)
+            showDetails(currentPos);
     }
 
     /* (non-Javadoc)
@@ -47,9 +47,9 @@ public class DeviceListFragment extends ListFragment {
      */
     @Override
     public void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
-        new CheckTask().execute();
+        // TOOO do we have to run this task everytime?
+        new DeviceListTask().execute();
     }
 
     @Override
@@ -106,7 +106,7 @@ public class DeviceListFragment extends ListFragment {
 //        super.onListItemClick(l, v, position, id);
     }
 
-    private class CheckTask extends AsyncTask<Void, Void, Void> {
+    private class DeviceListTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {

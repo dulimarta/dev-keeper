@@ -104,7 +104,7 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
                             /* Save the image as PNG */
                             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
                             photoBitmap.compress(Bitmap.CompressFormat.PNG, 90, byteStream);
-                            ParseFile userPhoto = new ParseFile(byteStream.toByteArray());
+                            ParseFile userPhoto = new ParseFile(email + ".png", byteStream.toByteArray());
                             userPhoto.saveInBackground();
                             newUser.put("user_photo", userPhoto);
                         }

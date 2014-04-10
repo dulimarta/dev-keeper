@@ -1,9 +1,9 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -14,12 +14,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -35,9 +34,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-public class SelectUserActivity extends ListActivity {
+public class SelectUserActivity extends ListActivity implements SimpleAdapter.ViewBinder {
 
-    private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
     private ArrayList<Map<String, Object>> allUsers;
@@ -62,10 +60,11 @@ public class SelectUserActivity extends ListActivity {
         setTitle("Select User");
         allUsers = new ArrayList<Map<String, Object>>();
         uAdapter = new SimpleAdapter(this, allUsers,
-                android.R.layout.simple_list_item_2,
-                new String[] {"user_name", "user_id"},
-                new int[] {android.R.id.text1, android.R.id.text2});
+                R.layout.user_list_item,
+                new String[] {"user_name", "user_id", "user_photo"},
+                new int[] {R.id.main_text, R.id.sub_text, R.id.item_icon});
         setListAdapter(uAdapter);
+        uAdapter.setViewBinder(this);
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selection");
             ArrayList<Bundle> bdl = savedInstanceState.getParcelableArrayList("allUsers");
@@ -91,8 +90,13 @@ public class SelectUserActivity extends ListActivity {
         ArrayList<Bundle> bdl = new ArrayList<Bundle>();
         for (Map<String,Object> u : allUsers) {
             Bundle b = new Bundle();
-            for (String key : u.keySet())
-                b.putString(key, (String)u.get(key));
+            for (String key : u.keySet()) {
+                Object obj = u.get(key);
+                if (obj instanceof Bitmap)
+                    b.putParcelable(key, (Bitmap) obj);
+                else
+                    b.putString(key, (String) u.get(key));
+            }
             bdl.add(b);
         }
         outState.putParcelableArrayList("allUsers", bdl);
@@ -115,7 +119,12 @@ public class SelectUserActivity extends ListActivity {
                         uMap.put("objectId", u.getObjectId());
                         ParseFile uImg = u.getParseFile("user_photo");
                         if (uImg != null) {
-                            uMap.put("user_photo", uImg);
+                            try {
+                                byte[] imgData = uImg.getData();
+                                uMap.put("user_photo", BitmapFactory.decodeByteArray(imgData, 0, imgData.length));
+                            } catch (ParseException e1) {
+                                uMap.put("user_photo", BitmapFactory.decodeResource(getResources(), R.drawable.male_user_icon));
+                            }
                         }
                         allUsers.add(uMap);
                     }
@@ -171,63 +180,6 @@ public class SelectUserActivity extends ListActivity {
             if (resultCode == RESULT_OK)
                 loadAllUsers();
         }
-        else {
-            IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-            if (scanResult == null) return;
-            final String contents = scanResult.getContents();
-            if (contents == null) return;
-            ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
-            idQuery.whereEqualTo("dev_id", contents);
-            idQuery.findInBackground(new FindCallback<ParseObject>() {
-
-                @Override
-                public void done(List<ParseObject> result, ParseException ex) {
-                    if (ex == null) {
-                        if (result.size() == 0) {
-                        /* Pass userid, username, and device id to the next activity */
-                            Intent next = new Intent(SelectUserActivity.this,
-                                    PhoneCheckoutActivity.class);
-                            //Map<String,Object> uMap = allUsers.get(selectedPosition);
-                            next.putExtra("user_id", selectedUid);
-                            next.putExtra("user_name", selectedUname);
-                            next.putExtra("dev_id", contents);
-                            startActivity(next);
-                            finish();
-                        } else {
-                            showDialog(DIALOG_ALREADY_CHECKEDOUT);
-                            Toast.makeText(SelectUserActivity.this,
-                                    "The device is already checkout",
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Toast.makeText(SelectUserActivity.this,
-                                "Error in querying device id: " + ex.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-            //super.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see android.app.Activity#onCreateDialog(int)
-     */
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        switch (id) {
-        case DIALOG_ALREADY_CHECKEDOUT:
-            builder.setMessage("The scanned device is already checked out");
-            builder.setTitle("Warning");
-            builder.setPositiveButton("OK", null);
-            break;
-//        case DIALOG_PROGRESS:
-//            progress = new ProgressDialog(this);
-//            progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//            return progress;
-        }
-        return builder.create();
     }
 
     /* (non-Javadoc)
@@ -238,8 +190,11 @@ public class SelectUserActivity extends ListActivity {
         selectedPosition = position;
         String uid = (String) allUsers.get(position).get("user_id");
         String uname = (String) allUsers.get(position).get("user_name");
-        IntentIntegrator integrator = new IntentIntegrator(this);
-        integrator.initiateScan();
+        Intent userInfo = new Intent();
+        userInfo.putExtra("user_id", uid);
+        userInfo.putExtra("user_name", uname);
+        setResult(RESULT_OK, userInfo);
+        finish();
     }
 
     @Override
@@ -281,4 +236,15 @@ public class SelectUserActivity extends ListActivity {
     }
 
 
+    @Override
+    public boolean setViewValue(View view, Object data, String textRepresentation) {
+        if (view.getId() == R.id.item_icon)
+        {
+            ImageView img = (ImageView) view;
+            img.setImageBitmap((Bitmap)data);
+            return true;
+        }
+        else
+            return false;
+    }
 }
