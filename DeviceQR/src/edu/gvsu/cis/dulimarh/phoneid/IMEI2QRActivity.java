@@ -1,5 +1,7 @@
 package edu.gvsu.cis.dulimarh.phoneid;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -24,6 +26,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.parse.Parse;
@@ -48,7 +51,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
     private static final String CHART_URL = 
         "http://chart.apis.google.com/chart?cht=qr&chld=L&choe=UTF-8";
-    
+
+    private RelativeLayout top;
     private TextView id, user;
     private ImageView qr;
     private ProgressDialog progress;
@@ -67,6 +71,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
         Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
         setContentView(R.layout.main);
+        top = (RelativeLayout) findViewById(R.id.topLayout);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
         reload = (Button) findViewById(R.id.refresh);
@@ -88,6 +93,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
             qrCodeImg = null;
         }
+
         id.setText(devId);
         /* TODO: Make sure the channel name here is the SAME as the companion app */
         //PushService.subscribe(this, "HansDulimarta", IMEI2QRActivity.class);
@@ -125,8 +131,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     protected void onResume() {
         // TODO Auto-generated method stub
         super.onResume();
-        if (qrCodeImg != null) return;
         registerReceiver(localReceiver, new IntentFilter(getPackageName() + ".HansLocalBroadcast"));
+        if (qrCodeImg != null) return;
         if (isNetworkAvailable()) {
             myTask = new URLTask();
             myTask.execute();
@@ -229,13 +235,14 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             qr.setImageBitmap((Bitmap)res[0]);
             if (res[1] != null) {
                 user.setText("Checked out by " + (String) res[1]);
+                top.setBackgroundResource(R.color.background_reg);
                 userId = (String) res[1];
             }
             else {
                 user.setText("Device is not checked out");
+                top.setBackgroundResource(R.color.background_dereg);
                 userId = "";
             }
-            
         }
 
         /* (non-Javadoc)
@@ -273,7 +280,19 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            user.setText(intent.getStringExtra("message"));
+            String msg = intent.getStringExtra("message");
+            user.setText(msg);
+            int reg_color = getResources().getColor(R.color.background_reg);
+            int der_color = getResources().getColor(R.color.background_dereg);
+            ObjectAnimator bgAnim;
+            if (msg.toUpperCase().startsWith("DEREG"))
+                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
+                    new ArgbEvaluator(), reg_color, der_color);
+            else
+                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
+                    new ArgbEvaluator(), der_color, reg_color);
+            bgAnim.setDuration(3000);
+            bgAnim.start();
         }
     };
 }
