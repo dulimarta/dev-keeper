@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="background_reg">#ff63ac3f</color>
-  <color name="background_dereg">#ff1f37a3</color>
+  <color name="background_avail">#ff63ac3f</color>
+  <color name="background_onloan">#ffa32513</color>
 </resources>

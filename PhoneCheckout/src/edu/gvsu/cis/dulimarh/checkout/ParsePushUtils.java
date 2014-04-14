@@ -24,6 +24,7 @@ public class ParsePushUtils {
                     "\"message\":\"" + msg + "\"}");
             pushNotification.setQuery(pushQuery);
             pushNotification.setData(data);
+            pushNotification.setExpirationTimeInterval(180); /* expire in 3 minutes */
             pushNotification.sendInBackground();
         } catch (JSONException e) {
             Log.e("HANS", "Unable to parse JSON string: " + e.getMessage());

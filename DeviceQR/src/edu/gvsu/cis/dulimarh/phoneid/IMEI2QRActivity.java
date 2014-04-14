@@ -24,7 +24,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -56,7 +56,6 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private TextView id, user;
     private ImageView qr;
     private ProgressDialog progress;
-    private Button reload;
     private String devId, userId;
     private Bitmap qrCodeImg;
     private URLTask myTask;
@@ -74,7 +73,6 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         top = (RelativeLayout) findViewById(R.id.topLayout);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
-        reload = (Button) findViewById(R.id.refresh);
         qr = (ImageView) findViewById(R.id.qr_code);
         qr.setOnClickListener(this);
         if (savedInstanceState != null) {
@@ -100,7 +98,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         thisInstall.put("dev_id", devId);
         thisInstall.saveInBackground();
         PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
-        reload.setOnClickListener(new OnClickListener() {
+        qr.setOnClickListener(new OnClickListener() {
             
             @Override
             public void onClick(View v) {
@@ -235,14 +233,15 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             qr.setImageBitmap((Bitmap)res[0]);
             if (res[1] != null) {
                 user.setText("Checked out by " + (String) res[1]);
-                top.setBackgroundResource(R.color.background_reg);
+                top.setBackgroundResource(R.color.background_onloan);
                 userId = (String) res[1];
             }
             else {
                 user.setText("Device is not checked out");
-                top.setBackgroundResource(R.color.background_dereg);
+                top.setBackgroundResource(R.color.background_avail);
                 userId = "";
             }
+            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
         }
 
         /* (non-Javadoc)
@@ -282,17 +281,18 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
 
             String msg = intent.getStringExtra("message");
             user.setText(msg);
-            int reg_color = getResources().getColor(R.color.background_reg);
-            int der_color = getResources().getColor(R.color.background_dereg);
+            int reg_color = getResources().getColor(R.color.background_onloan);
+            int avail_color = getResources().getColor(R.color.background_avail);
             ObjectAnimator bgAnim;
             if (msg.toUpperCase().startsWith("DEREG"))
                 bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
-                    new ArgbEvaluator(), reg_color, der_color);
+                    new ArgbEvaluator(), reg_color, avail_color);
             else
                 bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
-                    new ArgbEvaluator(), der_color, reg_color);
-            bgAnim.setDuration(3000);
+                    new ArgbEvaluator(), avail_color, reg_color);
+            bgAnim.setDuration(1000);
             bgAnim.start();
+            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
         }
     };
 }

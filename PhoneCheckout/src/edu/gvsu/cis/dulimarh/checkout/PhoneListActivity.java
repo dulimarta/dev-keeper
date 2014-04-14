@@ -126,7 +126,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
                     if (parseObjects.size() == 1) {
                         ParseObject obj = parseObjects.get(0);
                         String user_id = obj.getString("user_id");
-                        String user_name = obj.getString("user_name");
+                        //String user_name = obj.getString("user_name");
 //                        DialogFragment mydialog = CheckinConfirmationDialog.newInstance (obj,
 //                                "Checkin " + devId + " registered to " + user_id + "?");
                         try {
