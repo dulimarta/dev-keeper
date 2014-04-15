@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -18,6 +20,7 @@ import com.parse.ParseQuery;
 import java.util.*;
 
 public class DeviceListFragment extends ListFragment {
+    private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
     private ArrayList<Map<String,String>> checkouts;
     private SimpleAdapter adapter;
@@ -49,6 +52,11 @@ public class DeviceListFragment extends ListFragment {
     public void onResume() {
         super.onResume();
         // TOOO do we have to run this task everytime?
+        updateDeviceList();
+    }
+
+    public void updateDeviceList()
+    {
         new DeviceListTask().execute();
     }
 
@@ -101,12 +109,34 @@ public class DeviceListFragment extends ListFragment {
             i.putExtra("index", pos);
             i.putExtra("user_id", uid);
             i.putExtra("dev_id", devid);
-            startActivity(i);
+            startActivityForResult(i, DEVICE_CHECKIN_REQUEST);
         }
 //        super.onListItemClick(l, v, position, id);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == DEVICE_CHECKIN_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                updateDeviceList();
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
+
     private class DeviceListTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            adapter.notifyDataSetInvalidated();
+        }
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -130,6 +160,7 @@ public class DeviceListFragment extends ListFragment {
                 });
             } catch (ParseException e) {
                 // TODO Auto-generated catch block
+                Log.e("HANS", "Failed to run query " + e.getMessage());
                 e.printStackTrace();
             }
             return null;

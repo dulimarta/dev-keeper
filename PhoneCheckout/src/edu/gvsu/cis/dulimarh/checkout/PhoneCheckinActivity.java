@@ -14,7 +14,7 @@ public class PhoneCheckinActivity extends Activity
 
     //private final String TAG = getClass().getName();
     
-//    private String user_id, dev_id, parseObjId;
+    private String user_id;
     
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -24,7 +24,7 @@ public class PhoneCheckinActivity extends Activity
         super.onCreate(savedInstanceState);
         Intent data = getIntent();
         int pos = data.getIntExtra("index", -1);
-        String user_id = data.getStringExtra("user_id");
+        user_id = data.getStringExtra("user_id");
         String dev_id = data.getStringExtra("dev_id");
         setContentView(R.layout.activity_checkin);
         DeviceDetailsFragment ddf = DeviceDetailsFragment.newInstance(pos, user_id, dev_id);
@@ -69,7 +69,9 @@ public class PhoneCheckinActivity extends Activity
 
     @Override
     public void deviceRemoved(String dev_id) {
+        ParsePushUtils.pushTo(dev_id, "Deregister from " + user_id);
         finish();
+
     }
 
     

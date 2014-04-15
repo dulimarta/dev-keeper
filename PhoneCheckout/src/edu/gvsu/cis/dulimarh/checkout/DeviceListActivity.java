@@ -24,13 +24,14 @@ import java.util.List;
 import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
 
 
-public class PhoneListActivity extends Activity implements DeviceRemovalListener {
+public class DeviceListActivity extends Activity implements DeviceRemovalListener {
     // private final String TAG = getClass().getName();
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
     private static final int DIALOG_CONFIRM_CHECKOUT = 2;
     private static final int SELECT_USER = 421;
     private enum DevTask {NONE, CHECKIN, CHECKOUT};
     private String borrowerId, borrowerName;
+    private DeviceListFragment devListFragment;
 //    private static final int DIALOG_PROGRESS = 2;
 
     private DevTask currentTask;
@@ -43,6 +44,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devlist);
+        devListFragment = (DeviceListFragment) getFragmentManager().findFragmentById(R.id.devlistFragment);
         if (savedInstanceState == null)
             currentTask = DevTask.NONE;
         else {
@@ -98,6 +100,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
             }
         }
         else {
+            super.onActivityResult(requestCode, resultCode, data);
             IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             if (scanResult == null) return;
             final String scannedDevId = scanResult.getContents();
@@ -110,6 +113,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
                     doCheckOut (scannedDevId, borrowerId, borrowerName);
                     break;
             }
+            devListFragment.updateDeviceList();
             currentTask = DevTask.NONE;
         }
     }
@@ -133,17 +137,17 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
                             obj.delete();
                             deviceRemoved(devId);
                         } catch (ParseException e1) {
-                            Toast.makeText(PhoneListActivity.this,
+                            Toast.makeText(DeviceListActivity.this,
                                     "Failed to remove device " + devId,
                                     Toast.LENGTH_SHORT).show();
                         }
 
                     } else
-                        Toast.makeText(PhoneListActivity.this,
+                        Toast.makeText(DeviceListActivity.this,
                                 "Device " + devId + " not checked out",
                                 Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(PhoneListActivity.this,
+                    Toast.makeText(DeviceListActivity.this,
                             "Failed to query device id " + devId,
                             Toast.LENGTH_SHORT).show();
                 }
@@ -155,35 +159,29 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
     {
         ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
         idQuery.whereEqualTo("dev_id", devId);
-        idQuery.findInBackground(new FindCallback<ParseObject>() {
-
-            @Override
-            public void done(List<ParseObject> result, ParseException ex) {
-                if (ex == null) {
-                    if (result.size() == 0) {
+        List<ParseObject> result = null;
+        try {
+            result = idQuery.find();
+            if (result.size() == 0) {
                         /* Pass userid, username, and device id to the next activity */
-                        Intent next = new Intent(PhoneListActivity.this,
-                                PhoneCheckoutActivity.class);
-                        //Map<String,Object> uMap = allUsers.get(selectedPosition);
-                        next.putExtra("user_id", borrowerId);
-                        next.putExtra("user_name", borrowerName);
-                        next.putExtra("dev_id", devId);
-                        startActivity(next);
-                        //finish();
-                    } else {
-                        showDialog(DIALOG_ALREADY_CHECKEDOUT);
-                        Toast.makeText(PhoneListActivity.this,
-                                "The device is already checkout",
-                                Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(PhoneListActivity.this,
-                            "Error in querying device id: " + ex.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                }
+                Intent next = new Intent(DeviceListActivity.this,
+                        PhoneCheckoutActivity.class);
+                next.putExtra("user_id", borrowerId);
+                next.putExtra("user_name", borrowerName);
+                next.putExtra("dev_id", devId);
+                startActivity(next);
+                //finish();
+            } else {
+                //showDialog(DIALOG_ALREADY_CHECKEDOUT);
+                Toast.makeText(DeviceListActivity.this,
+                        "The device is already checkout",
+                        Toast.LENGTH_LONG).show();
             }
-        });
-
+        } catch (ParseException e) {
+            Toast.makeText(DeviceListActivity.this,
+                    "Error in querying device id: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     /* (non-Javadoc)
@@ -206,7 +204,7 @@ public class PhoneListActivity extends Activity implements DeviceRemovalListener
     @Override
     public void deviceRemoved(String dev_id) {
         /* TODO: Complete this method */
-
+        devListFragment.updateDeviceList();
         ParsePushUtils.pushTo(dev_id, "Deregistered from " + borrowerId);
     }
 

@@ -24,6 +24,7 @@ public class ParsePushUtils {
                     "\"message\":\"" + msg + "\"}");
             pushNotification.setQuery(pushQuery);
             pushNotification.setData(data);
+            /* expiration time is currently ignored by parse.com??? */
             pushNotification.setExpirationTimeInterval(180); /* expire in 3 minutes */
             pushNotification.sendInBackground();
         } catch (JSONException e) {

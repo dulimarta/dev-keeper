@@ -7,7 +7,7 @@
 
     <fragment
         android:name="edu.gvsu.cis.dulimarh.checkout.DeviceListFragment"
-        android:id="@+id/devlist"
+        android:id="@+id/devlistFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
