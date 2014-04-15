@@ -1,23 +1,21 @@
 package edu.gvsu.cis.dulimarh.phoneid;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.util.List;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,8 +24,9 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.parse.Parse;
@@ -37,16 +36,28 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.PushService;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.List;
+
 public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
     private static final String CHART_URL = 
         "http://chart.apis.google.com/chart?cht=qr&chld=L&choe=UTF-8";
-    
+
+    private RelativeLayout top;
     private TextView id, user;
     private ImageView qr;
     private ProgressDialog progress;
-    private Button reload;
-    private String devId;
+    private String devId, userId;
+    private Bitmap qrCodeImg;
     private URLTask myTask;
     
     /** Called when the activity is first created. */
@@ -55,21 +66,39 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
                 "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
-//        ParseInstallation.getCurrentInstallation().saveInBackground();
-        PushService.subscribe(this, "Hans", IMEI2QRActivity.class);
-        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
+        Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
+        ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
+        Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
         setContentView(R.layout.main);
+        top = (RelativeLayout) findViewById(R.id.topLayout);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
-        reload = (Button) findViewById(R.id.refresh);
         qr = (ImageView) findViewById(R.id.qr_code);
         qr.setOnClickListener(this);
-        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-        devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
+        if (savedInstanceState != null) {
+            userId = savedInstanceState.getString("userId");
+            devId = savedInstanceState.getString("devId");
+            qrCodeImg = savedInstanceState.getParcelable("qrcode");
+            qr.setImageBitmap(qrCodeImg);
+            id.setText(devId);
+            if (userId.length() > 0)
+                user.setText("Checked out by " + userId);
+            else
+                user.setText ("Device is not checked out");
+        }
+        else {
+            WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+            devId = wm.getConnectionInfo().getMacAddress() + " " + Build.MODEL;
+            qrCodeImg = null;
+        }
+
         id.setText(devId);
-        myTask = new URLTask();
-        myTask.execute();
-        reload.setOnClickListener(new OnClickListener() {
+        /* TODO: Make sure the channel name here is the SAME as the companion app */
+        //PushService.subscribe(this, "HansDulimarta", IMEI2QRActivity.class);
+        thisInstall.put("dev_id", devId);
+        thisInstall.saveInBackground();
+        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
+        qr.setOnClickListener(new OnClickListener() {
             
             @Override
             public void onClick(View v) {
@@ -79,23 +108,80 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         });
     }
     
+    
     /* (non-Javadoc)
-     * @see android.app.Activity#onCreateDialog(int)
+     * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
      */
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("qrcode", qrCodeImg);
+        outState.putString("userId", userId);
+        outState.putString("devId", devId);
+    }
+
+    
+
+    /* (non-Javadoc)
+     * @see android.app.Activity#onResume()
+     */
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+        registerReceiver(localReceiver, new IntentFilter(getPackageName() + ".HansLocalBroadcast"));
+        if (qrCodeImg != null) return;
+        if (isNetworkAvailable()) {
+            myTask = new URLTask();
+            myTask.execute();
+        } else {
+            showDialog(1);
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(localReceiver);
+    }
+
+    /* (non-Javadoc)
+         * @see android.app.Activity#onCreateDialog(int)
+         */
+    @Override
     protected Dialog onCreateDialog(int id) {
-        progress = new ProgressDialog(this);
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setOnCancelListener(new OnCancelListener() {
-            
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                myTask.cancel(true);
-                finish();
-            }
-        });
-        progress.setTitle("Please wait ...");
-        return progress;
+        AlertDialog.Builder builder;
+        switch (id) {
+        case 0:
+            progress = new ProgressDialog(this);
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setOnCancelListener(new OnCancelListener() {
+
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    myTask.cancel(true);
+                    finish();
+                }
+            });
+            progress.setTitle("Please wait ...");
+            return progress;
+        case 1:
+            builder = new AlertDialog.Builder(this);
+            builder.setTitle("Network Error");
+            builder.setMessage("This app requires Internet connection. "
+                    + "Please setup your network and try again.");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+            return builder.create();
+        default:
+            return null;
+        }
     }
 
     private class URLTask extends AsyncTask<Void, Void, Object> {
@@ -114,8 +200,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             try {
                 HttpResponse res = client.execute(req);
                 InputStream istr = res.getEntity().getContent();
-                Bitmap img = BitmapFactory.decodeStream(istr);
-                result[0] = img;
+                qrCodeImg = BitmapFactory.decodeStream(istr);
+                result[0] = qrCodeImg;
                 ParseQuery devQuery = new ParseQuery("DevOut");
                 devQuery.whereEqualTo("dev_id", devId);
                 List<ParseObject> qRes = devQuery.find();
@@ -147,9 +233,15 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             qr.setImageBitmap((Bitmap)res[0]);
             if (res[1] != null) {
                 user.setText("Checked out by " + (String) res[1]);
+                top.setBackgroundResource(R.color.background_onloan);
+                userId = (String) res[1];
             }
-            else
+            else {
                 user.setText("Device is not checked out");
+                top.setBackgroundResource(R.color.background_avail);
+                userId = "";
+            }
+            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
         }
 
         /* (non-Javadoc)
@@ -175,4 +267,32 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         new URLTask().execute();
     }
+    
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager 
+              = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private BroadcastReceiver localReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String msg = intent.getStringExtra("message");
+            user.setText(msg);
+            int reg_color = getResources().getColor(R.color.background_onloan);
+            int avail_color = getResources().getColor(R.color.background_avail);
+            ObjectAnimator bgAnim;
+            if (msg.toUpperCase().startsWith("DEREG"))
+                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
+                    new ArgbEvaluator(), reg_color, avail_color);
+            else
+                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
+                    new ArgbEvaluator(), avail_color, reg_color);
+            bgAnim.setDuration(1000);
+            bgAnim.start();
+            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
+        }
+    };
 }

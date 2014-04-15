@@ -1,11 +1,5 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.io.ByteArrayInputStream;
-import java.util.List;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,8 +12,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -30,9 +24,10 @@ import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
-import com.parse.ParsePush;
 import com.parse.ParseQuery;
-import com.parse.SendCallback;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
 
 public class DeviceDetailsFragment extends Fragment {
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
@@ -45,6 +40,11 @@ public class DeviceDetailsFragment extends Fragment {
     private ImageView sig;
     private ParseFile parseSignatureFile;
     private Button checkin; //, ping;
+    private DeviceRemovalListener callback;
+    
+    public interface DeviceRemovalListener {
+        public void deviceRemoved (String dev_id);
+    }
     
     public static DeviceDetailsFragment newInstance (int index, 
             String user_id, String dev_id)
@@ -57,6 +57,24 @@ public class DeviceDetailsFragment extends Fragment {
         frag.setArguments(args);
         return frag;
     }
+
+    
+    /* (non-Javadoc)
+     * @see android.app.Fragment#onAttach(android.app.Activity)
+     */
+    @Override
+    public void onAttach(Activity activity) {
+        // TODO Auto-generated method stub
+        super.onAttach(activity);
+        try {
+            callback = (DeviceRemovalListener) activity;
+        }
+        catch (ClassCastException cce) {
+            throw new ClassCastException(activity.toString() + 
+                    " must implement DeviceRemovalListener");
+        }
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,7 +103,7 @@ public class DeviceDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_devdetails, container, false);
-        ParseQuery devQuery = new ParseQuery("DevOut");
+        ParseQuery<ParseObject> devQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
         uid = (TextView) v.findViewById(R.id.user_id);
         devid = (TextView) v.findViewById(R.id.dev_id);
         date = (TextView) v.findViewById(R.id.out_date);
@@ -94,7 +112,7 @@ public class DeviceDetailsFragment extends Fragment {
         checkin = (Button) v.findViewById(R.id.checkin);
 //        ping = (Button) v.findViewById(R.id.ping);
         checkin.setEnabled(false);
-        devQuery.whereEqualTo("user_id", user_id);
+        devQuery.whereEqualTo("dev_id", dev_id);
         checkin.setOnClickListener(new OnClickListener() {
             
             @Override
@@ -105,7 +123,7 @@ public class DeviceDetailsFragment extends Fragment {
             }
         });
 //        ping.setOnClickListener(new PingHandler());
-        devQuery.findInBackground(new FindCallback() {
+        devQuery.findInBackground(new FindCallback<ParseObject>() {
             
             @Override
             public void done(List<ParseObject> arg0, ParseException arg1) {
@@ -211,13 +229,19 @@ public class DeviceDetailsFragment extends Fragment {
     private void showDialog (int which, String ... parms)
     {
         DialogFragment diafrag;
-        diafrag = CheckinConfirmDialog.newInstance (parms[0], parms[1]);
-        diafrag.show(getFragmentManager(), "dialog");
+        if (which == DIALOG_CONFIRM_CHECKIN) {
+            diafrag = CheckinConfirmDialog.newInstance(callback, parms[0],
+                    parms[1]);
+            diafrag.show(getFragmentManager(), "dialog");
+        }
     }
 
     public static class CheckinConfirmDialog extends DialogFragment {
-        public static CheckinConfirmDialog newInstance (String devId, String parseId)
+        private static DeviceRemovalListener hostActivity;
+        public static CheckinConfirmDialog newInstance (DeviceRemovalListener act,
+                String devId, String parseId)
         {
+            hostActivity = act;
             CheckinConfirmDialog frag = new CheckinConfirmDialog();
             Bundle args = new Bundle();
             args.putString("dev_id", devId);
@@ -228,22 +252,22 @@ public class DeviceDetailsFragment extends Fragment {
 
         @Override
         public Dialog onCreateDialog(Bundle unused) {
-            String dev_id = getArguments().getString("dev_id");
+            final String dev_id = getArguments().getString("dev_id");
             final String parseId = getArguments().getString("parse_id");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Confirmation Required");
-            builder.setMessage("Check in device + " + dev_id + "?");
+            builder.setMessage("Deregister device + " + dev_id + "?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    ParseQuery qr = new ParseQuery("DevOut");
-                    qr.getInBackground(parseId, new GetCallback() {
+                    ParseQuery<ParseObject> qr = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
+                    qr.getInBackground(parseId, new GetCallback<ParseObject>() {
 
                         @Override
                         public void done(ParseObject arg0, ParseException arg1) {
                             arg0.deleteInBackground();
-//                            finish();
+                            hostActivity.deviceRemoved(dev_id);
                         }
                     });
                 }

@@ -1,11 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-
+import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Intent;
@@ -13,48 +8,56 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.*;
+
 public class DeviceListFragment extends ListFragment {
+    private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
     private ArrayList<Map<String,String>> checkouts;
     private SimpleAdapter adapter;
     private boolean isDualPane;
     private int currentPos;
-    
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
         Log.d(TAG, "Hosting activity created");
         super.onActivityCreated(savedInstanceState);
         View v = getActivity().findViewById(R.id.devdetails);
         isDualPane = v != null && v.getVisibility() == View.VISIBLE;
         Log.d(TAG, "Dual pane = " + isDualPane);
-        if (savedInstanceState != null)
-        {
-            Log.d(TAG, "Restoring instance variables");
-            currentPos = savedInstanceState.getInt("currDevice", 0);
-            checkouts = (ArrayList<Map<String, String>>) savedInstanceState.getSerializable("deviceList");
-        }
-        else {
-            currentPos = 0;
-            checkouts = new ArrayList<Map<String,String>>();
-            Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
-            new CheckTask().execute();
-        }
-        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2, 
-                new String[] {"dev_id", "user_id"},
-                new int[] {android.R.id.text1, android.R.id.text2});
+        currentPos = 0;
+        checkouts = new ArrayList<Map<String, String>>();
+        Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
+        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
+                new String[]{"dev_id", "user_id"},
+                new int[]{android.R.id.text1, android.R.id.text2});
         setListAdapter(adapter);
         if (isDualPane)
-            showDetails (currentPos);
+            showDetails(currentPos);
+    }
+
+    /* (non-Javadoc)
+     * @see android.app.Fragment#onResume()
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        // TOOO do we have to run this task everytime?
+        updateDeviceList();
+    }
+
+    public void updateDeviceList()
+    {
+        new DeviceListTask().execute();
     }
 
     @Override
@@ -64,12 +67,12 @@ public class DeviceListFragment extends ListFragment {
         return v;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("currDevice", currentPos);
-        outState.putSerializable("deviceList", checkouts);
-    }
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putInt("currDevice", currentPos);
+//        outState.putSerializable("deviceList", checkouts);
+//    }
 
     /* (non-Javadoc)
      * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
@@ -78,7 +81,7 @@ public class DeviceListFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         showDetails (position);
     }
-    
+
     private void showDetails (int pos)
     {
         Log.d(TAG, "Data size is " + checkouts.size());
@@ -102,21 +105,43 @@ public class DeviceListFragment extends ListFragment {
             }
         }
         else {
-            Intent i = new Intent(getActivity(), PhoneCheckinActivity.class);
+            Intent i = new Intent(getActivity(), DeviceCheckinActivity.class);
             i.putExtra("index", pos);
             i.putExtra("user_id", uid);
             i.putExtra("dev_id", devid);
-            startActivity(i);
+            startActivityForResult(i, DEVICE_CHECKIN_REQUEST);
         }
 //        super.onListItemClick(l, v, position, id);
     }
-    
-    private class CheckTask extends AsyncTask<Void, Void, Void> {
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == DEVICE_CHECKIN_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                updateDeviceList();
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
+
+    private class DeviceListTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            adapter.notifyDataSetInvalidated();
+        }
 
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                ParseQuery checkOutQuery = new ParseQuery("DevOut");
+                ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
                 checkouts.clear();
                 for (ParseObject obj : checkOutQuery.find())
                 {
@@ -135,6 +160,7 @@ public class DeviceListFragment extends ListFragment {
                 });
             } catch (ParseException e) {
                 // TODO Auto-generated catch block
+                Log.e("HANS", "Failed to run query " + e.getMessage());
                 e.printStackTrace();
             }
             return null;
@@ -147,7 +173,7 @@ public class DeviceListFragment extends ListFragment {
         protected void onPostExecute(Void result) {
             adapter.notifyDataSetChanged();
         }
-        
+
     }
 
 }

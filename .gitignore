@@ -1,10 +1,12 @@
 .DS_Store
 *~
+*/bin
+*/gen
+*.class
 build
-bin
-gen
 doc/*.aux
 doc/*.log
+*/out
 DeviceQR/libs/Parse-1.1.15-javadoc
 .gradle/
 local.properties

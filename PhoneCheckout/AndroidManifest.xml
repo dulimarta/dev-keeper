@@ -3,40 +3,37 @@
     package="edu.gvsu.cis.dulimarh.checkout"
     android:versionCode="1"
     android:versionName="1.0" >
-
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14"/>
-
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="14" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- TODO remove the following three (unused) permissions? -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-
     <application
+        android:name="DevCheckoutApp"
+        android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" 
-        android:allowBackup="true">
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Holo.Light" >
         <activity
-            android:name=".PhoneListActivity"
-            android:label="@string/app_name">
+            android:name=".DeviceListActivity"
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="PhoneCheckoutActivity" />
+        <activity android:name=".DeviceCheckinActivity" />
         <activity
-            android:name="PhoneCheckoutActivity"
-            android:screenOrientation="landscape"></activity>
+            android:name="SelectUserActivity"
+            android:theme="@style/PopupTheme" />
         <activity
-            android:name="PhoneCheckinActivity"
-            android:screenOrientation="landscape"></activity>
-        <activity
-            android:name="UploadUsersActivity"></activity>
-        <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"
-            />
-        </application>
-
+            android:name="NewUserActivity"
+            android:theme="@style/PopupTheme" />
+    </application>
 </manifest>

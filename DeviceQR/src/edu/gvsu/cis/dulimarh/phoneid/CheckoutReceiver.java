@@ -1,11 +1,11 @@
 package edu.gvsu.cis.dulimarh.phoneid;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CheckoutReceiver extends BroadcastReceiver {
     private final String TAG = getClass().getName();
@@ -13,12 +13,20 @@ public class CheckoutReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
+        Intent localIntent = new Intent(context.getPackageName() + ".HansLocalBroadcast");
+        try {
+            JSONObject jObj = new JSONObject(intent.getExtras().getString("com.parse.Data"));
+            localIntent.putExtra("message", jObj.getString("message"));
+            context.sendBroadcast(localIntent);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+//        Notification.Builder noteBuilder = new Notification.Builder(context);
 //        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-//        Notification alert = new Notification(R.drawable.ic_launcher, "Checkout Message",
-//                System.currentTimeMillis());
-//        alert.setLatestEventInfo(context, "From Checkout", 
-//                intent.getExtras().getString("com.parse.Data"), null);
-//        nm.notify(TAG.hashCode(), alert);
+//        noteBuilder.setSmallIcon(R.drawable.ic_thumbup);
+//        noteBuilder.setContentTitle("Parse push");
+//        noteBuilder.setContentText("Registered " + intent.getAction());
+//        nm.notify(0xC0DE, noteBuilder.getNotification());
     }
 
 }
