@@ -1,7 +1,5 @@
 package edu.gvsu.cis.dulimarh.phoneid;
 
-import android.animation.ArgbEvaluator;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -24,13 +22,16 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -54,12 +55,12 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private static final int DOWNLOAD_DIALOG = 0;
     private static final int NETWORK_ERROR_DIALOG = 1;
 
-    private RelativeLayout top;
+    private LinearLayout top;
     private TextView id, user;
-    private ImageView qr;
+    private ImageView qr, signature;
     private ProgressDialog progress;
     private String devId, userId;
-    private Bitmap qrCodeImg;
+    private Bitmap qrCodeImg, signatureImg;
     private URLTask myTask;
     
     /** Called when the activity is first created. */
@@ -72,21 +73,28 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
         Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
         setContentView(R.layout.main);
-        top = (RelativeLayout) findViewById(R.id.topLayout);
+        top = (LinearLayout) findViewById(R.id.topLayout);
         id = (TextView) findViewById(R.id.id);
         user = (TextView) findViewById(R.id.user);
         qr = (ImageView) findViewById(R.id.qr_code);
+        signature = (ImageView) findViewById(R.id.signature_image);
         qr.setOnClickListener(this);
         if (savedInstanceState != null) {
             userId = savedInstanceState.getString("userId");
             devId = savedInstanceState.getString("devId");
             qrCodeImg = savedInstanceState.getParcelable("qrcode");
+            signatureImg = savedInstanceState.getParcelable("signature");
             qr.setImageBitmap(qrCodeImg);
             id.setText(devId);
-            if (userId.length() > 0)
-                user.setText("Checked out by " + userId);
-            else
-                user.setText ("Device is not checked out");
+            if (userId.length() > 0) {
+                user.setText("checked out by " + userId);
+                signature.setImageBitmap(signatureImg);
+                signature.setVisibility(View.VISIBLE);
+            }
+            else {
+                user.setText("is not checked out");
+                signature.setVisibility(View.GONE);
+            }
         }
         else {
             WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -116,6 +124,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable("qrcode", qrCodeImg);
+        outState.putParcelable("signature", signatureImg);
         outState.putString("userId", userId);
         outState.putString("devId", devId);
     }
@@ -128,6 +137,11 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         registerReceiver(localReceiver, new IntentFilter(getPackageName() + ".HansLocalBroadcast"));
+        if (userId == null || userId.length() == 0) {
+            top.setBackgroundResource(R.color.background_avail);
+        }
+        else
+            top.setBackgroundResource(R.color.background_onloan);
         if (qrCodeImg != null) return;
         if (isNetworkAvailable()) {
             myTask = new URLTask();
@@ -193,7 +207,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 dim = 512;
             String url = String.format("%s&chs=%dx%d&chl=%s", CHART_URL,
                     dim, dim, URLEncoder.encode(devId));
-            Object[] result = new Object[2];
+            Object[] result = new Object[3];
             HttpGet req = new HttpGet(url);
             try {
                 HttpResponse res = client.execute(req);
@@ -206,6 +220,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 if (qRes.size() > 0) {
                     ParseObject obj = qRes.get(0);
                     result[1] = obj.getString("user_id");
+                    result[2] = (ParseFile) obj.get("signature");
                 }
                 else
                     result[1] = null;
@@ -229,17 +244,29 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             dismissDialog(DOWNLOAD_DIALOG);
             Object[] res = (Object[]) result;
             qr.setImageBitmap((Bitmap)res[0]);
+            Animation flipAnim = AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim);
             if (res[1] != null) {
                 user.setText("Checked out by " + (String) res[1]);
                 top.setBackgroundResource(R.color.background_onloan);
                 userId = (String) res[1];
+                ParseFile sig = (ParseFile) res[2];
+                try {
+                    byte[] sigData = sig.getData();
+                    signatureImg = BitmapFactory.decodeByteArray(sigData, 0, sigData.length);
+                    signature.setImageBitmap(signatureImg);
+                    signature.setVisibility(View.VISIBLE);
+                    signature.startAnimation(flipAnim);
+                } catch (ParseException e) {
+                    Toast.makeText(IMEI2QRActivity.this, "Failed to load signature", Toast.LENGTH_SHORT).show();
+                }
             }
             else {
                 user.setText("Device is not checked out");
                 top.setBackgroundResource(R.color.background_avail);
+                signature.setVisibility(View.GONE);
                 userId = "";
             }
-            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
+            qr.startAnimation(flipAnim);
         }
 
         /* (non-Javadoc)
@@ -277,20 +304,21 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String msg = intent.getStringExtra("message");
-            user.setText(msg);
-            int reg_color = getResources().getColor(R.color.background_onloan);
-            int avail_color = getResources().getColor(R.color.background_avail);
-            ObjectAnimator bgAnim;
-            if (msg.toUpperCase().startsWith("DEREG"))
-                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
-                    new ArgbEvaluator(), reg_color, avail_color);
-            else
-                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
-                    new ArgbEvaluator(), avail_color, reg_color);
-            bgAnim.setDuration(1000);
-            bgAnim.start();
-            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
+            new URLTask().execute();
+//            String msg = intent.getStringExtra("message");
+//            user.setText(msg);
+//            int reg_color = getResources().getColor(R.color.background_onloan);
+//            int avail_color = getResources().getColor(R.color.background_avail);
+//            ObjectAnimator bgAnim;
+//            if (msg.toUpperCase().startsWith("DEREG"))
+//                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
+//                    new ArgbEvaluator(), reg_color, avail_color);
+//            else
+//                bgAnim = ObjectAnimator.ofObject(top, "backgroundColor",
+//                    new ArgbEvaluator(), avail_color, reg_color);
+//            bgAnim.setDuration(1000);
+//            bgAnim.start();
+//            qr.startAnimation(AnimationUtils.loadAnimation(IMEI2QRActivity.this, R.anim.qr_anim));
         }
     };
 }
