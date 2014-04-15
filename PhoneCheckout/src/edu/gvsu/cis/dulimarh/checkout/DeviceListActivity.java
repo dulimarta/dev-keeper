@@ -28,7 +28,10 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
     // private final String TAG = getClass().getName();
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
     private static final int DIALOG_CONFIRM_CHECKOUT = 2;
-    private static final int SELECT_USER = 421;
+
+    private static final int SELECT_USER_REQUEST = 421;
+    private static final int CHECKOUT_DEVICE_REQUEST = SELECT_USER_REQUEST + 1;
+
     private enum DevTask {NONE, CHECKIN, CHECKOUT};
     private String borrowerId, borrowerName;
     private DeviceListFragment devListFragment;
@@ -75,7 +78,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
             case R.id.menu_checkout:
                 Intent userSelect = new Intent(this, SelectUserActivity.class);
                 currentTask = DevTask.CHECKOUT;
-                startActivityForResult(userSelect, SELECT_USER);
+                startActivityForResult(userSelect, SELECT_USER_REQUEST);
                 break;
             case R.id.menu_checkin:
                 currentTask = DevTask.CHECKIN;
@@ -90,7 +93,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SELECT_USER) {
+        if (requestCode == SELECT_USER_REQUEST) {
             if (resultCode == RESULT_OK && data != null) {
             /* We got the info of the user who is checking out the device */
                 borrowerId = data.getStringExtra("user_id");
@@ -98,6 +101,10 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
                 IntentIntegrator ii = new IntentIntegrator(this);
                 ii.initiateScan();
             }
+        }
+        else if (requestCode == CHECKOUT_DEVICE_REQUEST) {
+            if (resultCode == RESULT_OK)
+                devListFragment.updateDeviceList();
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -107,7 +114,8 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
             if (scannedDevId == null) return;
             switch (currentTask) {
                 case CHECKIN:
-                    doCheckIn (scannedDevId);
+                    DialogFragment mydialog = CheckinConfirmationDialog.newInstance (scannedDevId);
+                    mydialog.show(getFragmentManager(), "dialog");
                     break;
                 case CHECKOUT:
                     doCheckOut (scannedDevId, borrowerId, borrowerName);
@@ -131,8 +139,6 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
                         ParseObject obj = parseObjects.get(0);
                         String user_id = obj.getString("user_id");
                         //String user_name = obj.getString("user_name");
-//                        DialogFragment mydialog = CheckinConfirmationDialog.newInstance (obj,
-//                                "Checkin " + devId + " registered to " + user_id + "?");
                         try {
                             obj.delete();
                             deviceRemoved(devId);
@@ -141,6 +147,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
                                     "Failed to remove device " + devId,
                                     Toast.LENGTH_SHORT).show();
                         }
+
 
                     } else
                         Toast.makeText(DeviceListActivity.this,
@@ -169,7 +176,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
                 next.putExtra("user_id", borrowerId);
                 next.putExtra("user_name", borrowerName);
                 next.putExtra("dev_id", devId);
-                startActivity(next);
+                startActivityForResult(next, CHECKOUT_DEVICE_REQUEST);
                 //finish();
             } else {
                 //showDialog(DIALOG_ALREADY_CHECKEDOUT);
@@ -211,11 +218,11 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
 
     private static class CheckinConfirmationDialog extends DialogFragment {
 
-        public static CheckinConfirmationDialog newInstance (ParseObject obj, String msg)
+        public static CheckinConfirmationDialog newInstance (String id)
         {
             CheckinConfirmationDialog diag = new CheckinConfirmationDialog();
             Bundle args = new Bundle();
-            args.putString("message", msg);
+            args.putString("devId", id);
             diag.setArguments(args);
             return diag;
         }
@@ -225,14 +232,16 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
             Bundle args = getArguments();
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Confirmation Required");
-            builder.setMessage(args.getString("message"));
+            final String deviceId = args.getString("devId");
+            builder.setMessage("Deregister " + deviceId + "?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-
+                    ((DeviceListActivity) getActivity()).doCheckIn(deviceId);
                 }
             });
             return builder.create();
         }
     }
+
 }

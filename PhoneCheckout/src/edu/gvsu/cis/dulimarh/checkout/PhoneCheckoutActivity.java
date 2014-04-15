@@ -85,7 +85,6 @@ public class PhoneCheckoutActivity extends Activity {
                 public void done(ParseException e) {
                     if (e == null) {
                         ParsePushUtils.pushTo(deviceId, "Registered to " + userId);
-                        finish();
                     }
                     else
                         Toast.makeText(PhoneCheckoutActivity.this, 
@@ -108,6 +107,8 @@ public class PhoneCheckoutActivity extends Activity {
                 signature.reset();
             } else {
                 post();
+                setResult(RESULT_OK);
+                finish();
             }
         }
     };

@@ -105,7 +105,7 @@ public class DeviceListFragment extends ListFragment {
             }
         }
         else {
-            Intent i = new Intent(getActivity(), PhoneCheckinActivity.class);
+            Intent i = new Intent(getActivity(), DeviceCheckinActivity.class);
             i.putExtra("index", pos);
             i.putExtra("user_id", uid);
             i.putExtra("dev_id", devid);

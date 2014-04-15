@@ -6,16 +6,16 @@ import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+
 import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
 
-public class PhoneCheckinActivity extends Activity 
+public class DeviceCheckinActivity extends Activity
     implements DeviceRemovalListener
 {
 
     //private final String TAG = getClass().getName();
     
     private String user_id;
-    
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -26,6 +26,7 @@ public class PhoneCheckinActivity extends Activity
         int pos = data.getIntExtra("index", -1);
         user_id = data.getStringExtra("user_id");
         String dev_id = data.getStringExtra("dev_id");
+        Bundle b = data.getExtras();
         setContentView(R.layout.activity_checkin);
         DeviceDetailsFragment ddf = DeviceDetailsFragment.newInstance(pos, user_id, dev_id);
         FragmentTransaction ft = getFragmentManager().beginTransaction();

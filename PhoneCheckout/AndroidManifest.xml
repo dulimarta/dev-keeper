@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- TODO remove the following three (unused) permissions? -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
@@ -27,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity android:name="PhoneCheckoutActivity" />
-        <activity android:name="PhoneCheckinActivity" />
+        <activity android:name=".DeviceCheckinActivity" />
         <activity
             android:name="SelectUserActivity"
             android:theme="@style/PopupTheme" />
