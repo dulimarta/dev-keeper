@@ -8,9 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class CheckoutReceiver extends BroadcastReceiver {
-    private final String TAG = getClass().getName();
-    
-    
+
     @Override
     public void onReceive(Context context, Intent intent) {
         Intent localIntent = new Intent(context.getPackageName() + ".HansLocalBroadcast");
@@ -21,12 +19,6 @@ public class CheckoutReceiver extends BroadcastReceiver {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-//        Notification.Builder noteBuilder = new Notification.Builder(context);
-//        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-//        noteBuilder.setSmallIcon(R.drawable.ic_thumbup);
-//        noteBuilder.setContentTitle("Parse push");
-//        noteBuilder.setContentText("Registered " + intent.getAction());
-//        nm.notify(0xC0DE, noteBuilder.getNotification());
     }
 
 }

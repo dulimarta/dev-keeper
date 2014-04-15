@@ -51,6 +51,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
     private static final String CHART_URL = 
         "http://chart.apis.google.com/chart?cht=qr&chld=L&choe=UTF-8";
+    private static final int DOWNLOAD_DIALOG = 0;
+    private static final int NETWORK_ERROR_DIALOG = 1;
 
     private RelativeLayout top;
     private TextView id, user;
@@ -93,8 +95,6 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         }
 
         id.setText(devId);
-        /* TODO: Make sure the channel name here is the SAME as the companion app */
-        //PushService.subscribe(this, "HansDulimarta", IMEI2QRActivity.class);
         thisInstall.put("dev_id", devId);
         thisInstall.saveInBackground();
         PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
@@ -120,14 +120,12 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         outState.putString("devId", devId);
     }
 
-    
 
     /* (non-Javadoc)
      * @see android.app.Activity#onResume()
      */
     @Override
     protected void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         registerReceiver(localReceiver, new IntentFilter(getPackageName() + ".HansLocalBroadcast"));
         if (qrCodeImg != null) return;
@@ -135,7 +133,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             myTask = new URLTask();
             myTask.execute();
         } else {
-            showDialog(1);
+            showDialog(NETWORK_ERROR_DIALOG);
         }
     }
 
@@ -153,7 +151,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     protected Dialog onCreateDialog(int id) {
         AlertDialog.Builder builder;
         switch (id) {
-        case 0:
+        case DOWNLOAD_DIALOG:
             progress = new ProgressDialog(this);
             progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progress.setOnCancelListener(new OnCancelListener() {
@@ -166,7 +164,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
             });
             progress.setTitle("Please wait ...");
             return progress;
-        case 1:
+        case NETWORK_ERROR_DIALOG:
             builder = new AlertDialog.Builder(this);
             builder.setTitle("Network Error");
             builder.setMessage("This app requires Internet connection. "
@@ -228,7 +226,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
          */
         @Override
         protected void onPostExecute(Object result) {
-            dismissDialog(0);
+            dismissDialog(DOWNLOAD_DIALOG);
             Object[] res = (Object[]) result;
             qr.setImageBitmap((Bitmap)res[0]);
             if (res[1] != null) {
@@ -249,7 +247,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
          */
         @Override
         protected void onPreExecute() {
-            showDialog(0);
+            showDialog(DOWNLOAD_DIALOG);
         }
         
         /* (non-Javadoc)
