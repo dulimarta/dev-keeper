@@ -216,7 +216,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
     }
 
 
-    private static class CheckinConfirmationDialog extends DialogFragment {
+    public static class CheckinConfirmationDialog extends DialogFragment {
 
         public static CheckinConfirmationDialog newInstance (String id)
         {
@@ -225,6 +225,10 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
             args.putString("devId", id);
             diag.setArguments(args);
             return diag;
+        }
+
+        public CheckinConfirmationDialog() {
+            /* this empty default constructor is required */
         }
 
         @Override

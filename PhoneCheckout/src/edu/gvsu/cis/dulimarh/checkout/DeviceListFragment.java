@@ -7,23 +7,28 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
+
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class DeviceListFragment extends ListFragment {
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
-    private ArrayList<Map<String,String>> checkouts;
-    private SimpleAdapter adapter;
+    private ArrayList<Bundle> checkouts;
+    private ArrayAdapter<Bundle> adapter;
     private boolean isDualPane;
     private int currentPos;
 
@@ -35,24 +40,56 @@ public class DeviceListFragment extends ListFragment {
         isDualPane = v != null && v.getVisibility() == View.VISIBLE;
         Log.d(TAG, "Dual pane = " + isDualPane);
         currentPos = 0;
-        checkouts = new ArrayList<Map<String, String>>();
+        if (savedInstanceState != null)
+            checkouts = savedInstanceState.getParcelableArrayList("checkouts");
+        else
+            checkouts = new ArrayList<Bundle>();
         Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
-        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
-                new String[]{"dev_id", "user_id"},
-                new int[]{android.R.id.text1, android.R.id.text2});
+//        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
+//                new String[]{"dev_id", "user_id"},
+//                new int[]{android.R.id.text1, android.R.id.text2});
+        final LayoutInflater inflater = getActivity().getLayoutInflater();
+        adapter = new ArrayAdapter<Bundle>(getActivity(), android.R.layout.simple_list_item_2, checkouts) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                Pair<TextView,TextView> cache;
+                if (convertView == null) {
+                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, parent, false);
+                    TextView t1 = (TextView) convertView.findViewById(android.R.id.text1);
+                    TextView t2 = (TextView) convertView.findViewById(android.R.id.text2);
+                    cache = new Pair<TextView, TextView>(t1, t2);
+                    convertView.setTag(cache);
+                }
+                else {
+                    cache = (Pair<TextView, TextView>) convertView.getTag();
+                }
+                cache.first.setText(checkouts.get(position).getString("dev_id"));
+                cache.second.setText(checkouts.get(position).getString("user_id"));
+                return convertView;
+            }
+        };
         setListAdapter(adapter);
         if (isDualPane)
             showDetails(currentPos);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("checkouts", checkouts);
+//        outState.putInt("currDevice", currentPos);
+    }
+
     /* (non-Javadoc)
-     * @see android.app.Fragment#onResume()
-     */
+         * @see android.app.Fragment#onResume()
+         */
     @Override
     public void onResume() {
         super.onResume();
-        // TOOO do we have to run this task everytime?
-        updateDeviceList();
+//        // TOOO do we have to run this task everytime?
+        if (checkouts.isEmpty()) {
+            updateDeviceList();
+        }
     }
 
     public void updateDeviceList()
@@ -67,13 +104,6 @@ public class DeviceListFragment extends ListFragment {
         return v;
     }
 
-//    @Override
-//    public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        outState.putInt("currDevice", currentPos);
-//        outState.putSerializable("deviceList", checkouts);
-//    }
-
     /* (non-Javadoc)
      * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
      */
@@ -87,9 +117,9 @@ public class DeviceListFragment extends ListFragment {
         Log.d(TAG, "Data size is " + checkouts.size());
         if (pos >= checkouts.size()) return;
         currentPos = pos;
-        Map<String,String> selected = checkouts.get(pos);
-        String uid = selected.get("user_id");
-        String devid = selected.get("dev_id");
+        Bundle selected = checkouts.get(pos);
+        String uid = selected.getString("user_id");
+        String devid = selected.getString("dev_id");
         if (isDualPane)
         {
             getListView().setItemChecked(pos, true);
@@ -145,17 +175,16 @@ public class DeviceListFragment extends ListFragment {
                 checkouts.clear();
                 for (ParseObject obj : checkOutQuery.find())
                 {
-                    Map<String,String> dev_u = new HashMap<String, String>();
-                    dev_u.put("dev_id", obj.getString("dev_id"));
-                    dev_u.put("user_id", obj.getString("user_id"));
+                    Bundle dev_u = new Bundle();
+                    dev_u.putString("dev_id", obj.getString("dev_id"));
+                    dev_u.putString("user_id", obj.getString("user_id"));
                     checkouts.add(dev_u);
                 }
-                Collections.sort(checkouts, new Comparator<Map<String,String>>() {
+                Collections.sort(checkouts, new Comparator<Bundle>() {
 
                     @Override
-                    public int compare(Map<String, String> one,
-                            Map<String, String> two) {
-                        return one.get("user_id").compareTo(two.get("user_id"));
+                    public int compare(Bundle one, Bundle two) {
+                        return one.getString("user_id").compareTo(two.getString("user_id"));
                     }
                 });
             } catch (ParseException e) {
