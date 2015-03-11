@@ -29,6 +29,8 @@ import com.parse.ParseQuery;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import bolts.Task;
+
 public class DeviceDetailsFragment extends Fragment {
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
     private final static int DIALOG_WRONG_DEVICE = 2;
@@ -123,6 +125,10 @@ public class DeviceDetailsFragment extends Fragment {
             }
         });
 //        ping.setOnClickListener(new PingHandler());
+
+//        findDev(devQuery).ons
+
+
         devQuery.findInBackground(new FindCallback<ParseObject>() {
             
             @Override
@@ -164,7 +170,6 @@ public class DeviceDetailsFragment extends Fragment {
         return v;
     }
 
-    
     /* Use an inner class in place of direct instance variable declaration
      * to avoid "Parse.Initialize" error when this class is loaded by JVM
      */
@@ -222,6 +227,9 @@ public class DeviceDetailsFragment extends Fragment {
                 }
             }
             return;
+        }
+        else {
+            /* TODO handle installation of the missing ap */
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

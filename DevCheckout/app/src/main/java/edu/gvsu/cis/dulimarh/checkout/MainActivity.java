@@ -24,7 +24,7 @@ import java.util.List;
 import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
 
 
-public class DeviceListActivity extends Activity implements DeviceRemovalListener {
+public class MainActivity extends Activity implements DeviceRemovalListener {
     // private final String TAG = getClass().getName();
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
     private static final int DIALOG_CONFIRM_CHECKOUT = 2;
@@ -143,18 +143,18 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
                             obj.delete();
                             deviceRemoved(devId);
                         } catch (ParseException e1) {
-                            Toast.makeText(DeviceListActivity.this,
+                            Toast.makeText(MainActivity.this,
                                     "Failed to remove device " + devId,
                                     Toast.LENGTH_SHORT).show();
                         }
 
 
                     } else
-                        Toast.makeText(DeviceListActivity.this,
+                        Toast.makeText(MainActivity.this,
                                 "Device " + devId + " not checked out",
                                 Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(DeviceListActivity.this,
+                    Toast.makeText(MainActivity.this,
                             "Failed to query device id " + devId,
                             Toast.LENGTH_SHORT).show();
                 }
@@ -171,7 +171,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
             result = idQuery.find();
             if (result.size() == 0) {
                         /* Pass userid, username, and device id to the next activity */
-                Intent next = new Intent(DeviceListActivity.this,
+                Intent next = new Intent(MainActivity.this,
                         PhoneCheckoutActivity.class);
                 next.putExtra("user_id", borrowerId);
                 next.putExtra("user_name", borrowerName);
@@ -180,12 +180,12 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
                 //finish();
             } else {
                 //showDialog(DIALOG_ALREADY_CHECKEDOUT);
-                Toast.makeText(DeviceListActivity.this,
+                Toast.makeText(MainActivity.this,
                         "The device is already checkout",
                         Toast.LENGTH_LONG).show();
             }
         } catch (ParseException e) {
-            Toast.makeText(DeviceListActivity.this,
+            Toast.makeText(MainActivity.this,
                     "Error in querying device id: " + e.getMessage(),
                     Toast.LENGTH_LONG).show();
         }
@@ -241,7 +241,7 @@ public class DeviceListActivity extends Activity implements DeviceRemovalListene
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    ((DeviceListActivity) getActivity()).doCheckIn(deviceId);
+                    ((MainActivity) getActivity()).doCheckIn(deviceId);
                 }
             });
             return builder.create();

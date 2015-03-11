@@ -12,8 +12,7 @@ public class DevCheckoutApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
-                "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
+        Parse.initialize(this, Consts.PARSE_APP_ID, Consts.PARSE_CLIENT_KEY);
         Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
     }
     

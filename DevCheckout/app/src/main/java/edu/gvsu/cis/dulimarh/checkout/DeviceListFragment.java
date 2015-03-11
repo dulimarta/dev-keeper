@@ -2,10 +2,12 @@ package edu.gvsu.cis.dulimarh.checkout;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
-import android.app.ListFragment;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -17,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
@@ -24,11 +27,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class DeviceListFragment extends ListFragment {
+public class DeviceListFragment extends Fragment {
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
     private ArrayList<Bundle> checkouts;
-    private ArrayAdapter<Bundle> adapter;
+    private RecyclerView myrecyclerview;
+    private RecyclerView.Adapter myadapter;
+    private RecyclerView.LayoutManager mylayoutmgr;
     private boolean isDualPane;
     private int currentPos;
 
@@ -44,31 +49,33 @@ public class DeviceListFragment extends ListFragment {
             checkouts = savedInstanceState.getParcelableArrayList("checkouts");
         else
             checkouts = new ArrayList<Bundle>();
+        myadapter = new MyAdapter(checkouts);
+        myrecyclerview.setAdapter(myadapter);
         Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
 //        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
 //                new String[]{"dev_id", "user_id"},
 //                new int[]{android.R.id.text1, android.R.id.text2});
         final LayoutInflater inflater = getActivity().getLayoutInflater();
-        adapter = new ArrayAdapter<Bundle>(getActivity(), android.R.layout.simple_list_item_2, checkouts) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                Pair<TextView,TextView> cache;
-                if (convertView == null) {
-                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, parent, false);
-                    TextView t1 = (TextView) convertView.findViewById(android.R.id.text1);
-                    TextView t2 = (TextView) convertView.findViewById(android.R.id.text2);
-                    cache = new Pair<TextView, TextView>(t1, t2);
-                    convertView.setTag(cache);
-                }
-                else {
-                    cache = (Pair<TextView, TextView>) convertView.getTag();
-                }
-                cache.first.setText(checkouts.get(position).getString("dev_id"));
-                cache.second.setText(checkouts.get(position).getString("user_id"));
-                return convertView;
-            }
-        };
-        setListAdapter(adapter);
+//        adapter = new ArrayAdapter<Bundle>(getActivity(), android.R.layout.simple_list_item_2, checkouts) {
+//            @Override
+//            public View getView(int position, View convertView, ViewGroup parent) {
+//                Pair<TextView,TextView> cache;
+//                if (convertView == null) {
+//                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, parent, false);
+//                    TextView t1 = (TextView) convertView.findViewById(android.R.id.text1);
+//                    TextView t2 = (TextView) convertView.findViewById(android.R.id.text2);
+//                    cache = new Pair<TextView, TextView>(t1, t2);
+//                    convertView.setTag(cache);
+//                }
+//                else {
+//                    cache = (Pair<TextView, TextView>) convertView.getTag();
+//                }
+//                cache.first.setText(checkouts.get(position).getString("dev_id"));
+//                cache.second.setText(checkouts.get(position).getString("user_id"));
+//                return convertView;
+//            }
+//        };
+//        setListAdapter(adapter);
         if (isDualPane)
             showDetails(currentPos);
     }
@@ -101,16 +108,20 @@ public class DeviceListFragment extends ListFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_devlist, container, false);
+        myrecyclerview = (RecyclerView) v.findViewById(R.id.devlist);
+        myrecyclerview.setHasFixedSize(true);
+        mylayoutmgr = new LinearLayoutManager(getActivity());
+        myrecyclerview.setLayoutManager(mylayoutmgr);
         return v;
     }
 
     /* (non-Javadoc)
      * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
      */
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        showDetails (position);
-    }
+//    @Override
+//    public void onListItemClick(ListView l, View v, int position, long id) {
+//        showDetails (position);
+//    }
 
     private void showDetails (int pos)
     {
@@ -122,7 +133,7 @@ public class DeviceListFragment extends ListFragment {
         String devid = selected.getString("dev_id");
         if (isDualPane)
         {
-            getListView().setItemChecked(pos, true);
+//            getListView().setItemChecked(pos, true);
             DeviceDetailsFragment ddf = (DeviceDetailsFragment)
                     getFragmentManager().findFragmentById(R.id.devdetails);
             if (ddf == null || ddf.getCurrentIndex() != pos)
@@ -165,7 +176,7 @@ public class DeviceListFragment extends ListFragment {
 
         @Override
         protected void onPreExecute() {
-            adapter.notifyDataSetInvalidated();
+//            adapter.notifyDataSetInvalidated();
         }
 
         @Override
@@ -178,6 +189,7 @@ public class DeviceListFragment extends ListFragment {
                     Bundle dev_u = new Bundle();
                     dev_u.putString("dev_id", obj.getString("dev_id"));
                     dev_u.putString("user_id", obj.getString("user_id"));
+//                    dev_u.put
                     checkouts.add(dev_u);
                 }
                 Collections.sort(checkouts, new Comparator<Bundle>() {
@@ -200,7 +212,7 @@ public class DeviceListFragment extends ListFragment {
          */
         @Override
         protected void onPostExecute(Void result) {
-            adapter.notifyDataSetChanged();
+            myadapter.notifyDataSetChanged();
         }
 
     }
