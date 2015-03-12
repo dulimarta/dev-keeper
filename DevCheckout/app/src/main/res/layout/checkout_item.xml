@@ -1,23 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
-    <android.support.v7.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/checkout_card_view"
-        android:layout_gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        card_view:cardCornerRadius="8dp"
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/checkout_card_view"
+    android:layout_gravity="center"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    card_view:cardCornerRadius="8dp"
+    card_view:cardBackgroundcolor="#fffff5c3">
+
+    <RelativeLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
         >
 
+        <ImageView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentLeft="true"
+            android:id="@+id/userphoto"
+            android:src="@drawable/add_user"/>
+
         <TextView
-            android:id="@+id/username"
+            android:id="@+id/checkout_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hans"/>
+            android:text="Hans"
+            android:layout_toRightOf="@+id/userphoto"
+            android:layout_alignBottom="@id/userphoto"/>
 
-        </android.support.v7.widget.CardView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Medium Text"
+            android:id="@+id/devicename"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/userphoto"
+            android:layout_alignRight="@+id/checkout_date"/>
 
-</LinearLayout>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
+

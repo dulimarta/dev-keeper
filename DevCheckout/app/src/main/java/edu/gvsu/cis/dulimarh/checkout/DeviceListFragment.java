@@ -30,7 +30,7 @@ import java.util.Comparator;
 public class DeviceListFragment extends Fragment {
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
-    private ArrayList<Bundle> checkouts;
+    private ArrayList<ParseProxyObject> checkouts;
     private RecyclerView myrecyclerview;
     private RecyclerView.Adapter myadapter;
     private RecyclerView.LayoutManager mylayoutmgr;
@@ -46,36 +46,14 @@ public class DeviceListFragment extends Fragment {
         Log.d(TAG, "Dual pane = " + isDualPane);
         currentPos = 0;
         if (savedInstanceState != null)
-            checkouts = savedInstanceState.getParcelableArrayList("checkouts");
+            checkouts = (ArrayList<ParseProxyObject>) savedInstanceState
+                    .getSerializable("checkouts");
         else
-            checkouts = new ArrayList<Bundle>();
+            checkouts = new ArrayList<ParseProxyObject>();
         myadapter = new MyAdapter(checkouts);
         myrecyclerview.setAdapter(myadapter);
         Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
-//        adapter = new SimpleAdapter(getActivity(), checkouts, android.R.layout.simple_list_item_2,
-//                new String[]{"dev_id", "user_id"},
-//                new int[]{android.R.id.text1, android.R.id.text2});
         final LayoutInflater inflater = getActivity().getLayoutInflater();
-//        adapter = new ArrayAdapter<Bundle>(getActivity(), android.R.layout.simple_list_item_2, checkouts) {
-//            @Override
-//            public View getView(int position, View convertView, ViewGroup parent) {
-//                Pair<TextView,TextView> cache;
-//                if (convertView == null) {
-//                    convertView = inflater.inflate(android.R.layout.simple_list_item_2, parent, false);
-//                    TextView t1 = (TextView) convertView.findViewById(android.R.id.text1);
-//                    TextView t2 = (TextView) convertView.findViewById(android.R.id.text2);
-//                    cache = new Pair<TextView, TextView>(t1, t2);
-//                    convertView.setTag(cache);
-//                }
-//                else {
-//                    cache = (Pair<TextView, TextView>) convertView.getTag();
-//                }
-//                cache.first.setText(checkouts.get(position).getString("dev_id"));
-//                cache.second.setText(checkouts.get(position).getString("user_id"));
-//                return convertView;
-//            }
-//        };
-//        setListAdapter(adapter);
         if (isDualPane)
             showDetails(currentPos);
     }
@@ -83,7 +61,7 @@ public class DeviceListFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList("checkouts", checkouts);
+        outState.putSerializable("checkouts", checkouts);
 //        outState.putInt("currDevice", currentPos);
     }
 
@@ -128,7 +106,7 @@ public class DeviceListFragment extends Fragment {
         Log.d(TAG, "Data size is " + checkouts.size());
         if (pos >= checkouts.size()) return;
         currentPos = pos;
-        Bundle selected = checkouts.get(pos);
+        ParseProxyObject selected = checkouts.get(pos);
         String uid = selected.getString("user_id");
         String devid = selected.getString("dev_id");
         if (isDualPane)
@@ -186,16 +164,13 @@ public class DeviceListFragment extends Fragment {
                 checkouts.clear();
                 for (ParseObject obj : checkOutQuery.find())
                 {
-                    Bundle dev_u = new Bundle();
-                    dev_u.putString("dev_id", obj.getString("dev_id"));
-                    dev_u.putString("user_id", obj.getString("user_id"));
-//                    dev_u.put
-                    checkouts.add(dev_u);
+                    checkouts.add(new ParseProxyObject(obj));
                 }
-                Collections.sort(checkouts, new Comparator<Bundle>() {
+                Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
 
                     @Override
-                    public int compare(Bundle one, Bundle two) {
+                    public int compare(ParseProxyObject one,
+                                       ParseProxyObject two) {
                         return one.getString("user_id").compareTo(two.getString("user_id"));
                     }
                 });
