@@ -73,7 +73,6 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        // TODO Auto-generated method stub
         switch (item.getItemId()) {
             case R.id.menu_checkout:
                 Intent userSelect = new Intent(this, SelectUserActivity.class);

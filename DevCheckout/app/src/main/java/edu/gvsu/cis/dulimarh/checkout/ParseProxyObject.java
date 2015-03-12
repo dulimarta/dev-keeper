@@ -3,11 +3,15 @@
 // License: open, do as you wish, just don't blame me if stuff breaks ;-)
 
 package edu.gvsu.cis.dulimarh.checkout;
+import android.util.Log;
+
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +20,7 @@ import bolts.Continuation;
 import bolts.Task;
 
 public class ParseProxyObject implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static final String PARSE_LOCAL_OBJECT = "parse_local_object";
 
@@ -50,12 +55,12 @@ public class ParseProxyObject implements Serializable {
             }
             else if (classType == ParseObject.class) {
                 ParseObject obj = (ParseObject) parseObject.get(key);
-                try {
-                    obj.fetchIfNeeded();
-                    values.put(key, obj);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    obj.fetchIfNeeded();
+                    values.put(key, obj.getObjectId());
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
             }
         }
         this.className = parseObject.getClassName();
@@ -141,9 +146,9 @@ public class ParseProxyObject implements Serializable {
         }
     }
 
-    public ParseObject getParseObject(String key) {
+    public String getParseObject(String key) {
         if (values.containsKey(key))
-            return (ParseObject) values.get(key);
+            return (String) values.get(key);
         else
             return null;
     }
@@ -170,5 +175,12 @@ public class ParseProxyObject implements Serializable {
         return updatedAt;
     }
 
+//    private void writeObject (ObjectOutputStream out) {
+//        Log.d("HANS", "inside writeObject");
+//
+//    }
+//    private void readObject (ObjectInputStream in) {
+//        Log.d("HANS", "inside readObject");
+//    }
 }
 

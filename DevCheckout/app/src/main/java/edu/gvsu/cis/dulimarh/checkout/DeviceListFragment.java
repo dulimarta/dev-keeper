@@ -10,14 +10,10 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -32,11 +28,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DeviceListFragment extends Fragment {
+public class DeviceListFragment extends Fragment implements
+        DevOutAdapter.DeviceSelectedListener{
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
     private ArrayList<ParseProxyObject> checkouts;
-    private Map<String,Drawable> user_photos;
+//    private Map<String,Drawable> user_photos;
     private RecyclerView myrecyclerview;
     private RecyclerView.Adapter myadapter;
     private RecyclerView.LayoutManager mylayoutmgr;
@@ -44,7 +41,7 @@ public class DeviceListFragment extends Fragment {
     private int currentPos;
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState)  {
         Log.d(TAG, "Hosting activity created");
         super.onActivityCreated(savedInstanceState);
         View v = getActivity().findViewById(R.id.devdetails);
@@ -56,12 +53,12 @@ public class DeviceListFragment extends Fragment {
                     .getSerializable("checkouts");
         else
             checkouts = new ArrayList<ParseProxyObject>();
-        user_photos = new HashMap<String, Drawable>();
-        myadapter = new MyAdapter(checkouts, user_photos);
+//        user_photos = new HashMap<String, Drawable>();
+        myadapter = new DevOutAdapter(checkouts, this);
         myrecyclerview.setAdapter(myadapter);
         Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
         final LayoutInflater inflater = getActivity().getLayoutInflater();
-        if (isDualPane)
+        if (isDualPane && checkouts.size() > 0)
             showDetails(currentPos);
     }
 
@@ -69,6 +66,7 @@ public class DeviceListFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable("checkouts", checkouts);
+//        outState.putSerializable("", user_photos);
 //        outState.putInt("currDevice", currentPos);
     }
 
@@ -78,7 +76,7 @@ public class DeviceListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-//        // TOOO do we have to run this task everytime?
+        // TOOO do we have to run this task everytime?
         if (checkouts.isEmpty()) {
             updateDeviceList();
         }
@@ -86,7 +84,42 @@ public class DeviceListFragment extends Fragment {
 
     public void updateDeviceList()
     {
-        new DeviceListTask().execute();
+
+        try {
+            ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
+            checkouts.clear();
+            for (ParseObject obj : checkOutQuery.find())
+            {
+                checkouts.add(new ParseProxyObject(obj));
+            }
+            for (ParseProxyObject ppo : checkouts) {
+                final String usr = ppo.getParseObject("user_obj");
+                ParseQuery<ParseObject> query = ParseQuery.getQuery
+                        ("Users");
+                query.getInBackground("usr", new GetCallback<ParseObject>
+                        () {
+                    @Override
+                    public void done(ParseObject parseObject, ParseException e) {
+                        if (e == null) {
+                            ImageStore.extractFrom (parseObject);
+                        }
+                    }
+                });
+            }
+            Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
+
+                @Override
+                public int compare(ParseProxyObject one,
+                                   ParseProxyObject two) {
+                    return one.getString("user_id").compareTo(two.getString("user_id"));
+                }
+            });
+            myadapter.notifyDataSetChanged();
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            Log.e("HANS", "Failed to run query " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -100,22 +133,15 @@ public class DeviceListFragment extends Fragment {
         return v;
     }
 
-    /* (non-Javadoc)
-     * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
-     */
-//    @Override
-//    public void onListItemClick(ListView l, View v, int position, long id) {
-//        showDetails (position);
-//    }
-
     private void showDetails (int pos)
     {
         Log.d(TAG, "Data size is " + checkouts.size());
         if (pos >= checkouts.size()) return;
         currentPos = pos;
         ParseProxyObject selected = checkouts.get(pos);
-        String uid = selected.getString("user_id");
-        String devid = selected.getString("dev_id");
+//        String uid = selected.getString("user_id");
+//        String devid = selected.getString("dev_id");
+//        String devname = selected.getString()
         if (isDualPane)
         {
 //            getListView().setItemChecked(pos, true);
@@ -123,7 +149,7 @@ public class DeviceListFragment extends Fragment {
                     getFragmentManager().findFragmentById(R.id.devdetails);
             if (ddf == null || ddf.getCurrentIndex() != pos)
             {
-                ddf = DeviceDetailsFragment.newInstance(pos,  uid,  devid);
+                ddf = DeviceDetailsFragment.newInstance(pos, selected.getObjectId());
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.devdetails, ddf);
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -132,9 +158,13 @@ public class DeviceListFragment extends Fragment {
         }
         else {
             Intent i = new Intent(getActivity(), DeviceCheckinActivity.class);
+//            Bundle b = new Bundle();
+//            b.putSerializable("selected", selected);
+//            i.putExtras(b);
             i.putExtra("index", pos);
-            i.putExtra("user_id", uid);
-            i.putExtra("dev_id", devid);
+            i.putExtra("object_id", selected.getObjectId());
+//            i.putExtra("dev_name", )
+//            i.putExtra("dev_id", devid);
             startActivityForResult(i, DEVICE_CHECKIN_REQUEST);
         }
 //        super.onListItemClick(l, v, position, id);
@@ -157,67 +187,9 @@ public class DeviceListFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private class DeviceListTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-//            adapter.notifyDataSetInvalidated();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
-                checkouts.clear();
-                for (ParseObject obj : checkOutQuery.find())
-                {
-                    checkouts.add(new ParseProxyObject(obj));
-                }
-                for (ParseProxyObject ppo : checkouts) {
-                    final ParseObject usr = ppo.getParseObject("user_obj");
-                    usr.fetchIfNeededInBackground(new GetCallback<ParseObject>() {
-                        @Override
-                        public void done(ParseObject parseObject, ParseException e) {
-                            if (e == null) {
-                                try {
-                                    ParseFile upic = parseObject.getParseFile
-                                            ("user_photo");
-                                    ByteArrayInputStream bis = new
-                                            ByteArrayInputStream(upic.getData());
-                                    String uid = usr.getObjectId();
-                                    user_photos.put(uid,
-                                            Drawable.createFromStream(bis, ""));
-                                } catch (ParseException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        }
-                    });
-                }
-                Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
-
-                    @Override
-                    public int compare(ParseProxyObject one,
-                                       ParseProxyObject two) {
-                        return one.getString("user_id").compareTo(two.getString("user_id"));
-                    }
-                });
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                Log.e("HANS", "Failed to run query " + e.getMessage());
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-         */
-        @Override
-        protected void onPostExecute(Void result) {
-            myadapter.notifyDataSetChanged();
-        }
+    @Override
+    public void onDeviceSelected(int pos) {
+        showDetails(pos);
 
     }
-
 }

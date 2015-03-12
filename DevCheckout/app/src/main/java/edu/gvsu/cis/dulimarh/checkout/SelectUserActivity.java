@@ -1,10 +1,10 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
-import android.app.ListActivity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,31 +14,31 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 
-public class SelectUserActivity extends ListActivity implements SimpleAdapter.ViewBinder {
+public class SelectUserActivity extends FragmentActivity {
 
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
-    private ArrayList<Map<String, Object>> allUsers;
+    private ArrayList<ParseProxyObject> allUsers;
     private SimpleAdapter uAdapter;
     private int selectedPosition;
     private String selectedUid, selectedUname;
@@ -58,27 +58,25 @@ public class SelectUserActivity extends ListActivity implements SimpleAdapter.Vi
         win.setAttributes(params);
 //        setContentView(R.layout.activity_selectuser);
         setTitle("Select User");
-        allUsers = new ArrayList<Map<String, Object>>();
-        uAdapter = new SimpleAdapter(this, allUsers,
-                R.layout.user_list_item,
-                new String[] {"user_name", "user_id", "user_photo"},
-                new int[] {R.id.main_text, R.id.sub_text, R.id.item_icon});
-        setListAdapter(uAdapter);
-        uAdapter.setViewBinder(this);
+
+//        uAdapter = new SimpleAdapter(this, allUsers,
+//                R.layout.user_list_item,
+//                new String[] {"user_name", "user_id", "user_photo"},
+//                new int[] {R.id.main_text, R.id.sub_text, R.id.item_icon});
+//        setListAdapter(uAdapter);
+//        uAdapter.setViewBinder(this);
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selection");
-            ArrayList<Bundle> bdl = savedInstanceState.getParcelableArrayList("allUsers");
-            for (Bundle b : bdl) {
-                Map<String,Object> uMap = new TreeMap<String, Object>();
-                for (String key : b.keySet())
-                    uMap.put(key, b.get(key));
-                allUsers.add(uMap);
-            }
+            allUsers =
+                    (ArrayList<ParseProxyObject>) savedInstanceState
+                            .getSerializable
+                            ("allUsers");
         } else {
             selectedPosition = -1;
+            allUsers = new ArrayList<ParseProxyObject>();
             loadAllUsers();
         }
-        registerForContextMenu(getListView());
+//        registerForContextMenu(getListView());
     }
 
     /* (non-Javadoc)
@@ -87,19 +85,7 @@ public class SelectUserActivity extends ListActivity implements SimpleAdapter.Vi
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        ArrayList<Bundle> bdl = new ArrayList<Bundle>();
-        for (Map<String,Object> u : allUsers) {
-            Bundle b = new Bundle();
-            for (String key : u.keySet()) {
-                Object obj = u.get(key);
-                if (obj instanceof Bitmap)
-                    b.putParcelable(key, (Bitmap) obj);
-                else
-                    b.putString(key, (String) u.get(key));
-            }
-            bdl.add(b);
-        }
-        outState.putParcelableArrayList("allUsers", bdl);
+        outState.putSerializable("allUsers", allUsers);
         outState.putInt("selection", selectedPosition);
     }
 
@@ -113,26 +99,29 @@ public class SelectUserActivity extends ListActivity implements SimpleAdapter.Vi
                     allUsers.clear();
                     uAdapter.notifyDataSetInvalidated();
                     for (ParseObject u : uList) {
-                        Map<String, Object> uMap = new TreeMap<String, Object>();
-                        uMap.put("user_id", u.getString("user_id"));
-                        uMap.put("user_name", u.getString("user_name"));
-                        uMap.put("objectId", u.getObjectId());
-                        ParseFile uImg = u.getParseFile("user_photo");
-                        if (uImg != null) {
-                            try {
-                                byte[] imgData = uImg.getData();
-                                uMap.put("user_photo", BitmapFactory.decodeByteArray(imgData, 0, imgData.length));
-                            } catch (ParseException e1) {
-                                uMap.put("user_photo", BitmapFactory.decodeResource(getResources(), R.drawable.male_user_icon));
-                            }
+                        if (ImageStore.get(u.getObjectId()) == null) {
+                            ParseFile uImg = u.getParseFile("user_photo");
+                            if (uImg != null) {
+                                try {
+                                    ByteArrayInputStream bis = new
+                                            ByteArrayInputStream(uImg
+                                            .getData());
+                                    ImageStore.put(u.getObjectId(),
+                                            Drawable.createFromStream(bis, ""));
+                                } catch (ParseException e1) {
+                                }
+
                         }
-                        allUsers.add(uMap);
+                        }
+//                        allUsers.add(uMap);
                     }
-                    Collections.sort(allUsers, new Comparator<Map<String, Object>>() {
+                    Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
                         @Override
-                        public int compare(Map<String, Object> one, Map<String, Object> two) {
-                            String one_id = (String) one.get("user_id");
-                            String two_id = (String) two.get("user_id");
+                        public int compare(ParseProxyObject one, ParseProxyObject two) {
+                            String one_id = one.getString
+                                    ("user_id");
+                            String two_id = two.getString
+                                    ("user_id");
                             return one_id.compareTo(two_id);
                         }
                     });
@@ -185,30 +174,31 @@ public class SelectUserActivity extends ListActivity implements SimpleAdapter.Vi
     /* (non-Javadoc)
      * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
      */
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        selectedPosition = position;
-        String uid = (String) allUsers.get(position).get("user_id");
-        String uname = (String) allUsers.get(position).get("user_name");
-        Intent userInfo = new Intent();
-        userInfo.putExtra("user_id", uid);
-        userInfo.putExtra("user_name", uname);
-        setResult(RESULT_OK, userInfo);
-        finish();
-    }
+//    @Override
+//    public void onListItemClick(ListView l, View v, int position, long id) {
+//        selectedPosition = position;
+//        String uid = (String) allUsers.get(position).get("user_id");
+//        String uname = (String) allUsers.get(position).get("user_name");
+//        Intent userInfo = new Intent();
+//        userInfo.putExtra("user_id", uid);
+//        userInfo.putExtra("user_name", uname);
+//        setResult(RESULT_OK, userInfo);
+//        finish();
+//    }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
 
         if (item.getItemId() == MENU_DELETE_USER) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-            Map<String,Object> umap = allUsers.get(info.position);
-            String userId = (String) umap.get("user_id");
+//            Map<String,Object> umap = allUsers.get(info.position);
+            ParseProxyObject ppo = allUsers.get(info.position);
+            String userId = ppo.getString("user_id");
             ParseQuery<ParseObject> registeredDev = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
             registeredDev.whereEqualTo("user_id", userId);
             try {
                 if (registeredDev.find().isEmpty()) {
-                    String delObjetId = (String) umap.get("objectId");
+                    String delObjetId = ppo.getObjectId();
                     ParseQuery<ParseObject> delUser = new ParseQuery<ParseObject>(Consts.USER_TABLE);
                     delUser.get(delObjetId).deleteInBackground(new DeleteCallback() {
                         @Override
@@ -222,7 +212,7 @@ public class SelectUserActivity extends ListActivity implements SimpleAdapter.Vi
                             Toast.LENGTH_LONG).show();
                 }
             } catch (ParseException e) {
-                String username = (String) allUsers.get(info.position).get("user_name");
+                String username = allUsers.get(info.position).getString("user_name");
                 Toast.makeText(this, "Unable to delete " + username, Toast.LENGTH_LONG).show();
             }
         }
@@ -236,15 +226,15 @@ public class SelectUserActivity extends ListActivity implements SimpleAdapter.Vi
     }
 
 
-    @Override
-    public boolean setViewValue(View view, Object data, String textRepresentation) {
-        if (view.getId() == R.id.item_icon)
-        {
-            ImageView img = (ImageView) view;
-            img.setImageBitmap((Bitmap)data);
-            return true;
-        }
-        else
-            return false;
-    }
+//    @Override
+//    public boolean setViewValue(View view, Object data, String textRepresentation) {
+//        if (view.getId() == R.id.item_icon)
+//        {
+//            ImageView img = (ImageView) view;
+//            img.setImageBitmap((Bitmap)data);
+//            return true;
+//        }
+//        else
+//            return false;
+//    }
 }

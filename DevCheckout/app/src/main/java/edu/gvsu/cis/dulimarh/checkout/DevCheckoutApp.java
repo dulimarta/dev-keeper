@@ -14,6 +14,7 @@ public class DevCheckoutApp extends Application {
         super.onCreate();
         Parse.initialize(this, Consts.PARSE_APP_ID, Consts.PARSE_CLIENT_KEY);
         Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
+        ImageStore.newInstance(getApplicationContext());
     }
     
 }

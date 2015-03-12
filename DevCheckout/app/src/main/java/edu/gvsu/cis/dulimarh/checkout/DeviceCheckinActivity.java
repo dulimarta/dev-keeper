@@ -24,11 +24,11 @@ public class DeviceCheckinActivity extends Activity
         super.onCreate(savedInstanceState);
         Intent data = getIntent();
         int pos = data.getIntExtra("index", -1);
-        user_id = data.getStringExtra("user_id");
-        String dev_id = data.getStringExtra("dev_id");
-        Bundle b = data.getExtras();
+        String obj_id = data.getStringExtra("object_id");
+//        Bundle b = data.getExtras();
         setContentView(R.layout.activity_checkin);
-        DeviceDetailsFragment ddf = DeviceDetailsFragment.newInstance(pos, user_id, dev_id);
+        DeviceDetailsFragment ddf = DeviceDetailsFragment.newInstance
+                (pos, obj_id);
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.devdetails, ddf);
         ft.commit();
