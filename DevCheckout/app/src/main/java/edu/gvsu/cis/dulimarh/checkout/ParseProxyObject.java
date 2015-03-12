@@ -3,6 +3,7 @@
 // License: open, do as you wish, just don't blame me if stuff breaks ;-)
 
 package edu.gvsu.cis.dulimarh.checkout;
+import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
@@ -10,6 +11,9 @@ import com.parse.ParseObject;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+
+import bolts.Continuation;
+import bolts.Task;
 
 public class ParseProxyObject implements Serializable {
 
@@ -44,12 +48,20 @@ public class ParseProxyObject implements Serializable {
                 double[] latlong = {((ParseGeoPoint)parseObject.get(key)).getLatitude(), ((ParseGeoPoint)parseObject.get(key)).getLongitude()};
                 geoPoints.put(key, latlong);
             }
-
-            this.className = parseObject.getClassName();
-            this.createdAt = parseObject.getCreatedAt();
-            this.objectId = parseObject.getObjectId();
-            this.updatedAt = parseObject.getUpdatedAt();
+            else if (classType == ParseObject.class) {
+                ParseObject obj = (ParseObject) parseObject.get(key);
+                try {
+                    obj.fetchIfNeeded();
+                    values.put(key, obj);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+        this.className = parseObject.getClassName();
+        this.createdAt = parseObject.getCreatedAt();
+        this.objectId = parseObject.getObjectId();
+        this.updatedAt = parseObject.getUpdatedAt();
     }
 
     public boolean getBoolean(String key) {
@@ -129,6 +141,12 @@ public class ParseProxyObject implements Serializable {
         }
     }
 
+    public ParseObject getParseObject(String key) {
+        if (values.containsKey(key))
+            return (ParseObject) values.get(key);
+        else
+            return null;
+    }
     // Note only the lat, long values are returned, not the actual ParseGeoPoint
     // [0] latitude
     // [1] longitude

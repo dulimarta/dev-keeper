@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,19 +19,24 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DeviceListFragment extends Fragment {
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = getClass().getName();
     private ArrayList<ParseProxyObject> checkouts;
+    private Map<String,Drawable> user_photos;
     private RecyclerView myrecyclerview;
     private RecyclerView.Adapter myadapter;
     private RecyclerView.LayoutManager mylayoutmgr;
@@ -50,7 +56,8 @@ public class DeviceListFragment extends Fragment {
                     .getSerializable("checkouts");
         else
             checkouts = new ArrayList<ParseProxyObject>();
-        myadapter = new MyAdapter(checkouts);
+        user_photos = new HashMap<String, Drawable>();
+        myadapter = new MyAdapter(checkouts, user_photos);
         myrecyclerview.setAdapter(myadapter);
         Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
         final LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -165,6 +172,27 @@ public class DeviceListFragment extends Fragment {
                 for (ParseObject obj : checkOutQuery.find())
                 {
                     checkouts.add(new ParseProxyObject(obj));
+                }
+                for (ParseProxyObject ppo : checkouts) {
+                    final ParseObject usr = ppo.getParseObject("user_obj");
+                    usr.fetchIfNeededInBackground(new GetCallback<ParseObject>() {
+                        @Override
+                        public void done(ParseObject parseObject, ParseException e) {
+                            if (e == null) {
+                                try {
+                                    ParseFile upic = parseObject.getParseFile
+                                            ("user_photo");
+                                    ByteArrayInputStream bis = new
+                                            ByteArrayInputStream(upic.getData());
+                                    String uid = usr.getObjectId();
+                                    user_photos.put(uid,
+                                            Drawable.createFromStream(bis, ""));
+                                } catch (ParseException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
+                    });
                 }
                 Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
 
