@@ -5,10 +5,29 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp">
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/user_menu"
+            android:layout_weight="1"
+            android:scaleType="center"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/device_menu"
+            android:layout_weight="1"
+            android:scaleType="center"/>
+    </LinearLayout>
     <fragment
         android:name="edu.gvsu.cis.dulimarh.checkout.DeviceListFragment"
         android:id="@+id/devlistFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"/>
 
 </LinearLayout>

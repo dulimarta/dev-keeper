@@ -13,7 +13,8 @@
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:layout_gravity="top">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -42,7 +43,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="device name here"
                 android:id="@+id/dev_name"
                 android:layout_below="@+id/dev_id"
@@ -51,7 +52,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="device type"
                 android:id="@+id/dev_type"
                 android:layout_below="@+id/dev_name"
@@ -62,7 +63,8 @@
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:layout_gravity="top">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -98,7 +100,7 @@
                 android:layout_below="@id/user_id"
                 android:layout_alignLeft="@id/user_id"
                 android:layout_alignParentRight="true"
-                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="Checkout date here"/>
 
 
@@ -120,10 +122,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_launcher"
-        android:layout_above="@+id/checkin"
         android:layout_below="@+id/group"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentLeft="true"/>
+        android:layout_toLeftOf="@id/checkin"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"/>
 
 
 
