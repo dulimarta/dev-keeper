@@ -5,7 +5,6 @@ import android.app.FragmentTransaction;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,8 +13,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
@@ -25,20 +24,48 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import bolts.Continuation;
+import bolts.Task;
 
 public class DeviceListFragment extends Fragment implements
         DevOutAdapter.DeviceSelectedListener{
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
-    private final String TAG = getClass().getName();
+    private final String TAG = "HANS";
     private ArrayList<ParseProxyObject> checkouts;
-//    private Map<String,Drawable> user_photos;
     private RecyclerView myrecyclerview;
     private RecyclerView.Adapter myadapter;
     private RecyclerView.LayoutManager mylayoutmgr;
     private boolean isDualPane;
     private int currentPos;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView ");
+
+        View v = inflater.inflate(R.layout.fragment_devlist, container, false);
+        myrecyclerview = (RecyclerView) v.findViewById(R.id.devlist);
+        myrecyclerview.setHasFixedSize(true);
+        mylayoutmgr = new LinearLayoutManager(getActivity());
+        myrecyclerview.setLayoutManager(mylayoutmgr);
+        if (savedInstanceState != null)
+            checkouts = (ArrayList<ParseProxyObject>) savedInstanceState
+                    .getSerializable("checkouts");
+        else
+            checkouts = new ArrayList<ParseProxyObject>();
+        myadapter = new DevOutAdapter(checkouts, this);
+        myrecyclerview.setAdapter(myadapter);
+        return v;
+    }
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState)  {
@@ -48,15 +75,7 @@ public class DeviceListFragment extends Fragment implements
         isDualPane = v != null && v.getVisibility() == View.VISIBLE;
         Log.d(TAG, "Dual pane = " + isDualPane);
         currentPos = 0;
-        if (savedInstanceState != null)
-            checkouts = (ArrayList<ParseProxyObject>) savedInstanceState
-                    .getSerializable("checkouts");
-        else
-            checkouts = new ArrayList<ParseProxyObject>();
-//        user_photos = new HashMap<String, Drawable>();
-        myadapter = new DevOutAdapter(checkouts, this);
-        myrecyclerview.setAdapter(myadapter);
-        Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
+        //Log.d(TAG, "Initiating ASyncTask to fetch Parse data");
         final LayoutInflater inflater = getActivity().getLayoutInflater();
         if (isDualPane && checkouts.size() > 0)
             showDetails(currentPos);
@@ -82,55 +101,78 @@ public class DeviceListFragment extends Fragment implements
         }
     }
 
-    public void updateDeviceList()
-    {
-
-        try {
-            ParseQuery<ParseObject> checkOutQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
-            checkouts.clear();
-            for (ParseObject obj : checkOutQuery.find())
-            {
-                checkouts.add(new ParseProxyObject(obj));
+    private Task<Void> findUserImageAsync (final ParseObject obj)
+            throws ParseException {
+        return Task.callInBackground(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                ParseObject usrObj = obj.getParseObject("user_obj");
+                usrObj.fetchIfNeeded();
+                ParseFile pf = usrObj.getParseFile("user_photo");
+                Drawable d = Drawable.createFromStream(new
+                        ByteArrayInputStream(pf.getData()), "");
+                ImageStore.put(usrObj.getObjectId(), d);
+                return null;
             }
-            for (ParseProxyObject ppo : checkouts) {
-                final String usr = ppo.getParseObject("user_obj");
-                ParseQuery<ParseObject> query = ParseQuery.getQuery
-                        ("Users");
-                query.getInBackground("usr", new GetCallback<ParseObject>
-                        () {
-                    @Override
-                    public void done(ParseObject parseObject, ParseException e) {
-                        if (e == null) {
-                            ImageStore.extractFrom (parseObject);
-                        }
-                    }
-                });
-            }
-            Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
-
-                @Override
-                public int compare(ParseProxyObject one,
-                                   ParseProxyObject two) {
-                    return one.getString("user_id").compareTo(two.getString("user_id"));
-                }
-            });
-            myadapter.notifyDataSetChanged();
-        } catch (ParseException e) {
-            // TODO Auto-generated catch block
-            Log.e("HANS", "Failed to run query " + e.getMessage());
-            e.printStackTrace();
-        }
+        });
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_devlist, container, false);
-        myrecyclerview = (RecyclerView) v.findViewById(R.id.devlist);
-        myrecyclerview.setHasFixedSize(true);
-        mylayoutmgr = new LinearLayoutManager(getActivity());
-        myrecyclerview.setLayoutManager(mylayoutmgr);
-        return v;
+    public void updateDeviceList()
+    {
+        new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE)
+                .findInBackground()
+                .continueWithTask(new Continuation<List<ParseObject>,
+                        Task<Void>>() {
+                    /* This task (T1) takes List<ParseObject> as input and
+                       produce a new task of type Task<Void>
+                     */
+                    @Override
+                    public Task<Void> then(Task<List<ParseObject>> results)
+                            throws Exception {
+
+                        /* place the image fetching tasks in an
+                        ArrayList */
+                        ArrayList<Task<Void>> tasks = new
+                                ArrayList<Task<Void>>();
+                        checkouts.clear();
+                        for (ParseObject p : results.getResult()) {
+                            tasks.add(findUserImageAsync(p));
+                            checkouts.add(new ParseProxyObject(p));
+                        }
+                        Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
+
+                            @Override
+                            public int compare(ParseProxyObject one,
+                                               ParseProxyObject two) {
+                                return one.getString("user_id").compareTo(two.getString("user_id"));
+                            }
+                        });
+
+                        /* The next task (T2) will run only when all the
+                            background tasks created by T1 complete
+                         */
+                        return Task.whenAll(tasks);
+                    }
+                })
+                .onSuccess(new Continuation<Void, Object>() {
+                    /* This task (T2) takes no input from the previous
+                    task
+                     */
+                    @Override
+                    public Void then(Task<Void> task) throws Exception {
+                        if (task.isCompleted()) {
+                            Log.d("HANS", "Notify dataset changed, " +
+                                    "dataset size " + checkouts.size());
+                            myadapter.notifyDataSetChanged();
+                        } else {
+                            Toast.makeText(getActivity(),
+                                    "Unable to load checkout data",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                        return null;
+                    }
+                }, Task.UI_THREAD_EXECUTOR); /* Run T2 on the UI thread,
+                 so notifyDatasetChanged updates the UI correctly */
     }
 
     private void showDetails (int pos)

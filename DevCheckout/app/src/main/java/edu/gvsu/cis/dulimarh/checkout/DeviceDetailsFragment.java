@@ -42,7 +42,7 @@ public class DeviceDetailsFragment extends Fragment {
     private int currentIndex;
     private TextView uid, devid, devname, devtype, date;
     private ImageView sig, userphoto;
-    private ParseFile parseSignatureFile;
+    //private ParseFile parseSignatureFile;
     private Button checkin; //, ping;
     private DeviceRemovalListener callback;
     
@@ -139,38 +139,43 @@ public class DeviceDetailsFragment extends Fragment {
             public void done(ParseObject obj, ParseException err) {
                 if (err == null) {
                     try {
-                        //ParseObject obj = arg0.get(0);
-                        //parseObjId = obj.getObjectId();
-//                        obj.fetchIfNeeded();
                         uid.setText(obj.getString("user_id"));
                         devid.setText(obj.getString("dev_id"));
                         ParseObject devObj = obj.getParseObject
                                 ("device_obj");
                         devObj.fetchIfNeeded();
-//                        String user_obj_id = obj.getString("user_obj");
-//                        ParseQuery<ParseObject> userQuery = ParseQuery
-//                                .getQuery(Consts.USER_TABLE);
                         ParseObject userObj = obj.getParseObject
                                 ("user_obj");
                         userObj.fetchIfNeeded();
-//                        ParseQuery<ParseObject> devQuery = ParseQuery
-//                                .getQuery(Consts.ALL_DEVICE_TABLE);
-//                        ParseObject devObj = devQuery.get(device_obj_id);
                         devname.setText(devObj.getString("name"));
                         devtype.setText(devObj.getString("type"));
                         date.setText(obj.getCreatedAt().toLocaleString());
-                        parseSignatureFile = (ParseFile) obj
+                        ParseFile pf = (ParseFile) obj
                                 .getParseFile("signature");
                         Drawable storedDrawable = ImageStore.get
-                                (parseSignatureFile.getUrl());
+                                (pf.getUrl());
                         if (storedDrawable == null) {
-                            ByteArrayInputStream bis = new ByteArrayInputStream(parseSignatureFile.getData());
+                            ByteArrayInputStream bis = new
+                                    ByteArrayInputStream(pf.getData());
                             Drawable d = Drawable.createFromStream(bis, "");
-                            ImageStore.put(parseSignatureFile.getUrl(), d);
+                            ImageStore.put(pf.getUrl(), d);
                             sig.setImageDrawable(d);
                         }
                         else
                             sig.setImageDrawable(storedDrawable);
+                        pf = (ParseFile) userObj.getParseFile
+                                ("user_photo");
+                        storedDrawable = ImageStore.get(pf.getUrl());
+                        if (storedDrawable == null) {
+                            ByteArrayInputStream bis = new
+                                    ByteArrayInputStream(pf.getData());
+                            Drawable d = Drawable.createFromStream(bis,
+                                    "");
+                            ImageStore.put (pf.getUrl(), d);
+                            userphoto.setImageDrawable(d);
+                        }
+                        else
+                            userphoto.setImageDrawable(storedDrawable);
                         sig.setVisibility(View.VISIBLE);
                         checkin.setEnabled(true);
 
@@ -185,8 +190,6 @@ public class DeviceDetailsFragment extends Fragment {
             }
         });
         
-//        if (container == null)
-//            return null;
         return v;
     }
 
