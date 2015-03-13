@@ -109,9 +109,11 @@ public class DeviceListFragment extends Fragment implements
                 ParseObject usrObj = obj.getParseObject("user_obj");
                 usrObj.fetchIfNeeded();
                 ParseFile pf = usrObj.getParseFile("user_photo");
-                Drawable d = Drawable.createFromStream(new
-                        ByteArrayInputStream(pf.getData()), "");
-                ImageStore.put(usrObj.getObjectId(), d);
+                if (ImageStore.get(pf.getUrl()) == null) {
+                    Drawable d = Drawable.createFromStream(new
+                            ByteArrayInputStream(pf.getData()), "");
+                    ImageStore.put(usrObj.getObjectId(), d);
+                }
                 return null;
             }
         });
@@ -139,7 +141,8 @@ public class DeviceListFragment extends Fragment implements
                             tasks.add(findUserImageAsync(p));
                             checkouts.add(new ParseProxyObject(p));
                         }
-                        Collections.sort(checkouts, new Comparator<ParseProxyObject>() {
+                        Collections.sort(checkouts,
+                        new Comparator<ParseProxyObject>() {
 
                             @Override
                             public int compare(ParseProxyObject one,

@@ -54,8 +54,8 @@ public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
             viewHolder.photo.setImageDrawable(photo);
         }
         viewHolder.deviceName.setText (p.getString("dev_id"));
-        viewHolder.checkOutDate.setText (DateFormat.format("yyyy-MM-dd",
-                p.getCreatedAt()));
+        viewHolder.checkOutDate.setText ("Checkout on: " + DateFormat
+                .format("yyyy-MM-dd", p.getCreatedAt()));
     }
 
     @Override
@@ -74,7 +74,7 @@ public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
             super(cellView);
             checkOutDate = (TextView) cellView.findViewById(R.id.checkout_date);
             deviceName = (TextView) cellView.findViewById(R.id.devicename);
-            photo = (ImageView) cellView.findViewById(R.id.userphoto);
+            photo = (ImageView) cellView.findViewById(R.id.user_photo);
             cellView.setOnClickListener(this);
         }
 

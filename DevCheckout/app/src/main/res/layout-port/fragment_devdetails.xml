@@ -61,7 +61,7 @@
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/user_image"
+        android:id="@+id/user_photo"
         android:src="@drawable/ic_launcher"
         android:layout_below="@+id/textView3"
         android:layout_alignParentLeft="true"/>
@@ -72,8 +72,8 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_alignTop="@id/user_image"
-        android:layout_toRightOf="@id/user_image"
+        android:layout_alignTop="@id/user_photo"
+        android:layout_toRightOf="@id/user_photo"
         android:layout_alignParentRight="true"
         android:text="User ID here"/>
 
@@ -94,7 +94,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_launcher"
         android:layout_above="@+id/checkin"
-        android:layout_below="@+id/user_image"
+        android:layout_below="@+id/user_photo"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_marginTop="10dp"

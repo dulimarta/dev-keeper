@@ -15,13 +15,15 @@
             android:layout_height="match_parent"
             android:src="@drawable/user_menu"
             android:layout_weight="1"
-            android:scaleType="center"/>
+            android:scaleType="center"
+            android:id="@+id/user_menu"/>
         <ImageView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:src="@drawable/device_menu"
             android:layout_weight="1"
-            android:scaleType="center"/>
+            android:scaleType="center"
+            android:id="@+id/device_menu"/>
     </LinearLayout>
     <fragment
         android:name="edu.gvsu.cis.dulimarh.checkout.DeviceListFragment"

@@ -5,6 +5,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +35,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
+import bolts.Continuation;
+import bolts.Task;
 
 
 public class SelectUserActivity extends FragmentActivity {
@@ -39,7 +46,7 @@ public class SelectUserActivity extends FragmentActivity {
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
     private ArrayList<ParseProxyObject> allUsers;
-    private SimpleAdapter uAdapter;
+    private UserAdapter uAdapter;
     private int selectedPosition;
     private String selectedUid, selectedUname;
     /* (non-Javadoc)
@@ -56,15 +63,9 @@ public class SelectUserActivity extends FragmentActivity {
         params.width = 800;
         params.dimAmount = 0.3f;
         win.setAttributes(params);
-//        setContentView(R.layout.activity_selectuser);
+        setContentView(R.layout.user_list);
         setTitle("Select User");
 
-//        uAdapter = new SimpleAdapter(this, allUsers,
-//                R.layout.user_list_item,
-//                new String[] {"user_name", "user_id", "user_photo"},
-//                new int[] {R.id.main_text, R.id.sub_text, R.id.item_icon});
-//        setListAdapter(uAdapter);
-//        uAdapter.setViewBinder(this);
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selection");
             allUsers =
@@ -74,9 +75,14 @@ public class SelectUserActivity extends FragmentActivity {
         } else {
             selectedPosition = -1;
             allUsers = new ArrayList<ParseProxyObject>();
-            loadAllUsers();
         }
+        uAdapter = new UserAdapter(allUsers);
+        RecyclerView rview = (RecyclerView) findViewById(R.id.user_list);
+        rview.setAdapter(uAdapter);
+        RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
+        rview.setLayoutManager(mgr);
 //        registerForContextMenu(getListView());
+        loadAllUsers();
     }
 
     /* (non-Javadoc)
@@ -89,50 +95,69 @@ public class SelectUserActivity extends FragmentActivity {
         outState.putInt("selection", selectedPosition);
     }
 
-    private void loadAllUsers() {
-        ParseQuery<ParseObject> userQuery = new ParseQuery<ParseObject>(Consts.USER_TABLE);
-        userQuery.findInBackground(new FindCallback<ParseObject>() {
-
+    private Task<Void> findUserImageAsync (final ParseObject obj)
+            throws ParseException {
+        return Task.callInBackground(new Callable<Void>() {
             @Override
-            public void done(List<ParseObject> uList, ParseException e) {
-                if (e == null) {
-                    allUsers.clear();
-                    uAdapter.notifyDataSetInvalidated();
-                    for (ParseObject u : uList) {
-                        if (ImageStore.get(u.getObjectId()) == null) {
-                            ParseFile uImg = u.getParseFile("user_photo");
-                            if (uImg != null) {
-                                try {
-                                    ByteArrayInputStream bis = new
-                                            ByteArrayInputStream(uImg
-                                            .getData());
-                                    ImageStore.put(u.getObjectId(),
-                                            Drawable.createFromStream(bis, ""));
-                                } catch (ParseException e1) {
-                                }
-
-                        }
-                        }
-//                        allUsers.add(uMap);
-                    }
-                    Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
-                        @Override
-                        public int compare(ParseProxyObject one, ParseProxyObject two) {
-                            String one_id = one.getString
-                                    ("user_id");
-                            String two_id = two.getString
-                                    ("user_id");
-                            return one_id.compareTo(two_id);
-                        }
-                    });
-                    uAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(SelectUserActivity.this,
-                            "Unable to retrieve user data: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
+            public Void call() throws Exception {
+                ParseObject usrObj = obj.getParseObject("user_obj");
+                usrObj.fetchIfNeeded();
+                ParseFile pf = usrObj.getParseFile("user_photo");
+                if (ImageStore.get(pf.getUrl()) == null) {
+                    Drawable d = Drawable.createFromStream(new
+                            ByteArrayInputStream(pf.getData()), "");
+                    ImageStore.put(usrObj.getObjectId(), d);
                 }
+                return null;
             }
         });
+    }
+
+    private void loadAllUsers() {
+        new ParseQuery<ParseObject>(Consts.USER_TABLE)
+        .findInBackground()
+        .continueWithTask(new Continuation<List<ParseObject>,
+                Task<Void>>() {
+            @Override
+            public Task<Void> then(Task<List<ParseObject>> results) throws
+                    Exception {
+//                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                allUsers.clear();
+                for (ParseObject p : results.getResult()) {
+//                    tasks.add(findUserImageAsync(p));
+                    allUsers.add(new ParseProxyObject(p));
+                }
+                Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
+
+                    @Override
+                    public int compare(ParseProxyObject one,
+                                       ParseProxyObject two) {
+                        return one.getString("user_id").compareTo(two.getString("user_id"));
+                    }
+                });
+
+//                return Task.whenAll(tasks);
+                return null;
+            }
+        })
+        .onSuccess(new Continuation<Void, Object>() {
+            @Override
+            public Object then(Task<Void> task) throws Exception {
+                if (task.isCompleted()) {
+                    Log.d("HANS", "Notify dataset changed, " +
+                            "dataset size " + allUsers.size());
+                    uAdapter.notifyDataSetChanged();
+                }
+                else {
+                    Toast.makeText(SelectUserActivity.this,
+                            "Unable to load user data",
+                            Toast.LENGTH_SHORT).show();
+
+                }
+                return null;
+            }
+        }, Task.UI_THREAD_EXECUTOR);
+
     }
 
 

@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -29,9 +28,6 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
-
-import bolts.Task;
 
 public class DeviceDetailsFragment extends Fragment {
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
@@ -114,7 +110,7 @@ public class DeviceDetailsFragment extends Fragment {
         date = (TextView) v.findViewById(R.id.out_date);
 
         sig = (ImageView) v.findViewById(R.id.sig_imgview);
-        userphoto = (ImageView) v.findViewById(R.id.user_image);
+        userphoto = (ImageView) v.findViewById(R.id.user_photo);
         sig.setVisibility(View.INVISIBLE);
         checkin = (Button) v.findViewById(R.id.checkin);
 //        ping = (Button) v.findViewById(R.id.ping);

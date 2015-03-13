@@ -6,10 +6,13 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -35,6 +38,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
     private enum DevTask {NONE, CHECKIN, CHECKOUT};
     private String borrowerId, borrowerName;
     private DeviceListFragment devListFragment;
+    private ImageView userMenu, deviceMenu;
 //    private static final int DIALOG_PROGRESS = 2;
 
     private DevTask currentTask;
@@ -48,6 +52,16 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devlist);
         devListFragment = (DeviceListFragment) getFragmentManager().findFragmentById(R.id.devlistFragment);
+        userMenu = (ImageView) findViewById(R.id.user_menu);
+        deviceMenu = (ImageView) findViewById(R.id.device_menu);
+        userMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent userIntent = new Intent(MainActivity.this,
+                        SelectUserActivity.class);
+                startActivity(userIntent);
+            }
+        });
         if (savedInstanceState == null)
             currentTask = DevTask.NONE;
         else {
