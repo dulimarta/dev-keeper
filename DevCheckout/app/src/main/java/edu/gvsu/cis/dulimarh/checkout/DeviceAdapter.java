@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Created by dulimarh on 3/11/15.
@@ -23,10 +24,14 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
     }
 
     private ArrayList<ParseProxyObject> datasource;
+    private Set<String> checkedOutIds;
     private DeviceSelectedListener mylistener;
+
     public DeviceAdapter(ArrayList<ParseProxyObject> data,
+                         Set<String> chkOutSet,
                          DeviceSelectedListener listener) {
         datasource = data;
+        checkedOutIds = chkOutSet;
         mylistener = listener;
     }
 
@@ -44,6 +49,14 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
         ParseProxyObject dev = datasource.get(i);
         viewHolder.deviceName.setText (dev.getString("name"));
         viewHolder.deviceId.setText (dev.getString("device_id"));
+        if (checkedOutIds.contains(dev.getObjectId())) {
+            viewHolder.statusIcon.setVisibility(View.VISIBLE);
+            viewHolder.devStatus.setText("Checked Out");
+        }
+        else {
+            viewHolder.statusIcon.setVisibility(View.GONE);
+            viewHolder.devStatus.setText("Available");
+        }
     }
 
     @Override

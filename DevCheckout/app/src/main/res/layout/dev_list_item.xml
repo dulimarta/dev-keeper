@@ -59,8 +59,8 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:id="@+id/dev_status_text"
-            android:layout_toRightOf="@+id/dev_icon"
-            android:layout_below="@id/dev_id" />
+            android:layout_below="@id/dev_id"
+            android:layout_alignLeft="@+id/dev_id"/>
 
     </RelativeLayout>
 

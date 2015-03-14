@@ -30,6 +30,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import bolts.Continuation;
@@ -42,6 +45,7 @@ public class DeviceListActivity extends FragmentActivity implements
 //    private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_DEVICE = Menu.FIRST;
     private ArrayList<ParseProxyObject> allDevices;
+    private Set<String> checkedDevices;
     private DeviceAdapter devAdapter;
     private int selectedPosition;
     private String selectedUid, selectedUname;
@@ -67,7 +71,8 @@ public class DeviceListActivity extends FragmentActivity implements
             selectedPosition = -1;
             allDevices = new ArrayList<ParseProxyObject>();
         }
-        devAdapter = new DeviceAdapter(allDevices, this);
+        checkedDevices = new TreeSet<String>();
+        devAdapter = new DeviceAdapter(allDevices, checkedDevices, this);
         RecyclerView rview = (RecyclerView) findViewById(R.id.the_list);
         rview.setAdapter(devAdapter);
         RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
@@ -86,22 +91,6 @@ public class DeviceListActivity extends FragmentActivity implements
         outState.putInt("selection", selectedPosition);
     }
 
-//    private Task<Void> findUserImageAsync (final ParseObject obj)
-//            throws ParseException {
-//        return Task.callInBackground(new Callable<Void>() {
-//            @Override
-//            public Void call() throws Exception {
-//                ParseFile pf = obj.getParseFile("user_photo");
-//                if (ImageStore.get(pf.getUrl()) == null) {
-//                    Drawable d = Drawable.createFromStream(new
-//                            ByteArrayInputStream(pf.getData()), "");
-//                    ImageStore.put(obj.getObjectId(), d);
-//                }
-//                return null;
-//            }
-//        });
-//    }
-
     private void loadAllDevs() {
         new ParseQuery<ParseObject>(Consts.ALL_DEVICE_TABLE)
         .findInBackground()
@@ -111,9 +100,18 @@ public class DeviceListActivity extends FragmentActivity implements
             public Task<Void> then(Task<List<ParseObject>> results) throws
                     Exception {
 //                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                ParseQuery<ParseObject> loanQuery = new
+                        ParseQuery<ParseObject>
+                (Consts
+                        .DEVICE_LOAN_TABLE);
                 allDevices.clear();
+                checkedDevices.clear();
                 for (ParseObject dev : results.getResult()) {
 //                    tasks.add(findUserImageAsync(user));
+                    int c = loanQuery.whereEqualTo("device_obj", dev).count();
+                    if (c > 0) {
+                        checkedDevices.add(dev.getObjectId());
+                    }
                     allDevices.add(new ParseProxyObject(dev));
                 }
 //                return Task.whenAll(tasks);
@@ -124,18 +122,8 @@ public class DeviceListActivity extends FragmentActivity implements
             @Override
             public Object then(Task<Void> task) throws Exception {
                 if (task.isCompleted()) {
-                    Collections.sort(allDevices, new Comparator<ParseProxyObject>() {
+                    Collections.sort(allDevices, deviceComparator);
 
-                        @Override
-                        public int compare(ParseProxyObject d1,
-                                           ParseProxyObject d2) {
-                                return d1.getString("type").compareTo(d2
-                                        .getString("type"));
-                        }
-                    });
-
-                    Log.d("HANS", "Notify dataset changed, " +
-                            "dataset size " + allDevices.size());
                     devAdapter.notifyDataSetChanged();
                 }
                 else {
@@ -151,6 +139,21 @@ public class DeviceListActivity extends FragmentActivity implements
     }
 
 
+    private Comparator<ParseProxyObject> deviceComparator = new
+            Comparator<ParseProxyObject>() {
+        @Override
+        public int compare(ParseProxyObject d1, ParseProxyObject d2) {
+            boolean d1_out = checkedDevices.contains(d1
+                    .getObjectId());
+            boolean d2_out = checkedDevices.contains(d2
+                    .getObjectId());
+
+            if (d1_out && !d2_out) return -1;
+            if (d2_out && !d1_out) return +1;
+            return d1.getString("type").compareTo(d2
+                    .getString("type"));
+        }
+    };
     /* (non-Javadoc)
      * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
      */
