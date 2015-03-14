@@ -7,7 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 
-import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
+import edu.gvsu.cis.dulimarh.checkout.DevOutDetailsFragment.DeviceRemovalListener;
 
 public class DeviceCheckinActivity extends Activity
     implements DeviceRemovalListener
@@ -27,7 +27,7 @@ public class DeviceCheckinActivity extends Activity
         String obj_id = data.getStringExtra("object_id");
 //        Bundle b = data.getExtras();
         setContentView(R.layout.activity_checkin);
-        DeviceDetailsFragment ddf = DeviceDetailsFragment.newInstance
+        DevOutDetailsFragment ddf = DevOutDetailsFragment.newInstance
                 (pos, obj_id);
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.devdetails, ddf);

@@ -19,7 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.parse.FindCallback;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -27,18 +28,17 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
 
-public class DeviceDetailsFragment extends Fragment {
+public class DevOutDetailsFragment extends Fragment {
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
     private final static int DIALOG_WRONG_DEVICE = 2;
 
     private final String TAG = getClass().getName();
-    private String user_id, dev_id, parseObjId;
+    private String user_id, dev_id, obj_id;
     private int currentIndex;
-    private TextView uid, devid, date;
-    private ImageView sig;
-    private ParseFile parseSignatureFile;
+    private TextView uid, devid, devname, devtype, date;
+    private ImageView sig, userphoto;
+    //private ParseFile parseSignatureFile;
     private Button checkin; //, ping;
     private DeviceRemovalListener callback;
     
@@ -46,14 +46,13 @@ public class DeviceDetailsFragment extends Fragment {
         public void deviceRemoved (String dev_id);
     }
     
-    public static DeviceDetailsFragment newInstance (int index, 
-            String user_id, String dev_id)
+    public static DevOutDetailsFragment newInstance (int index,
+            String object_id)
     {
-        DeviceDetailsFragment frag = new DeviceDetailsFragment();
+        DevOutDetailsFragment frag = new DevOutDetailsFragment();
         Bundle args = new Bundle();
-        args.putString("user_id", user_id);
-        args.putString("dev_id", dev_id);
-        args.putInt("currentIndex", index);
+        args.putString("object_id", object_id);
+        args.putInt("index", index);
         frag.setArguments(args);
         return frag;
     }
@@ -81,9 +80,9 @@ public class DeviceDetailsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         
         Bundle args = savedInstanceState != null? savedInstanceState : getArguments();
-        user_id = args.getString("user_id");
-        dev_id = args.getString("dev_id");
-        currentIndex = args.getInt("currentIndex");
+
+        obj_id = args.getString("object_id");
+        currentIndex = args.getInt("index");
     }
 
     @Override
@@ -106,65 +105,90 @@ public class DeviceDetailsFragment extends Fragment {
         ParseQuery<ParseObject> devQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
         uid = (TextView) v.findViewById(R.id.user_id);
         devid = (TextView) v.findViewById(R.id.dev_id);
+        devname = (TextView) v.findViewById(R.id.dev_name);
+        devtype = (TextView) v.findViewById(R.id.dev_type);
         date = (TextView) v.findViewById(R.id.out_date);
+
         sig = (ImageView) v.findViewById(R.id.sig_imgview);
+        userphoto = (ImageView) v.findViewById(R.id.user_photo);
         sig.setVisibility(View.INVISIBLE);
         checkin = (Button) v.findViewById(R.id.checkin);
 //        ping = (Button) v.findViewById(R.id.ping);
         checkin.setEnabled(false);
-        devQuery.whereEqualTo("dev_id", dev_id);
+//        devQuery.whereEqualTo("dev_id", dev_id);
         checkin.setOnClickListener(new OnClickListener() {
             
             @Override
             public void onClick(View v) {
-                Intent scan = new Intent("com.google.zxing.client.android.SCAN");
-                scan.putExtra("SCAN_MODE", "QR_CODE_MODE");
-                startActivityForResult(scan, 0);
+                IntentIntegrator scan = new IntentIntegrator(getActivity());
+                scan.initiateScan();
             }
         });
 //        ping.setOnClickListener(new PingHandler());
-        devQuery.findInBackground(new FindCallback<ParseObject>() {
-            
+
+//        findDev(devQuery).ons
+
+
+        devQuery.getInBackground(obj_id, new GetCallback<ParseObject>() {
+
             @Override
-            public void done(List<ParseObject> arg0, ParseException arg1) {
-                if (arg1 == null) {
-                    if (arg0.size() == 1)
-                        try {
-                            ParseObject obj = arg0.get(0);
-                            parseObjId = obj.getObjectId();
-                            parseSignatureFile = (ParseFile) obj.get("signature");
-                            uid.setText(obj.getString("user_id"));
-                            devid.setText(obj.getString("dev_id"));
-                            date.setText(obj.getCreatedAt().toLocaleString());
-                            ByteArrayInputStream bis = new ByteArrayInputStream(parseSignatureFile.getData());
+            public void done(ParseObject obj, ParseException err) {
+                if (err == null) {
+                    try {
+                        uid.setText(obj.getString("user_id"));
+                        devid.setText(obj.getString("dev_id"));
+                        ParseObject devObj = obj.getParseObject
+                                ("device_obj");
+                        devObj.fetchIfNeeded();
+                        ParseObject userObj = obj.getParseObject
+                                ("user_obj");
+                        userObj.fetchIfNeeded();
+                        devname.setText(devObj.getString("name"));
+                        devtype.setText(devObj.getString("type"));
+                        date.setText(obj.getCreatedAt().toLocaleString());
+                        ParseFile pf = (ParseFile) obj
+                                .getParseFile("signature");
+                        Drawable storedDrawable = ImageStore.get
+                                (pf.getUrl());
+                        if (storedDrawable == null) {
+                            ByteArrayInputStream bis = new
+                                    ByteArrayInputStream(pf.getData());
                             Drawable d = Drawable.createFromStream(bis, "");
+                            ImageStore.put(pf.getUrl(), d);
                             sig.setImageDrawable(d);
-                            sig.setVisibility(View.VISIBLE);
-                            checkin.setEnabled(true);
-                            
-                        } catch (ParseException e) {
-                            Toast.makeText(
-                                    getActivity(),
-                                    "Failed to download signature of "
-                                            + user_id, Toast.LENGTH_LONG)
-                                    .show();
                         }
-                    else {
+                        else
+                            sig.setImageDrawable(storedDrawable);
+                        pf = (ParseFile) userObj.getParseFile
+                                ("user_photo");
+                        storedDrawable = ImageStore.get(pf.getUrl());
+                        if (storedDrawable == null) {
+                            ByteArrayInputStream bis = new
+                                    ByteArrayInputStream(pf.getData());
+                            Drawable d = Drawable.createFromStream(bis,
+                                    "");
+                            ImageStore.put (pf.getUrl(), d);
+                            userphoto.setImageDrawable(d);
+                        }
+                        else
+                            userphoto.setImageDrawable(storedDrawable);
+                        sig.setVisibility(View.VISIBLE);
+                        checkin.setEnabled(true);
+
+                    } catch (ParseException e) {
                         Toast.makeText(
                                 getActivity(),
-                                "Could not find a unique record", Toast.LENGTH_LONG)
+                                "Failed to download signature of "
+                                        + user_id, Toast.LENGTH_LONG)
                                 .show();
                     }
                 }
             }
         });
         
-//        if (container == null)
-//            return null;
         return v;
     }
 
-    
     /* Use an inner class in place of direct instance variable declaration
      * to avoid "Parse.Initialize" error when this class is loaded by JVM
      */
@@ -211,19 +235,19 @@ public class DeviceDetailsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 0) {
-            if (resultCode == Activity.RESULT_OK) {
-                final String contents = data.getStringExtra("SCAN_RESULT");
-//                final String expected_dev_id = dev_id;
-                if (contents.equals(dev_id))
-                    showDialog(DIALOG_CONFIRM_CHECKIN, dev_id, parseObjId);
-                else {
-                    showDialog(DIALOG_WRONG_DEVICE, dev_id, contents);
-                }
-            }
+        IntentResult scanResult = IntentIntegrator.parseActivityResult
+                (requestCode, resultCode, data);
+        if (scanResult != null) {
+            final String contents = data.getStringExtra("SCAN_RESULT");
+//            if (contents.equals(dev_id))
+//                showDialog(DIALOG_CONFIRM_CHECKIN, dev_id, parseObjId);
+//            else {
+//                showDialog(DIALOG_WRONG_DEVICE, dev_id, contents);
+//            }
             return;
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        else
+            super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void showDialog (int which, String ... parms)

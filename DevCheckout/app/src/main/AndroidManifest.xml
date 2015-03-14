@@ -30,7 +30,9 @@
         <activity android:name="PhoneCheckoutActivity" />
         <activity android:name=".DeviceCheckinActivity" />
         <activity
-            android:name="SelectUserActivity" />
+            android:name=".UserListActivity" />
+        <activity
+            android:name=".DeviceListActivity" />
         <activity
             android:name="NewUserActivity" />
             <!-- android:theme="@style/PopupTheme" -->

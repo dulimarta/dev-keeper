@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -26,7 +24,7 @@ import java.util.List;
 
 import bolts.Continuation;
 import bolts.Task;
-import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
+import edu.gvsu.cis.dulimarh.checkout.DevOutDetailsFragment.DeviceRemovalListener;
 
 
 public class MainActivity extends Activity implements DeviceRemovalListener {
@@ -39,7 +37,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
 
     private enum DevTask {NONE, CHECKIN, CHECKOUT};
     private String borrowerId, borrowerName;
-    private DeviceListFragment devListFragment;
+    private DevOutListFragment devListFragment;
     private ImageView userMenu, deviceMenu;
 //    private static final int DIALOG_PROGRESS = 2;
 
@@ -52,15 +50,23 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devlist);
-        devListFragment = (DeviceListFragment) getFragmentManager().findFragmentById(R.id.devlistFragment);
+        devListFragment = (DevOutListFragment) getFragmentManager().findFragmentById(R.id.devlistFragment);
         userMenu = (ImageView) findViewById(R.id.user_menu);
         deviceMenu = (ImageView) findViewById(R.id.device_menu);
         userMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent userIntent = new Intent(MainActivity.this,
-                        SelectUserActivity.class);
+                        UserListActivity.class);
                 startActivity(userIntent);
+            }
+        });
+        deviceMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this,
+                        DeviceListActivity.class);
+                startActivity(i);
             }
         });
         if (savedInstanceState == null)
@@ -88,7 +94,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_checkout:
-                Intent userSelect = new Intent(this, SelectUserActivity.class);
+                Intent userSelect = new Intent(this, UserListActivity.class);
                 currentTask = DevTask.CHECKOUT;
                 startActivityForResult(userSelect, SELECT_USER_REQUEST);
                 break;

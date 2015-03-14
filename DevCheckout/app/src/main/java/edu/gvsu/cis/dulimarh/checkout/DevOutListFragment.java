@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
 import bolts.Continuation;
 import bolts.Task;
 
-public class DeviceListFragment extends Fragment implements
+public class DevOutListFragment extends Fragment implements
         DevOutAdapter.DeviceSelectedListener{
     private static final int DEVICE_CHECKIN_REQUEST = 0xBEEF;
     private final String TAG = "HANS";
@@ -190,11 +190,11 @@ public class DeviceListFragment extends Fragment implements
         if (isDualPane)
         {
 //            getListView().setItemChecked(pos, true);
-            DeviceDetailsFragment ddf = (DeviceDetailsFragment)
+            DevOutDetailsFragment ddf = (DevOutDetailsFragment)
                     getFragmentManager().findFragmentById(R.id.devdetails);
             if (ddf == null || ddf.getCurrentIndex() != pos)
             {
-                ddf = DeviceDetailsFragment.newInstance(pos, selected.getObjectId());
+                ddf = DevOutDetailsFragment.newInstance(pos, selected.getObjectId());
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.devdetails, ddf);
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);

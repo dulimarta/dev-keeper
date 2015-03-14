@@ -26,7 +26,7 @@
             android:id="@+id/device_menu"/>
     </LinearLayout>
     <fragment
-        android:name="edu.gvsu.cis.dulimarh.checkout.DeviceListFragment"
+        android:name="edu.gvsu.cis.dulimarh.checkout.DevOutListFragment"
         android:id="@+id/devlistFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

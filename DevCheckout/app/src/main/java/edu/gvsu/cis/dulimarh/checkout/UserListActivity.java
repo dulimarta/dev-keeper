@@ -1,7 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -14,15 +13,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.parse.DeleteCallback;
-import com.parse.FindCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
@@ -41,7 +36,7 @@ import bolts.Continuation;
 import bolts.Task;
 
 
-public class SelectUserActivity extends FragmentActivity {
+public class UserListActivity extends FragmentActivity {
 
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
@@ -64,7 +59,7 @@ public class SelectUserActivity extends FragmentActivity {
 //        params.width = 800;
 //        params.dimAmount = 0.3f;
 //        win.setAttributes(params);
-        setContentView(R.layout.user_list);
+        setContentView(R.layout.du_list);
         setTitle("Users");
 
         countMap = new HashMap<String, Integer>();
@@ -79,7 +74,7 @@ public class SelectUserActivity extends FragmentActivity {
             allUsers = new ArrayList<ParseProxyObject>();
         }
         uAdapter = new UserAdapter(allUsers, countMap);
-        RecyclerView rview = (RecyclerView) findViewById(R.id.user_list);
+        RecyclerView rview = (RecyclerView) findViewById(R.id.the_list);
         rview.setAdapter(uAdapter);
         RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
         rview.setLayoutManager(mgr);
@@ -184,7 +179,7 @@ public class SelectUserActivity extends FragmentActivity {
                     uAdapter.notifyDataSetChanged();
                 }
                 else {
-                    Toast.makeText(SelectUserActivity.this,
+                    Toast.makeText(UserListActivity.this,
                             "Unable to load user data",
                             Toast.LENGTH_SHORT).show();
 
