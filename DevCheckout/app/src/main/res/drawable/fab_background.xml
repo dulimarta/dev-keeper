@@ -16,21 +16,11 @@
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:state_checked="true">
-        <ripple android:color="@color/fab_color_2_muted">
-            <item>
-                <shape>
-                    <solid android:color="@color/fab_color_2" />
-                </shape>
-            </item>
-        </ripple>
-    </item>
-
     <item>
-        <ripple android:color="@color/fab_color_1_muted">
+        <ripple android:color="@color/fab_color_muted">
             <item>
                 <shape>
-                    <solid android:color="@color/fab_color_1" />
+                    <solid android:color="@color/fab_color" />
                 </shape>
             </item>
         </ripple>

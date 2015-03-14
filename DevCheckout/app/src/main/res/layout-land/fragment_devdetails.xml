@@ -117,17 +117,6 @@
 
         </RelativeLayout>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/checkin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="12dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/btn_checkin"/>
-
     <ImageView
         android:id="@+id/sig_imgview"
         android:contentDescription="@string/app_name"
@@ -138,6 +127,25 @@
         android:layout_toLeftOf="@id/checkin"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"/>
+
+    <edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton
+        android:id="@+id/checkin"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:text="@string/btn_checkin"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:elevation="@dimen/fab_elevation"
+        android:background="@drawable/fab_background">
+
+        <ImageView
+            android:layout_width="@dimen/fab_icon_size"
+            android:layout_height="@dimen/fab_icon_size"
+            android:src="@mipmap/return_dev"
+            android:layout_gravity="center"
+            android:duplicateParentState="true"/>
+    </edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton>
+
 
 
 </RelativeLayout>

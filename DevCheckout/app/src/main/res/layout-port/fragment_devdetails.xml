@@ -139,10 +139,9 @@
         <ImageView
             android:layout_width="@dimen/fab_icon_size"
             android:layout_height="@dimen/fab_icon_size"
-            android:src="@drawable/fab_icons"
+            android:src="@mipmap/return_dev"
             android:layout_gravity="center"
             android:duplicateParentState="true"/>
     </edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton>
-    dimens.xml
 
 </RelativeLayout>
