@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/add_user_menu" android:icon="@drawable/add_user"
+    <item android:id="@+id/add_user_menu" android:icon="@mipmap/add_user"
         android:title="Add User" android:showAsAction="ifRoom"/>    
 </menu>

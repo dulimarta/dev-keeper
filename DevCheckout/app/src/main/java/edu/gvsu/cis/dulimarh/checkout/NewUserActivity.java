@@ -139,7 +139,8 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
                 uPhoto.setImageBitmap(photoBitmap);
             }
             else {
-                Toast.makeText(this, "Photo was not taken", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "No photo was captured",
+                        Toast.LENGTH_LONG).show();
             }
         }
         else
