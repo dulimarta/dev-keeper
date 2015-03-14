@@ -1,6 +1,7 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -54,14 +55,18 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
     public class DeviceViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
 
-        public TextView deviceName, deviceId;
-        public ImageView devIcon;
+        public TextView deviceName, deviceId, devStatus;
+        public ImageView devIcon, statusIcon;
 
         public DeviceViewHolder(View cellView) {
             super(cellView);
             deviceId = (TextView) cellView.findViewById(R.id.dev_id);
             deviceName = (TextView) cellView.findViewById(R.id.devicename);
+            devStatus = (TextView) cellView.findViewById(R.id.dev_status_text);
             devIcon = (ImageView) cellView.findViewById(R.id.dev_icon);
+            statusIcon = (ImageView) cellView.findViewById(R.id
+                    .dev_status_icon);
+
             cellView.setOnClickListener(this);
         }
 

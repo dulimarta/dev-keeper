@@ -16,10 +16,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/dev_icon"
-            android:layout_alignParentTop="true"
+            android:layout_alignParentTop="false"
             android:layout_alignParentLeft="true"
-            android:src="@drawable/device_image"
-            android:scaleType="fitXY"/>
+            android:src="@mipmap/device_image"
+            android:layout_centerVertical="true"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -40,15 +40,27 @@
             android:layout_alignLeft="@id/devicename"
             android:layout_below="@+id/devicename"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_alignParentRight="true"
             android:layout_centerInParent="true"
             android:text="Large Text"
-            android:id="@+id/dev_status"
-            android:paddingRight="8dp"/>
+            android:id="@+id/dev_status_icon"
+            android:src="@mipmap/on_loan"
+            android:scaleType="centerCrop"
+            android:cropToPadding="false"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Medium Text"
+            android:id="@+id/dev_status_text"
+            android:layout_toRightOf="@+id/dev_icon"
+            android:layout_below="@id/dev_id" />
 
     </RelativeLayout>
 
