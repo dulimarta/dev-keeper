@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/RelativeLayout1"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:padding="4dp" >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:card_view="http://schemas.android.com/apk/res-auto"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:orientation="vertical"
+              android:padding="8dp">
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -12,41 +13,54 @@
         android:text="Device Details"
         android:id="@+id/textView"
         android:textStyle="bold"/>
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:id="@+id/device_image"
-        android:layout_below="@+id/textView"
-        android:src="@drawable/ic_launcher"/>
 
-    <TextView
-        android:id="@+id/dev_id"
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_alignTop="@id/device_image"
-        android:layout_toRightOf="@id/device_image"
-        android:layout_alignParentRight="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Device ID here"/>
+        card_view:cardCornerRadius="8dp"
+        card_view:cardElevation="5dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="device name here"
-        android:id="@+id/dev_name"
-        android:layout_below="@+id/dev_id"
-        android:layout_alignLeft="@+id/dev_id"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="device type"
-        android:id="@+id/dev_type"
-        android:layout_below="@+id/dev_name"
-        android:layout_alignLeft="@+id/dev_name"/>
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:id="@+id/device_image"
+                android:src="@drawable/ic_launcher"/>
+
+            <TextView
+                android:id="@+id/dev_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_alignTop="@id/device_image"
+                android:layout_toRightOf="@id/device_image"
+                android:layout_alignParentRight="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Device ID here"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="device name here"
+                android:id="@+id/dev_name"
+                android:layout_below="@+id/dev_id"
+                android:layout_alignLeft="@+id/dev_id"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="device type"
+                android:id="@+id/dev_type"
+                android:layout_below="@+id/dev_name"
+                android:layout_alignLeft="@+id/dev_name"/>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
 
     <TextView
         android:layout_width="wrap_content"
@@ -58,59 +72,62 @@
         android:id="@+id/textView3"
         android:paddingTop="10dp"/>
 
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:id="@+id/user_photo"
-        android:src="@drawable/ic_launcher"
-        android:layout_below="@+id/textView3"
-        android:layout_alignParentLeft="true"/>
-
-    <TextView
-        android:id="@+id/user_id"
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_alignTop="@id/user_photo"
-        android:layout_toRightOf="@id/user_photo"
-        android:layout_alignParentRight="true"
-        android:text="User ID here"/>
+        card_view:cardCornerRadius="8dp"
+        card_view:cardElevation="5dp">
 
-    <TextView
-        android:id="@+id/out_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/user_id"
-        android:layout_alignLeft="@id/user_id"
-        android:layout_alignParentRight="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Checkout date here"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:id="@+id/user_photo"
+                android:src="@drawable/ic_launcher"
+                android:layout_alignParentLeft="true"/>
+
+            <TextView
+                android:id="@+id/user_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_alignTop="@id/user_photo"
+                android:layout_toRightOf="@id/user_photo"
+                android:layout_alignParentRight="true"
+                android:text="User ID here"/>
+
+            <TextView
+                android:id="@+id/out_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/user_id"
+                android:layout_alignLeft="@id/user_id"
+                android:layout_alignParentRight="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Checkout date here"/>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
 
     <ImageView
         android:id="@+id/sig_imgview"
         android:contentDescription="@string/app_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:src="@drawable/ic_launcher"
-        android:layout_above="@+id/checkin"
-        android:layout_below="@+id/user_photo"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"/>
+/>
 
     <Button
         android:id="@+id/checkin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="12dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/btn_checkin" />
+        android:text="@string/btn_checkin"
+        android:layout_gravity="right"/>
 
 
-</RelativeLayout>
+</LinearLayout>

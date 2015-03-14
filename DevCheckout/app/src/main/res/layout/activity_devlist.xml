@@ -3,7 +3,8 @@
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,20 +17,29 @@
             android:src="@drawable/user_menu"
             android:layout_weight="1"
             android:scaleType="center"
-            android:id="@+id/user_menu"/>
+            android:id="@+id/user_menu"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="8dp"/>
         <ImageView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:src="@drawable/device_menu"
             android:layout_weight="1"
             android:scaleType="center"
-            android:id="@+id/device_menu"/>
+            android:id="@+id/device_menu"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"/>
     </LinearLayout>
     <fragment
         android:name="edu.gvsu.cis.dulimarh.checkout.DevOutListFragment"
         android:id="@+id/devlistFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"/>
+        android:layout_height="0dp"
+        android:layout_margin="8dp"
+        android:layout_weight="1"/>
 
 </LinearLayout>

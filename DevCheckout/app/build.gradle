@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 22
     buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "edu.gvsu.cis.dulimarh.checkout"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion 14
     }
 
@@ -21,7 +21,8 @@ android {
 dependencies {
     compile files('libs/Parse-1.8.3.jar')
     compile 'com.parse.bolts:bolts-android:1.1.4'
-    compile 'com.android.support:recyclerview-v7:21.0.+'
-    compile 'com.android.support:cardview-v7:21.0.+'
+    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:recyclerview-v7:21.0.0'
+    compile 'com.android.support:cardview-v7:21.0.0'
     compile 'com.google.zxing:android-integration:3.2.0'
 }
