@@ -29,6 +29,8 @@ import com.parse.ParseQuery;
 
 import java.io.ByteArrayInputStream;
 
+import edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton;
+
 public class DevOutDetailsFragment extends Fragment {
     private final static int DIALOG_CONFIRM_CHECKIN = 1;
     private final static int DIALOG_WRONG_DEVICE = 2;
@@ -39,7 +41,7 @@ public class DevOutDetailsFragment extends Fragment {
     private TextView uid, devid, devname, devtype, date;
     private ImageView sig, userphoto;
     //private ParseFile parseSignatureFile;
-    private Button checkin; //, ping;
+    private FloatingActionButton checkin; //, ping;
     private DeviceRemovalListener callback;
     
     public interface DeviceRemovalListener {
@@ -112,7 +114,7 @@ public class DevOutDetailsFragment extends Fragment {
         sig = (ImageView) v.findViewById(R.id.sig_imgview);
         userphoto = (ImageView) v.findViewById(R.id.user_photo);
         sig.setVisibility(View.INVISIBLE);
-        checkin = (Button) v.findViewById(R.id.checkin);
+        checkin = (FloatingActionButton) v.findViewById(R.id.checkin);
 //        ping = (Button) v.findViewById(R.id.ping);
         checkin.setEnabled(false);
 //        devQuery.whereEqualTo("dev_id", dev_id);

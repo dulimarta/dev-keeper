@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "edu.gvsu.cis.dulimarh.checkout"
         minSdkVersion 21
-        targetSdkVersion 14
+        targetSdkVersion 21
     }
 
     buildTypes {

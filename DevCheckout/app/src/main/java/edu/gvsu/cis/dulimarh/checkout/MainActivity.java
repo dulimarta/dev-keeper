@@ -1,16 +1,22 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.transition.Explode;
+import android.transition.Slide;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -49,6 +55,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         setContentView(R.layout.activity_devlist);
         devListFragment = (DevOutListFragment) getFragmentManager().findFragmentById(R.id.devlistFragment);
         userMenu = (ImageView) findViewById(R.id.user_menu);
@@ -56,9 +63,18 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
         userMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent userIntent = new Intent(MainActivity.this,
                         UserListActivity.class);
-                startActivity(userIntent);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getWindow().setExitTransition(new Explode());
+                    startActivity(userIntent,
+                            ActivityOptions.makeSceneTransitionAnimation
+                                    (MainActivity.this).toBundle());
+                }
+                else {
+                    startActivity(userIntent);
+                }
             }
         });
         deviceMenu.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +82,15 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
             public void onClick(View view) {
                 Intent i = new Intent(MainActivity.this,
                         DeviceListActivity.class);
-                startActivity(i);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getWindow().setExitTransition(new Explode());
+                    startActivity(i,
+                            ActivityOptions.makeSceneTransitionAnimation
+                                    (MainActivity.this).toBundle());
+                }
+                else {
+                    startActivity(i);
+                }
             }
         });
         if (savedInstanceState == null)
