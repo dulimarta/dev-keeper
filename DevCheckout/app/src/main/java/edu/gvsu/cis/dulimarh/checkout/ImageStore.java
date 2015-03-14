@@ -27,12 +27,12 @@ public class ImageStore {
 
     public static void put (String key, Drawable val)
     {
-//        Log.d("HANS", "Place drawable for key " + key);
+        Log.d("HANS", "Place drawable for key " + key);
         images.put(key, val);
     }
 
     public static Drawable get (String key) {
-//        Log.d("HANS", "Lookup drawable for key " + key);
+        Log.d("HANS", "Lookup drawable for key " + key);
         Drawable d;
             d = images.get(key);
 //        if (d != null)

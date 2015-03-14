@@ -58,13 +58,13 @@ public class SelectUserActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         Window win = getWindow();
-        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+//        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         LayoutParams params = win.getAttributes();
-        params.width = 800;
-        params.dimAmount = 0.3f;
-        win.setAttributes(params);
+//        params.width = 800;
+//        params.dimAmount = 0.3f;
+//        win.setAttributes(params);
         setContentView(R.layout.user_list);
-        setTitle("Select User");
+        setTitle("Users");
 
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selection");
@@ -100,13 +100,11 @@ public class SelectUserActivity extends FragmentActivity {
         return Task.callInBackground(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                ParseObject usrObj = obj.getParseObject("user_obj");
-                usrObj.fetchIfNeeded();
-                ParseFile pf = usrObj.getParseFile("user_photo");
+                ParseFile pf = obj.getParseFile("user_photo");
                 if (ImageStore.get(pf.getUrl()) == null) {
                     Drawable d = Drawable.createFromStream(new
                             ByteArrayInputStream(pf.getData()), "");
-                    ImageStore.put(usrObj.getObjectId(), d);
+                    ImageStore.put(obj.getObjectId(), d);
                 }
                 return null;
             }
@@ -121,10 +119,10 @@ public class SelectUserActivity extends FragmentActivity {
             @Override
             public Task<Void> then(Task<List<ParseObject>> results) throws
                     Exception {
-//                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
                 allUsers.clear();
                 for (ParseObject p : results.getResult()) {
-//                    tasks.add(findUserImageAsync(p));
+                    tasks.add(findUserImageAsync(p));
                     allUsers.add(new ParseProxyObject(p));
                 }
                 Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
@@ -136,8 +134,8 @@ public class SelectUserActivity extends FragmentActivity {
                     }
                 });
 
-//                return Task.whenAll(tasks);
-                return null;
+                return Task.whenAll(tasks);
+//                return null;
             }
         })
         .onSuccess(new Continuation<Void, Object>() {

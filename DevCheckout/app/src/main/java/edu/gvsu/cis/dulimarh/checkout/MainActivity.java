@@ -24,6 +24,8 @@ import com.parse.ParseQuery;
 
 import java.util.List;
 
+import bolts.Continuation;
+import bolts.Task;
 import edu.gvsu.cis.dulimarh.checkout.DeviceDetailsFragment.DeviceRemovalListener;
 
 
@@ -43,7 +45,6 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
 
     private DevTask currentTask;
 
-    // private ListView theList;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -67,8 +68,6 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
         else {
             currentTask = DevTask.valueOf(savedInstanceState.getString("currentTask"));
         }
-//        theList = getListView();
-//        theList.setOnItemLongClickListener(selectionListener);
     }
 
     @Override
@@ -143,36 +142,38 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
     private void doCheckIn(final String devId)
     {
         ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
-        idQuery.whereEqualTo("dev_id", devId);
-        idQuery.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (e == null) {
-                    if (parseObjects.size() == 1) {
-                        ParseObject obj = parseObjects.get(0);
-                        String user_id = obj.getString("user_id");
-                        //String user_name = obj.getString("user_name");
-                        try {
-                            obj.delete();
-                            deviceRemoved(devId);
-                        } catch (ParseException e1) {
-                            Toast.makeText(MainActivity.this,
-                                    "Failed to remove device " + devId,
-                                    Toast.LENGTH_SHORT).show();
+        idQuery.whereEqualTo("dev_id", devId)
+            .findInBackground()
+            .continueWith(new Continuation<List<ParseObject>, Task<Void>>() {
+                @Override
+                public Task<Void> then(Task<List<ParseObject>> task)
+                        throws Exception {
+                    if (task.isCompleted()) {
+                        List<ParseObject> result = task.getResult();
+                        if (result.size() == 1) {
+                            ParseObject obj = result.get(0);
+//                            String user_id = obj.getString("user_id");
+                            //String user_name = obj.getString("user_name");
+                            try {
+                                obj.delete();
+                                deviceRemoved(devId);
+                            } catch (ParseException e1) {
+                                Toast.makeText(MainActivity.this,
+                                        "Failed to remove device " + devId,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
                         }
-
-
-                    } else
+                    }
+                    else {
                         Toast.makeText(MainActivity.this,
-                                "Device " + devId + " not checked out",
+                                "Failed to query device id " + devId,
                                 Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this,
-                            "Failed to query device id " + devId,
-                            Toast.LENGTH_SHORT).show();
+
+                    }
+                    return null;
                 }
-            }
-        });
+            });
     }
 
     private void doCheckOut (final String devId, String uid, String uname)
@@ -183,7 +184,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
         try {
             result = idQuery.find();
             if (result.size() == 0) {
-                        /* Pass userid, username, and device id to the next activity */
+                /* Pass userid, username, and device id to the next activity */
                 Intent next = new Intent(MainActivity.this,
                         PhoneCheckoutActivity.class);
                 next.putExtra("user_id", borrowerId);

@@ -41,12 +41,12 @@ public class NewUserActivity extends Activity implements View.OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
-        Window win = getWindow();
-        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        LayoutParams params = win.getAttributes();
-        params.width = 800;
-        params.dimAmount = 0.3f;
-        win.setAttributes(params);
+//        Window win = getWindow();
+//        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+//        LayoutParams params = win.getAttributes();
+//        params.width = 800;
+//        params.dimAmount = 0.3f;
+//        win.setAttributes(params);
         setContentView(R.layout.activity_newuser);
         uname = (EditText) findViewById(R.id.newuser_name);
         email = (EditText) findViewById(R.id.newuser_email);

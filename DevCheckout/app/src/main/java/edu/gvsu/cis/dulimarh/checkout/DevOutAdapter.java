@@ -27,12 +27,10 @@ public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
 
     private ArrayList<ParseProxyObject> datasource;
     private DeviceSelectedListener mylistener;
-//    private Map<String,Drawable> photoMap;
     public DevOutAdapter(ArrayList<ParseProxyObject> data,
                          DeviceSelectedListener listener) {
         datasource = data;
         mylistener = listener;
-//        photoMap = photos;
     }
 
     @Override
@@ -60,7 +58,7 @@ public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
 
     @Override
     public int getItemCount() {
-        Log.d("HANS", "getItemCount() " + datasource.size());
+//        Log.d("HANS", "getItemCount() " + datasource.size());
         return datasource.size();
     }
 
