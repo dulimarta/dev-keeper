@@ -37,6 +37,16 @@
             android:id="@+id/user_id"
             android:layout_alignBottom="@+id/user_photo"
             android:layout_alignLeft="@+id/user_name"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="Large Text"
+            android:id="@+id/checkout_count"
+            android:paddingRight="8dp"/>
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

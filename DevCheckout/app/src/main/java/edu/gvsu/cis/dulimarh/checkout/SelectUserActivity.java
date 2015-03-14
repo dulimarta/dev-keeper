@@ -46,6 +46,7 @@ public class SelectUserActivity extends FragmentActivity {
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
     private ArrayList<ParseProxyObject> allUsers;
+    private Map<String,Integer> countMap;
     private UserAdapter uAdapter;
     private int selectedPosition;
     private String selectedUid, selectedUname;
@@ -66,6 +67,7 @@ public class SelectUserActivity extends FragmentActivity {
         setContentView(R.layout.user_list);
         setTitle("Users");
 
+        countMap = new HashMap<String, Integer>();
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selection");
             allUsers =
@@ -76,7 +78,7 @@ public class SelectUserActivity extends FragmentActivity {
             selectedPosition = -1;
             allUsers = new ArrayList<ParseProxyObject>();
         }
-        uAdapter = new UserAdapter(allUsers);
+        uAdapter = new UserAdapter(allUsers, countMap);
         RecyclerView rview = (RecyclerView) findViewById(R.id.user_list);
         rview.setAdapter(uAdapter);
         RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
@@ -111,6 +113,22 @@ public class SelectUserActivity extends FragmentActivity {
         });
     }
 
+    private Task<Void> countCheckout (final ParseObject usr) throws
+            ParseException {
+        return Task.callInBackground(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                int co_count = new ParseQuery<ParseObject>(Consts
+                        .DEVICE_LOAN_TABLE)
+                        .whereEqualTo("user_obj", usr)
+                        .count();
+                if (co_count > 0)
+                    countMap.put(usr.getObjectId(), co_count);
+                return null;
+            }
+        });
+    }
+
     private void loadAllUsers() {
         new ParseQuery<ParseObject>(Consts.USER_TABLE)
         .findInBackground()
@@ -121,19 +139,11 @@ public class SelectUserActivity extends FragmentActivity {
                     Exception {
                 ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
                 allUsers.clear();
-                for (ParseObject p : results.getResult()) {
-                    tasks.add(findUserImageAsync(p));
-                    allUsers.add(new ParseProxyObject(p));
+                for (ParseObject user : results.getResult()) {
+                    tasks.add(findUserImageAsync(user));
+                    tasks.add(countCheckout(user));
+                    allUsers.add(new ParseProxyObject(user));
                 }
-                Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
-
-                    @Override
-                    public int compare(ParseProxyObject one,
-                                       ParseProxyObject two) {
-                        return one.getString("user_id").compareTo(two.getString("user_id"));
-                    }
-                });
-
                 return Task.whenAll(tasks);
 //                return null;
             }
@@ -142,6 +152,33 @@ public class SelectUserActivity extends FragmentActivity {
             @Override
             public Object then(Task<Void> task) throws Exception {
                 if (task.isCompleted()) {
+                    Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
+
+                        @Override
+                        public int compare(ParseProxyObject u1,
+                                           ParseProxyObject u2) {
+                            String id_one = u1.getObjectId();
+                            String id_two = u2.getObjectId();
+                            Integer count1 = countMap.get(id_one);
+                            Integer count2 = countMap.get(id_two);
+                            if (count1 == null && count2 != null)
+                                return +1;
+                            if (count1 != null && count2 == null)
+                                return -1;
+                            if (count1 == null && count2 == null)
+                                return u1.getString("user_id").compareTo(u2
+                                        .getString("user_id"));
+                            else {
+                                int c1 = (int) count1;
+                                int c2 = (int) count2;
+                                if (c1 < c2) return -1;
+                                if (c1 > c2) return +1;
+                                return u1.getString("user_id").compareTo(u2
+                                        .getString("user_id"));
+                            }
+                        }
+                    });
+
                     Log.d("HANS", "Notify dataset changed, " +
                             "dataset size " + allUsers.size());
                     uAdapter.notifyDataSetChanged();
