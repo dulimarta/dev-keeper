@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.ProgressDialog;
@@ -127,7 +128,7 @@ public class UserListActivity extends Activity implements View
     protected void onPause() {
         super.onPause();
         if (progress.isShowing())
-            progress.hide();
+            progress.dismiss();
     }
 
     private Task<Void> findUserImageAsync (final ParseObject obj)
@@ -224,7 +225,7 @@ public class UserListActivity extends Activity implements View
             @Override
             public Object then(Task<Object> task) throws Exception {
                 Log.d("HANS", "Here three");
-                progress.hide();
+                progress.dismiss();
                 if (task.isFaulted()) {
                     Toast.makeText(UserListActivity.this,
                             "Unable to load user data",
@@ -346,8 +347,14 @@ public class UserListActivity extends Activity implements View
 
     @Override
     public void onUserSelected(int position) {
-        if (requestedAction == Consts.ACTION_SELECT_USER)
-            fab.setAlpha(1.0f);
+        if (requestedAction == Consts.ACTION_SELECT_USER &&
+                fab.getAlpha() == 0.0f) {
+            ObjectAnimator anim = ObjectAnimator.ofFloat(fab, "alpha",
+                    0, 1);
+            anim.setDuration(1000);
+            anim.start();
+//            fab.setVisibility(View.VISIBLE);
+        }
         uAdapter.notifyDataSetChanged();
     }
 
