@@ -18,8 +18,10 @@ import java.util.Map;
 /**
  * Created by dulimarh on 3/11/15.
  */
-public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
-        .DeviceViewHolder>  {
+public class DevOutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
+
+    private final int TYPE_MESSAGE = 1;
+    private final int TYPE_ENTRY = 2;
 
     public interface DeviceSelectedListener {
         void onDeviceSelected (int pos);
@@ -34,32 +36,53 @@ public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
     }
 
     @Override
-    public DeviceViewHolder onCreateViewHolder(ViewGroup viewGroup,
-                                               int i) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R
-                .layout.checkout_item, viewGroup, false);
-        DeviceViewHolder vh = new DeviceViewHolder(v);
-        return vh;
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup,
+                                               int type) {
+        if (type == TYPE_ENTRY) {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R
+                    .layout.checkout_item, viewGroup, false);
+            DeviceViewHolder vh = new DeviceViewHolder(v);
+            return vh;
+        }
+        else {
+            TextView tv = new TextView(viewGroup.getContext());
+            tv.setText("No checked out devices.");
+            return new MessageViewHolder (tv);
+        }
     }
 
     @Override
-    public void onBindViewHolder(DeviceViewHolder viewHolder, int i) {
-        ParseProxyObject p = datasource.get(i);
-        String user = p.getParseObject("user_obj");
-        if (user != null) {
-            Drawable photo = ImageStore.get(user);
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
+        if (viewHolder instanceof DeviceViewHolder){
+            ParseProxyObject p = datasource.get(i);
+            String user = p.getParseObject("user_obj");
+            DeviceViewHolder dvh = (DeviceViewHolder) viewHolder;
+            if (user != null) {
+                Drawable photo = ImageStore.get(user);
 
-            viewHolder.photo.setImageDrawable(photo);
+                dvh.photo.setImageDrawable(photo);
+            }
+            dvh.deviceName.setText(p.getString("dev_id"));
+            dvh.checkOutDate.setText("Checkout on: " + DateFormat
+                    .format("yyyy-MM-dd", p.getCreatedAt()));
         }
-        viewHolder.deviceName.setText (p.getString("dev_id"));
-        viewHolder.checkOutDate.setText ("Checkout on: " + DateFormat
-                .format("yyyy-MM-dd", p.getCreatedAt()));
     }
 
     @Override
     public int getItemCount() {
 //        Log.d("HANS", "getItemCount() " + datasource.size());
-        return datasource.size();
+        if (datasource.isEmpty())
+            return 1;
+        else
+            return datasource.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (datasource.isEmpty())
+            return TYPE_MESSAGE;
+        else
+            return TYPE_ENTRY;
     }
 
     public class DeviceViewHolder extends RecyclerView.ViewHolder
@@ -79,6 +102,15 @@ public class DevOutAdapter extends RecyclerView.Adapter<DevOutAdapter
         @Override
         public void onClick(View view) {
             mylistener.onDeviceSelected(getPosition());
+        }
+    }
+
+    public class MessageViewHolder extends RecyclerView.ViewHolder {
+        public TextView msg;
+
+        public MessageViewHolder(View itemView) {
+            super(itemView);
+            msg = (TextView) itemView;
         }
     }
 }

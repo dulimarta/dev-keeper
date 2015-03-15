@@ -96,9 +96,9 @@ public class DevOutListFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         // TOOO do we have to run this task everytime?
-        if (checkouts.isEmpty()) {
+//        if (checkouts.isEmpty()) {
             updateDeviceList();
-        }
+//        }
     }
 
     private Task<Void> findUserImageAsync (final ParseObject obj)

@@ -149,7 +149,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
                 devListFragment.updateDeviceList();
         }
         else {
-            super.onActivityResult(requestCode, resultCode, data);
+            //super.onActivityResult(requestCode, resultCode, data);
             IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             if (scanResult == null) return;
             final String scannedDevId = scanResult.getContents();

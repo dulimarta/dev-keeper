@@ -16,7 +16,9 @@
         <android.support.v7.widget.CardView
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:elevation="4dp"
+            card_view:cardCornerRadius="4dp">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -31,8 +33,8 @@
                     android:textStyle="bold"/>
 
                 <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
                     android:id="@+id/device_image"
                     android:layout_below="@+id/textView"
                     android:src="@drawable/ic_launcher"/>
@@ -70,53 +72,63 @@
             </RelativeLayout>
         </android.support.v7.widget.CardView>
 
-        <RelativeLayout
+        <android.support.v7.widget.CardView
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_gravity="top">
+            android:layout_height="wrap_content"
+            android:elevation="4dp"
+            card_view:cardCornerRadius="4dp">
 
-            <TextView
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Checkout Details"
-                android:textStyle="bold"
-                android:id="@+id/textView3"
-                android:paddingTop="10dp"/>
+                android:layout_gravity="top">
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:id="@+id/user_photo"
-                android:src="@drawable/ic_launcher"
-                android:layout_below="@+id/textView3"
-                android:layout_alignParentLeft="true"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Checkout Details"
+                    android:textStyle="bold"
+                    android:id="@+id/textView3"
+                    android:paddingTop="10dp"/>
 
-            <TextView
-                android:id="@+id/user_id"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_alignTop="@id/user_photo"
-                android:layout_toRightOf="@id/user_photo"
-                android:layout_alignParentRight="true"
-                android:text="User ID here"/>
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:id="@+id/user_photo"
+                    android:src="@drawable/ic_launcher"
+                    android:layout_below="@+id/textView3"
+                    android:layout_alignParentLeft="true"/>
 
-            <TextView
-                android:id="@+id/out_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/user_id"
-                android:layout_alignLeft="@id/user_id"
-                android:layout_alignParentRight="true"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Checkout date here"/>
+                <TextView
+                    android:id="@+id/user_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:layout_alignTop="@id/user_photo"
+                    android:layout_toRightOf="@id/user_photo"
+                    android:layout_alignParentRight="true"
+                    android:text="User ID here"/>
+
+                <TextView
+                    android:id="@+id/out_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/user_id"
+                    android:layout_alignLeft="@id/user_id"
+                    android:layout_alignParentRight="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="Checkout date here"/>
 
 
-        </RelativeLayout>
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+
     </LinearLayout>
+
     <ImageView
         android:id="@+id/sig_imgview"
         android:contentDescription="@string/app_name"
@@ -124,8 +136,6 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_launcher"
         android:layout_below="@+id/group"
-        android:layout_toLeftOf="@id/checkin"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"/>
 
     <edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton
@@ -145,7 +155,6 @@
             android:layout_gravity="center"
             android:duplicateParentState="true"/>
     </edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton>
-
 
 
 </RelativeLayout>

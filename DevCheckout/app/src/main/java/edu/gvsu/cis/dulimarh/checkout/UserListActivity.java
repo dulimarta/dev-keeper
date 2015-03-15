@@ -1,11 +1,15 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.app.ActivityOptions;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Explode;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -34,9 +38,11 @@ import java.util.concurrent.Callable;
 
 import bolts.Continuation;
 import bolts.Task;
+import edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton;
 
 
-public class UserListActivity extends FragmentActivity {
+public class UserListActivity extends FragmentActivity implements View
+        .OnClickListener {
 
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
@@ -44,6 +50,7 @@ public class UserListActivity extends FragmentActivity {
     private Map<String,Integer> countMap;
     private UserAdapter uAdapter;
     private int selectedPosition;
+    private FloatingActionButton add;
     private String selectedUid, selectedUname;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -60,6 +67,8 @@ public class UserListActivity extends FragmentActivity {
 //        params.dimAmount = 0.3f;
 //        win.setAttributes(params);
         setContentView(R.layout.du_list);
+        add = (FloatingActionButton) findViewById(R.id.add_new);
+        add.setOnClickListener(this);
         setTitle("Users");
 
         countMap = new HashMap<String, Integer>();
@@ -79,7 +88,6 @@ public class UserListActivity extends FragmentActivity {
         RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
         rview.setLayoutManager(mgr);
 //        registerForContextMenu(getListView());
-        loadAllUsers();
     }
 
     /* (non-Javadoc)
@@ -92,9 +100,15 @@ public class UserListActivity extends FragmentActivity {
         outState.putInt("selection", selectedPosition);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadAllUsers();
+    }
+
     private Task<Void> findUserImageAsync (final ParseObject obj)
             throws ParseException {
-        return Task.callInBackground(new Callable<Void>() {
+        return Task.call(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 ParseFile pf = obj.getParseFile("user_photo");
@@ -110,7 +124,7 @@ public class UserListActivity extends FragmentActivity {
 
     private Task<Void> countCheckout (final ParseObject usr) throws
             ParseException {
-        return Task.callInBackground(new Callable<Void>() {
+        return Task.call(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 int co_count = new ParseQuery<ParseObject>(Consts
@@ -125,13 +139,17 @@ public class UserListActivity extends FragmentActivity {
     }
 
     private void loadAllUsers() {
+        final ProgressDialog progress = new ProgressDialog(this);
+        progress.setIndeterminate(true);
+        progress.show();
         new ParseQuery<ParseObject>(Consts.USER_TABLE)
         .findInBackground()
-        .continueWithTask(new Continuation<List<ParseObject>,
+        .onSuccessTask(new Continuation<List<ParseObject>,
                 Task<Void>>() {
             @Override
             public Task<Void> then(Task<List<ParseObject>> results) throws
                     Exception {
+                Log.d("HANS", "Here one");
                 ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
                 allUsers.clear();
                 for (ParseObject user : results.getResult()) {
@@ -146,39 +164,46 @@ public class UserListActivity extends FragmentActivity {
         .onSuccess(new Continuation<Void, Object>() {
             @Override
             public Object then(Task<Void> task) throws Exception {
-                if (task.isCompleted()) {
-                    Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
+                Log.d("HANS", "Here two");
+                Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
 
-                        @Override
-                        public int compare(ParseProxyObject u1,
-                                           ParseProxyObject u2) {
-                            String id_one = u1.getObjectId();
-                            String id_two = u2.getObjectId();
-                            Integer count1 = countMap.get(id_one);
-                            Integer count2 = countMap.get(id_two);
-                            if (count1 == null && count2 != null)
-                                return +1;
-                            if (count1 != null && count2 == null)
-                                return -1;
-                            if (count1 == null && count2 == null)
-                                return u1.getString("user_id").compareTo(u2
-                                        .getString("user_id"));
-                            else {
-                                int c1 = (int) count1;
-                                int c2 = (int) count2;
-                                if (c1 < c2) return -1;
-                                if (c1 > c2) return +1;
-                                return u1.getString("user_id").compareTo(u2
-                                        .getString("user_id"));
-                            }
+                    @Override
+                    public int compare(ParseProxyObject u1,
+                                       ParseProxyObject u2) {
+                        String id_one = u1.getObjectId();
+                        String id_two = u2.getObjectId();
+                        Integer count1 = countMap.get(id_one);
+                        Integer count2 = countMap.get(id_two);
+                        if (count1 == null && count2 != null)
+                            return +1;
+                        if (count1 != null && count2 == null)
+                            return -1;
+                        if (count1 == null && count2 == null)
+                            return u1.getString("user_id").compareTo(u2
+                                    .getString("user_id"));
+                        else {
+                            int c1 = (int) count1;
+                            int c2 = (int) count2;
+                            if (c1 < c2) return -1;
+                            if (c1 > c2) return +1;
+                            return u1.getString("user_id").compareTo(u2
+                                    .getString("user_id"));
                         }
-                    });
+                    }
+                });
 
-                    Log.d("HANS", "Notify dataset changed, " +
-                            "dataset size " + allUsers.size());
-                    uAdapter.notifyDataSetChanged();
-                }
-                else {
+                Log.d("HANS", "Notify dataset changed, " +
+                        "dataset size " + allUsers.size());
+                uAdapter.notifyDataSetChanged();
+                return null;
+            }
+        }, Task.UI_THREAD_EXECUTOR)
+        .continueWith(new Continuation<Object, Object>() {
+            @Override
+            public Object then(Task<Object> task) throws Exception {
+                Log.d("HANS", "Here three");
+                progress.hide();
+                if (task.isFaulted()) {
                     Toast.makeText(UserListActivity.this,
                             "Unable to load user data",
                             Toast.LENGTH_SHORT).show();
@@ -278,6 +303,21 @@ public class UserListActivity extends FragmentActivity {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(0, MENU_DELETE_USER, 0, "Delete User");
+    }
+
+    @Override
+    public void onClick(View view) {
+        Intent i = new Intent (this, NewUserActivity.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setExitTransition(new Explode());
+            startActivity(i,
+                    ActivityOptions.makeSceneTransitionAnimation
+                            (this).toBundle());
+        }
+        else {
+            startActivity(i);
+        }
+
     }
 
 

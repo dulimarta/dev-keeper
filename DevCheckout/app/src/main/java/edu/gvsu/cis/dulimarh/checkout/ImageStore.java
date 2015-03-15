@@ -20,9 +20,10 @@ public class ImageStore {
 
     public static void newInstance(Context ctx) {
         images = new HashMap<String, Drawable>();
-        images.put("DEFAULT-IMAGE", ctx.getResources().getDrawable(R
-                .drawable
-                .male_user_icon));
+        Log.d("HANS", "ImageStore is running");
+//        images.put("DEFAULT-IMAGE", ctx.getResources().getDrawable(R
+//                .drawable
+//                .male_user_icon));
     }
 
     public static void put (String key, Drawable val)

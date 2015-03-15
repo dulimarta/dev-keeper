@@ -27,6 +27,9 @@ import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 
 import edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton;
@@ -81,10 +84,18 @@ public class DevOutDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        Bundle args = savedInstanceState != null? savedInstanceState : getArguments();
-
-        obj_id = args.getString("object_id");
-        currentIndex = args.getInt("index");
+        Bundle args; // = savedInstanceState != null? savedInstanceState :
+                getArguments();
+        if (savedInstanceState == null) {
+            args = getArguments();
+            obj_id = args.getString("object_id");
+            currentIndex = args.getInt("index");
+        }
+        else {
+            user_id = savedInstanceState.getString("user_id");
+            dev_id = savedInstanceState.getString("dev_id");
+            currentIndex = savedInstanceState.getInt("currentIndex");
+        }
     }
 
     @Override
@@ -122,7 +133,8 @@ public class DevOutDetailsFragment extends Fragment {
             
             @Override
             public void onClick(View v) {
-                IntentIntegrator scan = new IntentIntegrator(getActivity());
+                IntentIntegrator scan = new IntentIntegrator
+                        (DevOutDetailsFragment.this);
                 scan.initiateScan();
             }
         });
@@ -137,8 +149,10 @@ public class DevOutDetailsFragment extends Fragment {
             public void done(ParseObject obj, ParseException err) {
                 if (err == null) {
                     try {
-                        uid.setText(obj.getString("user_id"));
-                        devid.setText(obj.getString("dev_id"));
+                        user_id = obj.getString("user_id");
+                        uid.setText(user_id);
+                        dev_id = obj.getString("dev_id");
+                        devid.setText(dev_id);
                         ParseObject devObj = obj.getParseObject
                                 ("device_obj");
                         devObj.fetchIfNeeded();
@@ -158,8 +172,7 @@ public class DevOutDetailsFragment extends Fragment {
                             Drawable d = Drawable.createFromStream(bis, "");
                             ImageStore.put(pf.getUrl(), d);
                             sig.setImageDrawable(d);
-                        }
-                        else
+                        } else
                             sig.setImageDrawable(storedDrawable);
                         pf = (ParseFile) userObj.getParseFile
                                 ("user_photo");
@@ -169,10 +182,9 @@ public class DevOutDetailsFragment extends Fragment {
                                     ByteArrayInputStream(pf.getData());
                             Drawable d = Drawable.createFromStream(bis,
                                     "");
-                            ImageStore.put (pf.getUrl(), d);
+                            ImageStore.put(pf.getUrl(), d);
                             userphoto.setImageDrawable(d);
-                        }
-                        else
+                        } else
                             userphoto.setImageDrawable(storedDrawable);
                         sig.setVisibility(View.VISIBLE);
                         checkin.setEnabled(true);
@@ -231,7 +243,6 @@ public class DevOutDetailsFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         Log.d(TAG, "Hosting activity is created");
-        // TODO Auto-generated method stub
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -241,11 +252,18 @@ public class DevOutDetailsFragment extends Fragment {
                 (requestCode, resultCode, data);
         if (scanResult != null) {
             final String contents = data.getStringExtra("SCAN_RESULT");
-//            if (contents.equals(dev_id))
-//                showDialog(DIALOG_CONFIRM_CHECKIN, dev_id, parseObjId);
-//            else {
-//                showDialog(DIALOG_WRONG_DEVICE, dev_id, contents);
-//            }
+            /* JSON keys: id, model, os, form_factor */
+            try {
+                JSONObject jObj = new JSONObject(contents);
+                String scanned = jObj.getString("id");
+                if (scanned.equals(dev_id))
+                    showDialog(DIALOG_CONFIRM_CHECKIN, dev_id, obj_id);
+                else {
+                    showDialog(DIALOG_WRONG_DEVICE, dev_id, contents);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             return;
         }
         else
@@ -282,7 +300,7 @@ public class DevOutDetailsFragment extends Fragment {
             final String parseId = getArguments().getString("parse_id");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Confirmation Required");
-            builder.setMessage("Deregister device + " + dev_id + "?");
+            builder.setMessage("Deregister device " + dev_id + "?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         
                 @Override
