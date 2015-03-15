@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.transition.Explode;
-import android.transition.Slide;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,7 +31,8 @@ import bolts.Task;
 import edu.gvsu.cis.dulimarh.checkout.DevOutDetailsFragment.DeviceRemovalListener;
 
 
-public class MainActivity extends Activity implements DeviceRemovalListener {
+public class MainActivity extends Activity implements
+        DeviceRemovalListener {
     // private final String TAG = getClass().getName();
     private static final int DIALOG_ALREADY_CHECKEDOUT = 1;
     private static final int DIALOG_CONFIRM_CHECKOUT = 2;
@@ -54,8 +53,8 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devlist);
         devListFragment = (DevOutListFragment) getFragmentManager().findFragmentById(R.id.devlistFragment);
         userMenu = (ImageView) findViewById(R.id.user_menu);
@@ -115,7 +114,7 @@ public class MainActivity extends Activity implements DeviceRemovalListener {
     }
 
     @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_checkout:
                 Intent userSelect = new Intent(this, UserListActivity.class);

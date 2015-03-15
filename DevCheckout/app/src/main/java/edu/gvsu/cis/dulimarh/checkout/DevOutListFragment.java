@@ -103,7 +103,7 @@ public class DevOutListFragment extends Fragment implements
 
     private Task<Void> findUserImageAsync (final ParseObject obj)
             throws ParseException {
-        return Task.callInBackground(new Callable<Void>() {
+        return Task.call(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 ParseObject usrObj = obj.getParseObject("user_obj");
@@ -142,14 +142,14 @@ public class DevOutListFragment extends Fragment implements
                             checkouts.add(new ParseProxyObject(p));
                         }
                         Collections.sort(checkouts,
-                        new Comparator<ParseProxyObject>() {
+                                new Comparator<ParseProxyObject>() {
 
-                            @Override
-                            public int compare(ParseProxyObject one,
-                                               ParseProxyObject two) {
-                                return one.getString("user_id").compareTo(two.getString("user_id"));
-                            }
-                        });
+                                    @Override
+                                    public int compare(ParseProxyObject one,
+                                                       ParseProxyObject two) {
+                                        return one.getString("user_id").compareTo(two.getString("user_id"));
+                                    }
+                                });
 
                         /* The next task (T2) will run only when all the
                             background tasks created by T1 complete
@@ -163,19 +163,24 @@ public class DevOutListFragment extends Fragment implements
                      */
                     @Override
                     public Void then(Task<Void> task) throws Exception {
-                        if (task.isCompleted()) {
-                            Log.d("HANS", "Notify dataset changed, " +
-                                    "dataset size " + checkouts.size());
-                            myadapter.notifyDataSetChanged();
-                        } else {
+                        Log.d("HANS", "Notify dataset changed, " +
+                                "dataset size " + checkouts.size());
+                        myadapter.notifyDataSetChanged();
+                        return null;
+                    }
+                }, Task.UI_THREAD_EXECUTOR) /* Run T2 on the UI thread,
+                 so notifyDatasetChanged updates the UI correctly */
+                .continueWith(new Continuation<Object, Object>() {
+                    @Override
+                    public Object then(Task<Object> task) throws Exception {
+                        if (task.isFaulted()) {
                             Toast.makeText(getActivity(),
                                     "Unable to load checkout data",
                                     Toast.LENGTH_SHORT).show();
                         }
                         return null;
                     }
-                }, Task.UI_THREAD_EXECUTOR); /* Run T2 on the UI thread,
-                 so notifyDatasetChanged updates the UI correctly */
+                }, Task.UI_THREAD_EXECUTOR);
     }
 
     private void showDetails (int pos)

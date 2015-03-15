@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,13 +18,23 @@ import java.util.Map;
  */
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter
         .UserViewHolder> {
+
+    public interface UserSelectedListener {
+        void onUserSelected (int position);
+    }
+
     private List<ParseProxyObject> datasource;
     private Map<String,Integer> checkoutCounter;
+    private UserSelectedListener uListener;
+    private int selectedIndex;
 
-    public UserAdapter(List<ParseProxyObject> ds, Map<String,Integer> cc)
+    public UserAdapter(List<ParseProxyObject> ds, Map<String,Integer> cc,
+                       UserSelectedListener ulistener)
     {
         datasource = ds;
         checkoutCounter = cc;
+        this.uListener = ulistener;
+        selectedIndex = -1;
     }
 
     @Override
@@ -49,6 +60,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
         if (d != null) {
             holder.photo.setImageDrawable(d);
         }
+        if (position == selectedIndex)
+            holder.cell.setBackgroundResource(R.color.fab_color_muted);
+        else
+            holder.cell.setBackgroundColor(Color.WHITE);
     }
 
     @Override
@@ -57,15 +72,27 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
         return datasource.size();
     }
 
-    public class UserViewHolder extends RecyclerView.ViewHolder {
+    public class UserViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener{
         public ImageView photo;
         public TextView uname, uid, count;
+        public View cell;
+
         public UserViewHolder(View itemView) {
             super(itemView);
+            cell = itemView;
             photo = (ImageView) itemView.findViewById(R.id.user_photo);
             uname = (TextView) itemView.findViewById(R.id.user_name);
             uid = (TextView) itemView.findViewById(R.id.user_id);
             count = (TextView) itemView.findViewById(R.id.checkout_count);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+//            view.setBackgroundResource(R.color.fab_color_muted);
+            selectedIndex = getPosition();
+            uListener.onUserSelected(getPosition());
         }
     }
 }

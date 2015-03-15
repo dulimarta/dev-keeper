@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -41,8 +42,8 @@ import bolts.Task;
 import edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton;
 
 
-public class UserListActivity extends FragmentActivity implements View
-        .OnClickListener {
+public class UserListActivity extends Activity implements View
+        .OnClickListener, UserAdapter.UserSelectedListener {
 
     private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_USER = Menu.FIRST + 1;
@@ -57,12 +58,12 @@ public class UserListActivity extends FragmentActivity implements View
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_ACTION_BAR);
-        Window win = getWindow();
+//        requestWindowFeature(Window.FEATURE_ACTION_BAR);
+  //      Window win = getWindow();
+
 //        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        LayoutParams params = win.getAttributes();
+//        LayoutParams params = win.getAttributes();//
 //        params.width = 800;
 //        params.dimAmount = 0.3f;
 //        win.setAttributes(params);
@@ -82,12 +83,12 @@ public class UserListActivity extends FragmentActivity implements View
             selectedPosition = -1;
             allUsers = new ArrayList<ParseProxyObject>();
         }
-        uAdapter = new UserAdapter(allUsers, countMap);
+        uAdapter = new UserAdapter(allUsers, countMap, this);
         RecyclerView rview = (RecyclerView) findViewById(R.id.the_list);
         rview.setAdapter(uAdapter);
         RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
         rview.setLayoutManager(mgr);
-//        registerForContextMenu(getListView());
+        registerForContextMenu(rview);
     }
 
     /* (non-Javadoc)
@@ -221,10 +222,17 @@ public class UserListActivity extends FragmentActivity implements View
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         MenuInflater pump = getMenuInflater();
         pump.inflate(R.menu.select_user_add, menu);
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
+
+//    @Override
+//    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+//        super.onCreateContextMenu(menu, v, menuInfo);
+//        menu.add(0, MENU_DELETE_USER, 0, "Delete User");
+//    }
 
 
     /* (non-Javadoc)
@@ -239,6 +247,7 @@ public class UserListActivity extends FragmentActivity implements View
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     /* (non-Javadoc)
      * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
@@ -300,12 +309,6 @@ public class UserListActivity extends FragmentActivity implements View
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, MENU_DELETE_USER, 0, "Delete User");
-    }
-
-    @Override
     public void onClick(View view) {
         Intent i = new Intent (this, NewUserActivity.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -318,6 +321,11 @@ public class UserListActivity extends FragmentActivity implements View
             startActivity(i);
         }
 
+    }
+
+    @Override
+    public void onUserSelected(int position) {
+        uAdapter.notifyDataSetChanged();
     }
 
 

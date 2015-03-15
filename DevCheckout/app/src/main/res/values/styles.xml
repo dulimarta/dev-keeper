@@ -9,7 +9,7 @@
     <color name="primaryDark">#ff2a4883</color>
     <color name="accent">#ffd8d44f</color>
     <color name="textPrimary">#ffffffff</color>
-    <style name="AppTheme" parent="@android:style/Theme.Holo.Light">
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light">
         <item name="android:colorPrimary">@color/primary</item>
         <item name="android:colorPrimaryDark">@color/primaryDark</item>
         <item name="android:colorAccent">@color/accent</item>
