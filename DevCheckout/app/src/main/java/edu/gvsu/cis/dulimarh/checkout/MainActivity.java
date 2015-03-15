@@ -118,6 +118,7 @@ public class MainActivity extends Activity implements
         switch (item.getItemId()) {
             case R.id.menu_checkout:
                 Intent userSelect = new Intent(this, UserListActivity.class);
+                userSelect.putExtra("action", Consts.ACTION_SELECT_USER);
                 currentTask = DevTask.CHECKOUT;
                 startActivityForResult(userSelect, SELECT_USER_REQUEST);
                 break;

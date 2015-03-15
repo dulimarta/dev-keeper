@@ -11,4 +11,6 @@ public interface Consts {
             "C8rZuZwkSAFnH2vmgCn4mrtkyh89qFmqXw8pIPpB";
     public static final String PARSE_CLIENT_KEY = "LmGNHi2nXy2BoZfoLiBohrGVX5lgZqyIp4ft0n2A";
 //    public static final String PUSH_CHANNEL = "HansDulimarta";
+
+    public static final int ACTION_SELECT_USER = 1;
 }

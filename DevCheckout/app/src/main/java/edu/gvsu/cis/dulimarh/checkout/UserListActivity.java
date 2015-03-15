@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.parse.DeleteCallback;
@@ -51,8 +52,10 @@ public class UserListActivity extends Activity implements View
     private Map<String,Integer> countMap;
     private UserAdapter uAdapter;
     private int selectedPosition;
-    private FloatingActionButton add;
+    private FloatingActionButton fab;
     private String selectedUid, selectedUname;
+    private int requestedAction = 0;
+    private ProgressDialog progress;
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -68,9 +71,22 @@ public class UserListActivity extends Activity implements View
 //        params.dimAmount = 0.3f;
 //        win.setAttributes(params);
         setContentView(R.layout.du_list);
-        add = (FloatingActionButton) findViewById(R.id.add_new);
-        add.setOnClickListener(this);
+        fab = (FloatingActionButton) findViewById(R.id.add_new);
+        ImageView img = (ImageView) findViewById(R.id.fab_image);
+        fab.setOnClickListener(this);
         setTitle("Users");
+        progress = new ProgressDialog(this);
+        progress.setIndeterminate(true);
+
+        Intent data = getIntent();
+        if (data.hasExtra("action")) {
+            requestedAction = data.getIntExtra("action", 0);
+            if (requestedAction == Consts.ACTION_SELECT_USER) {
+                img.setImageResource(R.mipmap.ic_checkout);
+                fab.setAlpha(0.0f);
+//                fab.setVisibility(View.INVISIBLE);
+            }
+        }
 
         countMap = new HashMap<String, Integer>();
         if (savedInstanceState != null) {
@@ -107,6 +123,13 @@ public class UserListActivity extends Activity implements View
         loadAllUsers();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (progress.isShowing())
+            progress.hide();
+    }
+
     private Task<Void> findUserImageAsync (final ParseObject obj)
             throws ParseException {
         return Task.call(new Callable<Void>() {
@@ -140,8 +163,6 @@ public class UserListActivity extends Activity implements View
     }
 
     private void loadAllUsers() {
-        final ProgressDialog progress = new ProgressDialog(this);
-        progress.setIndeterminate(true);
         progress.show();
         new ParseQuery<ParseObject>(Consts.USER_TABLE)
         .findInBackground()
@@ -325,6 +346,8 @@ public class UserListActivity extends Activity implements View
 
     @Override
     public void onUserSelected(int position) {
+        if (requestedAction == Consts.ACTION_SELECT_USER)
+            fab.setAlpha(1.0f);
         uAdapter.notifyDataSetChanged();
     }
 
