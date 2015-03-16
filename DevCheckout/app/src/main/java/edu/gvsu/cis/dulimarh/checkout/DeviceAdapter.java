@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -24,11 +25,11 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
     }
 
     private ArrayList<ParseProxyObject> datasource;
-    private Set<String> checkedOutIds;
+    private Map<String,String> checkedOutIds;
     private DeviceSelectedListener mylistener;
 
     public DeviceAdapter(ArrayList<ParseProxyObject> data,
-                         Set<String> chkOutSet,
+                         Map<String,String> chkOutSet,
                          DeviceSelectedListener listener) {
         datasource = data;
         checkedOutIds = chkOutSet;
@@ -47,11 +48,13 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
     @Override
     public void onBindViewHolder(DeviceViewHolder viewHolder, int i) {
         ParseProxyObject dev = datasource.get(i);
+        String devId = dev.getString("device_id");
         viewHolder.deviceName.setText (dev.getString("name"));
-        viewHolder.deviceId.setText (dev.getString("device_id"));
-        if (checkedOutIds.contains(dev.getObjectId())) {
+        viewHolder.deviceId.setText (devId);
+        if (checkedOutIds.containsKey(dev.getObjectId())) {
             viewHolder.statusIcon.setVisibility(View.VISIBLE);
-            viewHolder.devStatus.setText("Checked Out");
+            viewHolder.devStatus.setText("Checked Out by " +
+                    checkedOutIds.get(dev.getObjectId()));
         }
         else {
             viewHolder.statusIcon.setVisibility(View.GONE);

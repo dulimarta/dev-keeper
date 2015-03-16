@@ -46,7 +46,7 @@ public class DeviceListActivity extends FragmentActivity implements
 //    private static final int MENU_ADD_NEW_USER = Menu.FIRST;
     private final static int MENU_DELETE_DEVICE = Menu.FIRST;
     private ArrayList<ParseProxyObject> allDevices;
-    private Set<String> checkedDevices;
+    private Map<String,String> checkedDevices;
     private DeviceAdapter devAdapter;
     private int selectedPosition;
     private String selectedUid, selectedUname;
@@ -74,7 +74,7 @@ public class DeviceListActivity extends FragmentActivity implements
             selectedPosition = -1;
             allDevices = new ArrayList<ParseProxyObject>();
         }
-        checkedDevices = new TreeSet<String>();
+        checkedDevices = new HashMap<String,String>();
         devAdapter = new DeviceAdapter(allDevices, checkedDevices, this);
         RecyclerView rview = (RecyclerView) findViewById(R.id.the_list);
         rview.setAdapter(devAdapter);
@@ -111,9 +111,12 @@ public class DeviceListActivity extends FragmentActivity implements
                 checkedDevices.clear();
                 for (ParseObject dev : results.getResult()) {
 //                    tasks.add(findUserImageAsync(user));
-                    int c = loanQuery.whereEqualTo("device_obj", dev).count();
-                    if (c > 0) {
-                        checkedDevices.add(dev.getObjectId());
+                    List<ParseObject> res = loanQuery.whereEqualTo
+                            ("device_obj",
+                            dev).find();
+                    if (res.size() > 0) {
+
+                        checkedDevices.put(dev.getObjectId(), res.get(0).getString("user_id"));
                     }
                     allDevices.add(new ParseProxyObject(dev));
                 }
@@ -146,9 +149,9 @@ public class DeviceListActivity extends FragmentActivity implements
             Comparator<ParseProxyObject>() {
         @Override
         public int compare(ParseProxyObject d1, ParseProxyObject d2) {
-            boolean d1_out = checkedDevices.contains(d1
+            boolean d1_out = checkedDevices.containsKey(d1
                     .getObjectId());
-            boolean d2_out = checkedDevices.contains(d2
+            boolean d2_out = checkedDevices.containsKey(d2
                     .getObjectId());
 
             if (d1_out && !d2_out) return -1;
