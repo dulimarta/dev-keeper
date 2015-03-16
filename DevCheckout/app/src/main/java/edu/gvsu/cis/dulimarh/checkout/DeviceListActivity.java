@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.parse.DeleteCallback;
@@ -59,6 +60,8 @@ public class DeviceListActivity extends FragmentActivity implements
         Window win = getWindow();
         LayoutParams params = win.getAttributes();
         setContentView(R.layout.du_list);
+        ImageView img = (ImageView) findViewById(R.id.fab_image);
+        img.setImageResource(R.mipmap.ic_checkin);
         setTitle("Devices");
 
         if (savedInstanceState != null) {

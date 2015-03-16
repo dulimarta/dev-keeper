@@ -109,9 +109,8 @@ public class DeviceCheckoutActivity extends Activity implements OnClickListener{
             @Override
             public Void then(Task<Void> task) throws Exception {
                 ParsePushUtils.pushTo(deviceId, "Registered to " + userId);
-                Toast.makeText(DeviceCheckoutActivity.this,
-                        "Device successfully checked out",
-                        Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
                 return null;
             }
         }, Task.UI_THREAD_EXECUTOR)
@@ -123,6 +122,8 @@ public class DeviceCheckoutActivity extends Activity implements OnClickListener{
                             "Cannot checkout device: " + task.getError()
                             .getMessage(),
                             Toast.LENGTH_LONG).show();
+                    setResult(RESULT_CANCELED);
+                    finish();
                 }
                 return null;
             }
@@ -135,8 +136,6 @@ public class DeviceCheckoutActivity extends Activity implements OnClickListener{
             signature.reset();
         } else {
             post();
-            setResult(RESULT_OK);
-            finish();
         }
     }
 

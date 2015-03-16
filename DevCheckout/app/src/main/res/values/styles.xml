@@ -5,10 +5,6 @@
     700 level for darker
     500 level for accent (brighter color)
     -->
-    <color name="primary">#ff4274d5</color>
-    <color name="primaryDark">#ff2a4883</color>
-    <color name="accent">#ffd8d44f</color>
-    <color name="textPrimary">#ffffffff</color>
     <style name="AppTheme" parent="@android:style/Theme.Material.Light">
         <item name="android:colorPrimary">@color/primary</item>
         <item name="android:colorPrimaryDark">@color/primaryDark</item>

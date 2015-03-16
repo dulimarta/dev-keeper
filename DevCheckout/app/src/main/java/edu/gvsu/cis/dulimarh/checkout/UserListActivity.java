@@ -8,18 +8,14 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.transition.Explode;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -47,8 +43,7 @@ import edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton;
 public class UserListActivity extends Activity implements View
         .OnClickListener, UserAdapter.UserSelectedListener {
 
-    private static final int MENU_ADD_NEW_USER = Menu.FIRST;
-    private final static int MENU_DELETE_USER = Menu.FIRST + 1;
+    private static final int MENU_DELETE_USER = Menu.FIRST;
     private ArrayList<ParseProxyObject> allUsers;
     private Map<String,Integer> countMap;
     private UserAdapter uAdapter;
@@ -63,14 +58,6 @@ public class UserListActivity extends Activity implements View
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        requestWindowFeature(Window.FEATURE_ACTION_BAR);
-  //      Window win = getWindow();
-
-//        win.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND , WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-//        LayoutParams params = win.getAttributes();//
-//        params.width = 800;
-//        params.dimAmount = 0.3f;
-//        win.setAttributes(params);
         setContentView(R.layout.du_list);
         fab = (FloatingActionButton) findViewById(R.id.add_new);
         ImageView img = (ImageView) findViewById(R.id.fab_image);
@@ -242,7 +229,7 @@ public class UserListActivity extends Activity implements View
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         MenuInflater pump = getMenuInflater();
-        pump.inflate(R.menu.select_user_add, menu);
+        pump.inflate(R.menu.user_list, menu);
         return true;
     }
 
@@ -252,9 +239,9 @@ public class UserListActivity extends Activity implements View
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.add_user_menu)
+        if (item.getItemId() == R.id.action_del_user)
         {
-            startActivityForResult(new Intent(this, NewUserActivity.class), MENU_ADD_NEW_USER);
+            /* TODO */
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -266,7 +253,7 @@ public class UserListActivity extends Activity implements View
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == MENU_ADD_NEW_USER) {
+        if (requestCode == MENU_DELETE_USER) {
             if (resultCode == RESULT_OK)
                 loadAllUsers();
         }
@@ -343,16 +330,4 @@ public class UserListActivity extends Activity implements View
         uAdapter.notifyDataSetChanged();
     }
 
-
-//    @Override
-//    public boolean setViewValue(View view, Object data, String textRepresentation) {
-//        if (view.getId() == R.id.item_icon)
-//        {
-//            ImageView img = (ImageView) view;
-//            img.setImageBitmap((Bitmap)data);
-//            return true;
-//        }
-//        else
-//            return false;
-//    }
 }

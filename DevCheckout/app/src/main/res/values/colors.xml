@@ -15,6 +15,11 @@
  limitations under the License.
 -->
 <resources>
-    <color name="fab_color">#ff5252</color>
-    <color name="fab_color_muted">#ff8080</color>
+    <color name="primary">#ff3f51b5</color>
+    <color name="primaryDark">#ff303f9f</color>
+    <color name="accent">#ffff4081</color>
+    <color name="accentMuted">#ffff80ab</color>
+    <color name="textPrimary">#ff000000</color>
+    <color name="fab_color">@color/accent</color>
+    <color name="fab_color_muted">@color/accentMuted</color>
 </resources>

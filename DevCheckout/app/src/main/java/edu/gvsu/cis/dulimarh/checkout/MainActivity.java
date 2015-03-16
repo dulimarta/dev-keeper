@@ -149,8 +149,17 @@ public class MainActivity extends Activity implements
             }
         }
         else if (requestCode == CHECKOUT_DEVICE_REQUEST) {
-            if (resultCode == RESULT_OK)
-                devListFragment.updateDeviceList();
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(MainActivity.this,
+                        "Device successfully checked out",
+                        Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(MainActivity.this,
+                        "Failed to check out",
+                        Toast.LENGTH_SHORT).show();
+
+            }
         }
         else {
             IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
@@ -170,7 +179,7 @@ public class MainActivity extends Activity implements
                             borrowerName);
                     break;
             }
-            devListFragment.updateDeviceList();
+//            devListFragment.updateDeviceList();
             currentTask = DevTask.NONE;
         }
     }
@@ -221,7 +230,6 @@ public class MainActivity extends Activity implements
                 (Consts.ALL_DEVICE_TABLE);
         final ParseQuery<ParseObject> loanQuery = new ParseQuery<ParseObject>
                 (Consts.DEVICE_LOAN_TABLE);
-//        ParseObject userObj, devObj;
         try {
             /* The device QRcode includes the following attributes:
                   id, model, os, form_factor

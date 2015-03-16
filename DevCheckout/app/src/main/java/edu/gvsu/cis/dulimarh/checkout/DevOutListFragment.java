@@ -224,7 +224,7 @@ public class DevOutListFragment extends Fragment implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == DEVICE_CHECKIN_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
-                updateDeviceList();
+//                updateDeviceList();
             }
         }
         else {
