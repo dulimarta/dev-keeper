@@ -90,7 +90,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
 
         @Override
         public void onClick(View view) {
-//            view.setBackgroundResource(R.color.fab_color_muted);
             selectedIndex = getPosition();
             uListener.onUserSelected(getPosition());
         }

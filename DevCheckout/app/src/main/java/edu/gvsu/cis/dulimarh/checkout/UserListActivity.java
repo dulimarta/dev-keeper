@@ -85,7 +85,7 @@ public class UserListActivity extends Activity implements View
             if (requestedAction == Consts.ACTION_SELECT_USER) {
                 img.setImageResource(R.mipmap.ic_checkout);
                 fab.setAlpha(0.0f);
-//                fab.setVisibility(View.INVISIBLE);
+                fab.setEnabled(false);
             }
         }
 
@@ -172,7 +172,6 @@ public class UserListActivity extends Activity implements View
             @Override
             public Task<Void> then(Task<List<ParseObject>> results) throws
                     Exception {
-                Log.d("HANS", "Here one");
                 ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
                 allUsers.clear();
                 for (ParseObject user : results.getResult()) {
@@ -181,13 +180,11 @@ public class UserListActivity extends Activity implements View
                     allUsers.add(new ParseProxyObject(user));
                 }
                 return Task.whenAll(tasks);
-//                return null;
             }
         })
         .onSuccess(new Continuation<Void, Object>() {
             @Override
             public Object then(Task<Void> task) throws Exception {
-                Log.d("HANS", "Here two");
                 Collections.sort(allUsers, new Comparator<ParseProxyObject>() {
 
                     @Override
@@ -224,7 +221,6 @@ public class UserListActivity extends Activity implements View
         .continueWith(new Continuation<Object, Object>() {
             @Override
             public Object then(Task<Object> task) throws Exception {
-                Log.d("HANS", "Here three");
                 progress.dismiss();
                 if (task.isFaulted()) {
                     Toast.makeText(UserListActivity.this,
@@ -249,12 +245,6 @@ public class UserListActivity extends Activity implements View
         pump.inflate(R.menu.select_user_add, menu);
         return true;
     }
-
-//    @Override
-//    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-//        super.onCreateContextMenu(menu, v, menuInfo);
-//        menu.add(0, MENU_DELETE_USER, 0, "Delete User");
-//    }
 
 
     /* (non-Javadoc)
@@ -282,27 +272,11 @@ public class UserListActivity extends Activity implements View
         }
     }
 
-    /* (non-Javadoc)
-     * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
-     */
-//    @Override
-//    public void onListItemClick(ListView l, View v, int position, long id) {
-//        selectedPosition = position;
-//        String uid = (String) allUsers.get(position).get("user_id");
-//        String uname = (String) allUsers.get(position).get("user_name");
-//        Intent userInfo = new Intent();
-//        userInfo.putExtra("user_id", uid);
-//        userInfo.putExtra("user_name", uname);
-//        setResult(RESULT_OK, userInfo);
-//        finish();
-//    }
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-
+        /* TODO: delete this method? */
         if (item.getItemId() == MENU_DELETE_USER) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-//            Map<String,Object> umap = allUsers.get(info.position);
             ParseProxyObject ppo = allUsers.get(info.position);
             String userId = ppo.getString("user_id");
             ParseQuery<ParseObject> registeredDev = new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE);
@@ -332,17 +306,27 @@ public class UserListActivity extends Activity implements View
 
     @Override
     public void onClick(View view) {
-        Intent i = new Intent (this, NewUserActivity.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setExitTransition(new Explode());
-            startActivity(i,
-                    ActivityOptions.makeSceneTransitionAnimation
-                            (this).toBundle());
+        if (requestedAction == Consts.ACTION_SELECT_USER) {
+            /* Select user for checkout */
+            Intent result = new Intent();
+            ParseProxyObject ppObj = allUsers.get(selectedPosition);
+            result.putExtra ("user_obj", ppObj.getObjectId());
+            result.putExtra ("user_id", ppObj.getString("user_id"));
+            result.putExtra ("user_name", ppObj.getString("user_name"));
+            setResult(RESULT_OK, result);
+            finish();
         }
         else {
-            startActivity(i);
+            Intent i = new Intent(this, NewUserActivity.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setExitTransition(new Explode());
+                startActivity(i,
+                        ActivityOptions.makeSceneTransitionAnimation
+                                (this).toBundle());
+            } else {
+                startActivity(i);
+            }
         }
-
     }
 
     @Override
@@ -353,8 +337,9 @@ public class UserListActivity extends Activity implements View
                     0, 1);
             anim.setDuration(1000);
             anim.start();
-//            fab.setVisibility(View.VISIBLE);
+            fab.setEnabled(true);
         }
+        selectedPosition = position;
         uAdapter.notifyDataSetChanged();
     }
 
