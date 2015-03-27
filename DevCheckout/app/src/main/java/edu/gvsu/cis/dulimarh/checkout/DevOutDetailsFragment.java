@@ -68,7 +68,6 @@ public class DevOutDetailsFragment extends Fragment {
      */
     @Override
     public void onAttach(Activity activity) {
-        // TODO Auto-generated method stub
         super.onAttach(activity);
         try {
             callback = (DeviceRemovalListener) activity;
@@ -233,7 +232,6 @@ public class DevOutDetailsFragment extends Fragment {
 //                    }
 //                });
 //            } catch (JSONException e) {
-//                // TODO Auto-generated catch block
 //                e.printStackTrace();
 //            }
 //        }
@@ -278,6 +276,10 @@ public class DevOutDetailsFragment extends Fragment {
                     parms[1]);
             diafrag.show(getFragmentManager(), "dialog");
         }
+        else if (which == DIALOG_WRONG_DEVICE) {
+            Toast.makeText(getActivity(), "Unmatch device id scanned",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static class CheckinConfirmDialog extends DialogFragment {
@@ -309,8 +311,17 @@ public class DevOutDetailsFragment extends Fragment {
                     qr.getInBackground(parseId, new GetCallback<ParseObject>() {
 
                         @Override
-                        public void done(ParseObject arg0, ParseException arg1) {
-                            arg0.deleteInBackground();
+                        public void done(ParseObject obj,
+                                         ParseException arg1) {
+                            ParseObject logObj = new ParseObject(Consts
+                                    .LOG_TABLE);
+                            logObj.put("dev_id", obj.getString("dev_id"));
+                            logObj.put("signature",
+                                    obj.getParseFile("signature"));
+                            logObj.put("user_id", obj.getString("user_id"));
+                            logObj.put("checkout_date", obj.getCreatedAt());
+                            logObj.saveInBackground();
+                            obj.deleteInBackground();
                             hostActivity.deviceRemoved(dev_id);
                         }
                     });

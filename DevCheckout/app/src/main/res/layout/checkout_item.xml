@@ -19,6 +19,7 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:id="@+id/user_photo"
             android:layout_marginRight="8dp"
             android:src="@mipmap/on_loan"/>
@@ -31,14 +32,17 @@
             android:id="@+id/devicename"
             android:layout_alignParentTop="true"
             android:layout_toRightOf="@+id/user_photo"
-            android:layout_alignRight="@+id/checkout_date"/>
+            android:layout_alignRight="@+id/checkout_date"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:singleLine="false"/>
         <TextView
             android:id="@+id/checkout_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="checkout info here"
             android:layout_toRightOf="@+id/user_photo"
-            android:layout_alignBottom="@id/user_photo"/>
+            android:layout_below="@id/devicename"/>
 
 
     </RelativeLayout>

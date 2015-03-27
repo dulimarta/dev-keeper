@@ -9,10 +9,6 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- TODO remove the following three (unused) permissions? -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <application
         android:name="DevCheckoutApp"
         android:allowBackup="true"
@@ -35,6 +31,8 @@
             android:name=".DeviceListActivity" />
         <activity
             android:name="NewUserActivity" />
+        <activity
+            android:name="NewDeviceActivity" />
             <!-- android:theme="@style/PopupTheme" -->
     </application>
 </manifest>

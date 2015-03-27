@@ -48,7 +48,7 @@ public class DeviceCheckoutActivity extends Activity implements OnClickListener{
         userObj = param.getString("user_obj");
         devId = (TextView) findViewById(R.id.dev_id);
         userInfo = (TextView) findViewById(R.id.user_info);
-        devId.setText("What: " + deviceId);
+        devId.setText("Device: " + deviceId);
         userInfo.setText("User: " + userName + " (" + userId + ")");
         clear = (Button) findViewById(R.id.clear);
 //        clear.setEnabled(false);
@@ -118,10 +118,10 @@ public class DeviceCheckoutActivity extends Activity implements OnClickListener{
             @Override
             public Object then(Task<Void> task) throws Exception {
                 if (task.isFaulted()) {
-                    Toast.makeText(DeviceCheckoutActivity.this,
-                            "Cannot checkout device: " + task.getError()
-                            .getMessage(),
-                            Toast.LENGTH_LONG).show();
+//                    Toast.makeText(DeviceCheckoutActivity.this,
+//                            "Cannot checkout device: " + task.getError()
+//                            .getMessage(),
+//                            Toast.LENGTH_LONG).show();
                     setResult(RESULT_CANCELED);
                     finish();
                 }
@@ -139,12 +139,4 @@ public class DeviceCheckoutActivity extends Activity implements OnClickListener{
         }
     }
 
-//    private class IDComparator implements Comparator<CharSequence> {
-//
-//        @Override
-//        public int compare(CharSequence lhs, CharSequence rhs) {
-//            return lhs.toString().compareTo(rhs.toString());
-//        }
-//        
-//    }
 }

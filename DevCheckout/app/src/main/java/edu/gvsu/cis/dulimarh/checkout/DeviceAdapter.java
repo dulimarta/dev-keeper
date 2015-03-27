@@ -21,12 +21,13 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
         .DeviceViewHolder>  {
 
     public interface DeviceSelectedListener {
-        void onDeviceSelected(int pos);
+        void onDeviceSelected(int pos, boolean available);
     }
 
     private ArrayList<ParseProxyObject> datasource;
     private Map<String,String> checkedOutIds;
     private DeviceSelectedListener mylistener;
+    private int selectedIndex;
 
     public DeviceAdapter(ArrayList<ParseProxyObject> data,
                          Map<String,String> chkOutSet,
@@ -34,6 +35,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
         datasource = data;
         checkedOutIds = chkOutSet;
         mylistener = listener;
+        selectedIndex = -1;
     }
 
     @Override
@@ -47,6 +49,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
 
     @Override
     public void onBindViewHolder(DeviceViewHolder viewHolder, int i) {
+        if (i > datasource.size()) return;
         ParseProxyObject dev = datasource.get(i);
         String devId = dev.getString("device_id");
         viewHolder.deviceName.setText (dev.getString("name"));
@@ -64,7 +67,6 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
 
     @Override
     public int getItemCount() {
-//        Log.d("HANS", "getItemCount() " + datasource.size());
         return datasource.size();
     }
 
@@ -88,7 +90,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
 
         @Override
         public void onClick(View view) {
-            mylistener.onDeviceSelected(getPosition());
+            selectedIndex = getPosition();
+            boolean onLoan = checkedOutIds.containsKey(datasource.get
+                    (selectedIndex).getObjectId());
+            mylistener.onDeviceSelected(selectedIndex, !onLoan);
         }
     }
 }

@@ -241,7 +241,7 @@ public class UserListActivity extends Activity implements View
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_del_user)
         {
-            /* TODO */
+            /* TODO: add code to delete user? */
             return true;
         }
         return super.onOptionsItemSelected(item);

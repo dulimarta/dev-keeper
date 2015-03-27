@@ -25,6 +25,7 @@
             android:layout_height="@dimen/fab_icon_size"
             android:src="@drawable/ic_add"
             android:layout_gravity="center"
+            android:layout_margin="8dp"
             android:duplicateParentState="true"/>
     </edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton>
 

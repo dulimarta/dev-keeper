@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="This device has never been checked out before. Please take a moment to verify the following details"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="8dp"
+        android:id="@+id/title"/>
+
+    <TextView
+        android:id="@+id/dev_id_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ID"
+        android:layout_below="@id/title"
+        android:layout_marginTop="16dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <TextView
+        android:id="@+id/dev_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="device id goes here"
+        android:layout_alignBaseline="@id/dev_id_label"
+        android:layout_toRightOf="@id/dev_id_label"
+        android:layout_marginLeft="8dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+    <TextView
+        android:id="@+id/dev_name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dev_id_label"
+        android:layout_alignLeft="@id/dev_id_label"
+        android:layout_marginTop="16dp"
+        android:text="Name"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <EditText
+        android:id="@+id/dev_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dev_name_label"
+        android:layout_alignLeft="@id/dev_name_label"
+        android:layout_marginTop="4dp"
+        android:inputType="textPersonName"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:hint="Enter device name">
+    </EditText>
+    <TextView
+        android:id="@+id/dev_os_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dev_name"
+        android:layout_alignLeft="@id/dev_name_label"
+        android:layout_marginTop="16dp"
+        android:text="OS"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <EditText
+        android:id="@+id/dev_os"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dev_os_label"
+        android:layout_alignLeft="@id/dev_os_label"
+        android:layout_marginTop="4dp"
+        android:inputType="textPersonName"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:hint="Enter device operating system">
+    </EditText>
+
+
+    <TextView
+        android:id="@+id/dev_ff_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dev_os"
+        android:layout_alignLeft="@id/dev_os"
+        android:layout_marginTop="16dp"
+        android:text="Form Factor"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <EditText
+        android:id="@+id/dev_form"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dev_ff_label"
+        android:layout_alignLeft="@id/dev_ff_label"
+        android:layout_marginTop="4dp"
+        android:inputType="textPersonName"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:hint="Enter device form factor">
+    </EditText>
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:id="@+id/save_button"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="8dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        style="?android:attr/borderlessButtonStyle"/>
+
+</RelativeLayout>

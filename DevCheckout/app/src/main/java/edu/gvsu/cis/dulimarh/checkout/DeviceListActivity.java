@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -38,6 +39,7 @@ import java.util.concurrent.Callable;
 
 import bolts.Continuation;
 import bolts.Task;
+import edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton;
 
 
 public class DeviceListActivity extends FragmentActivity implements
@@ -48,6 +50,7 @@ public class DeviceListActivity extends FragmentActivity implements
     private ArrayList<ParseProxyObject> allDevices;
     private Map<String,String> checkedDevices;
     private DeviceAdapter devAdapter;
+    private FloatingActionButton fab;
     private int selectedPosition;
     private String selectedUid, selectedUname;
     /* (non-Javadoc)
@@ -60,6 +63,9 @@ public class DeviceListActivity extends FragmentActivity implements
         Window win = getWindow();
         LayoutParams params = win.getAttributes();
         setContentView(R.layout.du_list);
+        fab = (FloatingActionButton) findViewById(R.id.add_new);
+        fab.setAlpha(0.0f);
+        fab.setEnabled(false);
         ImageView img = (ImageView) findViewById(R.id.fab_image);
         img.setImageResource(R.mipmap.ic_checkin);
         setTitle("Devices");
@@ -251,8 +257,25 @@ public class DeviceListActivity extends FragmentActivity implements
     }
 
     @Override
-    public void onDeviceSelected(int pos) {
-
+    public void onDeviceSelected(int pos, boolean devAvailable) {
+        ObjectAnimator anim = null;
+        if (!devAvailable) {
+            if (fab.getAlpha() == 0.0f) {
+                anim = ObjectAnimator.ofFloat(fab, "alpha", 0, 1);
+                anim.setDuration(600);
+                anim.start();
+                devAdapter.notifyDataSetChanged();
+            }
+        }
+        else {
+            if (fab.getAlpha() > 0) {
+                anim = ObjectAnimator.ofFloat(fab, "alpha", 1, 0);
+                anim.setDuration(600);
+                anim.start();
+                devAdapter.notifyDataSetChanged();
+            }
+        }
+        fab.setEnabled(!devAvailable);
     }
 
 
