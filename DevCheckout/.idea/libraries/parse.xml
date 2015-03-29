@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="parse">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/agent/libs/parse.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

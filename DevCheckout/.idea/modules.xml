@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DevCheckout.iml" filepath="$PROJECT_DIR$/DevCheckout.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent/agent.iml" filepath="$PROJECT_DIR$/agent/agent.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/dashboard.iml" filepath="$PROJECT_DIR$/app/dashboard.iml" />
     </modules>
   </component>

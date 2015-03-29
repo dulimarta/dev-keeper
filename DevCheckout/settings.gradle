@@ -1,1 +1,2 @@
 include ':dashboard'
+include ':agent'
