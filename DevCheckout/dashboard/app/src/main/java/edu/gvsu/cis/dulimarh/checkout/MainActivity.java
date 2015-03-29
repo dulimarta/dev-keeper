@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
@@ -168,7 +167,7 @@ public class MainActivity extends Activity implements
                             /* device is not checked out */
             if (resultCode == RESULT_OK) {
                 Intent next = new Intent(MainActivity.this,
-                        DeviceCheckoutActivity.class);
+                        UserSignActivity.class);
                 next.putExtra("user_id", borrowerId);
                 next.putExtra("user_name", borrowerName);
                 next.putExtra("user_obj", userObjId);
@@ -297,7 +296,7 @@ public class MainActivity extends Activity implements
                         if (result.size() == 0) {
                             /* device is not checked out */
                             Intent next = new Intent(MainActivity.this,
-                                    DeviceCheckoutActivity.class);
+                                    UserSignActivity.class);
                             next.putExtra("user_id", borrowerId);
                             next.putExtra("user_name", borrowerName);
                             next.putExtra("user_obj", userObjId);

@@ -7,7 +7,7 @@ public interface Consts {
     public static final String USER_TABLE = "Users";
     public static final String DEVICE_LOAN_TABLE = "DevOut";
     public static final String ALL_DEVICE_TABLE = "Devices";
-    public static final String LOG_TABLE = "ChekoutLog";
+    public static final String LOG_TABLE = "CheckoutLog";
 //   The following are Hans' id and client key
     public static final String PARSE_APP_ID =
             "C8rZuZwkSAFnH2vmgCn4mrtkyh89qFmqXw8pIPpB";
@@ -20,5 +20,5 @@ public interface Consts {
 //            "yJWzDV3D3p2itdpc86rEYkcpVOLf6pQqdU05qa3m";
     public static final String PUSH_CHANNEL = "HansDulimarta";
 
-    public static final int ACTION_SELECT_USER = 1;
+    public static final int ACTION_SELECT_USER_FOR_CHECKOUT = 1;
 }

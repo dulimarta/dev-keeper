@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
@@ -45,7 +44,7 @@ public class MainActivity extends Activity implements
     private static final int REG_DEVICE_FOR_CHECKOUT =
             SELECT_USER_REQUEST + 2;
 
-    private enum DevTask {NONE, CHECKIN, CHECKOUT};
+    private enum DevTask {NONE, CHECKIN}; //, CHECKOUT};
     private String borrowerId, borrowerName, userObjId, deviceId;
     private DevOutListFragment devListFragment;
     private ImageView userMenu, deviceMenu;
@@ -72,6 +71,7 @@ public class MainActivity extends Activity implements
                         UserListActivity.class);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     getWindow().setExitTransition(new Explode());
+                    /* TODO: startActivityForResult? */
                     startActivity(userIntent,
                             ActivityOptions.makeSceneTransitionAnimation
                                     (MainActivity.this).toBundle());
@@ -123,8 +123,9 @@ public class MainActivity extends Activity implements
         switch (item.getItemId()) {
             case R.id.menu_checkout:
                 Intent userSelect = new Intent(this, UserListActivity.class);
-                userSelect.putExtra("action", Consts.ACTION_SELECT_USER);
-                currentTask = DevTask.CHECKOUT;
+                /* select user that will checkout the device */
+                userSelect.putExtra("action", Consts.ACTION_SELECT_USER_FOR_CHECKOUT);
+                //currentTask = DevTask.CHECKOUT;
                 startActivityForResult(userSelect, SELECT_USER_REQUEST);
                 break;
             case R.id.menu_checkin:
@@ -168,7 +169,7 @@ public class MainActivity extends Activity implements
                             /* device is not checked out */
             if (resultCode == RESULT_OK) {
                 Intent next = new Intent(MainActivity.this,
-                        DeviceCheckoutActivity.class);
+                        UserSignActivity.class);
                 next.putExtra("user_id", borrowerId);
                 next.putExtra("user_name", borrowerName);
                 next.putExtra("user_obj", userObjId);
@@ -180,7 +181,7 @@ public class MainActivity extends Activity implements
             }
         }
         else {
-            /* scanned device for checkin or checkout */
+            /* scanned device for checkin */
             IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             if (scanResult == null) return;
             final String scannedData = scanResult.getContents();
@@ -190,9 +191,6 @@ public class MainActivity extends Activity implements
                     DialogFragment mydialog = CheckinConfirmationDialog
                             .newInstance(scannedData);
                     mydialog.show(getFragmentManager(), "dialog");
-                    break;
-                case CHECKOUT:
-                    doCheckOut (scannedData);
                     break;
             }
 //            devListFragment.updateDeviceList();
@@ -219,7 +217,7 @@ public class MainActivity extends Activity implements
                 public Task<Void> then(Task<List<ParseObject>> task)
                         throws Exception {
                     List<ParseObject> result = task.getResult();
-                    if (result.size() == 1) {
+                    if (result.size() >= 1) {
                         ParseObject obj = result.get(0);
                         ParseObject logObj = new ParseObject(Consts
                                 .LOG_TABLE);
@@ -232,6 +230,9 @@ public class MainActivity extends Activity implements
                         logObj.save();
                         deviceRemoved(devId);
                     }
+                    else {
+                        throw new IllegalStateException("NOT_CHECKED_OUT");
+                    }
                     return null;
                 }
             })
@@ -240,102 +241,17 @@ public class MainActivity extends Activity implements
             public Object then(Task<Task<Void>> task) throws Exception {
                 if (task.isFaulted()) {
                     Toast.makeText(MainActivity.this,
-                            "Failed to checkin device id " + devId,
+                            "Can't checkin device id " + devId,
+                            Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(MainActivity.this,
+                            "Device " + devId + " successfully checked in",
                             Toast.LENGTH_SHORT).show();
                 }
                 return null;
             }
-        });
-    }
-
-    private void doCheckOut (final String jsonStr)
-    {
-        final String scannedModel, scannedOS, scannedFF;
-        ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>
-                (Consts.ALL_DEVICE_TABLE);
-        final ParseQuery<ParseObject> loanQuery = new ParseQuery<ParseObject>
-                (Consts.DEVICE_LOAN_TABLE);
-        try {
-            /* The device QRcode includes the following attributes:
-                  id, model, os, form_factor
-               The Parse table includes the following columns:
-                  device_id, name, os, type
-             */
-            JSONObject jObj = new JSONObject(jsonStr);
-            deviceId = jObj.getString("id");
-            scannedModel = jObj.getString("model");
-            scannedOS = jObj.getString("os");
-            scannedFF = jObj.getString("form_factor");
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error in scanning device information",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        idQuery.whereEqualTo("device_id", deviceId);
-        idQuery.findInBackground()
-                .onSuccessTask(new Continuation<List<ParseObject>,
-                        Task<List<ParseObject>>>() {
-                    @Override
-                    public Task<List<ParseObject>> then
-                            (Task<List<ParseObject>> task)
-                            throws Exception {
-                        List<ParseObject> result = task.getResult();
-                        if (result.size() == 0) {
-                            throw new RuntimeException("UNREG");
-                        }
-                        /* device is registered, now check if it is checked out */
-                        loanQuery.whereEqualTo("dev_id", deviceId);
-                        return loanQuery.findInBackground();
-                    }
-                })
-                .onSuccess(new Continuation<List<ParseObject>, Void>() {
-                    @Override
-                    public Void then(Task<List<ParseObject>> task) throws
-                            Exception {
-                        List<ParseObject> result = task.getResult();
-                        if (result.size() == 0) {
-                            /* device is not checked out */
-                            Intent next = new Intent(MainActivity.this,
-                                    DeviceCheckoutActivity.class);
-                            next.putExtra("user_id", borrowerId);
-                            next.putExtra("user_name", borrowerName);
-                            next.putExtra("user_obj", userObjId);
-                            next.putExtra("dev_id", deviceId);
-                            startActivityForResult(next, CHECKOUT_DEVICE_REQUEST);
-                        } else {
-                            throw new RuntimeException("ONLOAN");
-                        }
-                        return null;
-                    }
-                })
-                .continueWith(new Continuation<Void, Object>() {
-                    @Override
-                    public Object then(Task<Void> task) throws Exception {
-                        if (task.isFaulted()) {
-                            Exception e = task.getError();
-                            String error = e.getMessage();
-                            if ("UNREG".equals(error)) {
-                                Intent ndev = new Intent(MainActivity
-                                        .this, NewDeviceActivity.class);
-                                ndev.putExtra("scannedId", deviceId);
-                                ndev.putExtra("scannedModel",
-                                        scannedModel);
-                                ndev.putExtra("scannedOS", scannedOS);
-                                ndev.putExtra("scannedFF", scannedFF);
-                                startActivityForResult(ndev,
-                                        REG_DEVICE_FOR_CHECKOUT);
-                            }
-                            else if ("ONLOAN".equals(error)) {
-                                Toast.makeText (MainActivity.this,
-                                        "Device " + deviceId + " is already" +
-                                                " checked out",
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                        return null;
-                    }
-                }, Task.UI_THREAD_EXECUTOR);
+        }, Task.UI_THREAD_EXECUTOR);
     }
 
     /* (non-Javadoc)
@@ -374,11 +290,17 @@ public class MainActivity extends Activity implements
 
     public static class CheckinConfirmationDialog extends DialogFragment {
 
-        public static CheckinConfirmationDialog newInstance (String id)
+        public static CheckinConfirmationDialog newInstance (String jStr)
         {
             CheckinConfirmationDialog diag = new CheckinConfirmationDialog();
             Bundle args = new Bundle();
-            args.putString("devId", id);
+            JSONObject jsonObj = null;
+            try {
+                jsonObj = new JSONObject(jStr);
+                args.putString("devId", jsonObj.getString("id"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             diag.setArguments(args);
             return diag;
         }

@@ -20,11 +20,16 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.parse.DeleteCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -44,12 +49,14 @@ public class UserListActivity extends Activity implements View
         .OnClickListener, UserAdapter.UserSelectedListener {
 
     private static final int MENU_DELETE_USER = Menu.FIRST;
+    private static final int GET_USER_SIGNATURE = 0xC0DE01;
+    private static final int REGISTER_DEVIVE_4_CHECKOUT = 0xC0DE02;
     private ArrayList<ParseProxyObject> allUsers;
     private Map<String,Integer> countMap;
     private UserAdapter uAdapter;
     private int selectedPosition;
     private FloatingActionButton fab;
-    private String selectedUid, selectedUname;
+    private String selectedUid, selectedUname, userObjId;
     private int requestedAction = 0;
     private ProgressDialog progress;
     /* (non-Javadoc)
@@ -69,7 +76,7 @@ public class UserListActivity extends Activity implements View
         Intent data = getIntent();
         if (data.hasExtra("action")) {
             requestedAction = data.getIntExtra("action", 0);
-            if (requestedAction == Consts.ACTION_SELECT_USER) {
+            if (requestedAction == Consts.ACTION_SELECT_USER_FOR_CHECKOUT) {
                 img.setImageResource(R.mipmap.ic_checkout);
                 fab.setAlpha(0.0f);
                 fab.setEnabled(false);
@@ -124,7 +131,7 @@ public class UserListActivity extends Activity implements View
             @Override
             public Void call() throws Exception {
                 ParseFile pf = obj.getParseFile("user_photo");
-                if (ImageStore.get(pf.getUrl()) == null) {
+                if (pf != null && ImageStore.get(pf.getUrl()) == null) {
                     Drawable d = Drawable.createFromStream(new
                             ByteArrayInputStream(pf.getData()), "");
                     ImageStore.put(obj.getObjectId(), d);
@@ -257,6 +264,113 @@ public class UserListActivity extends Activity implements View
             if (resultCode == RESULT_OK)
                 loadAllUsers();
         }
+        else if (requestCode == GET_USER_SIGNATURE) {
+            /* TODO signature for checkout is complete */
+            finish();
+        }
+        else {
+            /* scan result for device details */
+            IntentResult scanResult = IntentIntegrator
+                    .parseActivityResult(requestCode, resultCode, data);
+            if (scanResult == null) return;
+            final String scannedData = scanResult.getContents();
+            if (scannedData == null) return;
+            doCheckOut(scannedData);
+        }
+    }
+
+   private void doCheckOut (final String jsonStr)
+    {
+        final String scannedModel, scannedOS, scannedFF;
+        ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>
+                (Consts.ALL_DEVICE_TABLE);
+        final ParseQuery<ParseObject> loanQuery = new ParseQuery<ParseObject>
+                (Consts.DEVICE_LOAN_TABLE);
+        final String deviceId;
+        try {
+            /* The device QRcode includes the following attributes:
+                  id, model, os, form_factor
+               The Parse table includes the following columns:
+                  device_id, name, os, type
+             */
+            JSONObject jObj = new JSONObject(jsonStr);
+            deviceId = jObj.getString("id");
+            scannedModel = jObj.getString("model");
+            scannedOS = jObj.getString("os");
+            scannedFF = jObj.getString("form_factor");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error in scanning device information",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        idQuery.whereEqualTo("device_id", deviceId);
+        idQuery.findInBackground()
+                .onSuccessTask(new Continuation<List<ParseObject>,
+                        Task<List<ParseObject>>>() {
+                    @Override
+                    public Task<List<ParseObject>> then
+                            (Task<List<ParseObject>> task)
+                            throws Exception {
+                        List<ParseObject> result = task.getResult();
+                        if (result.size() == 0) {
+                            throw new RuntimeException("UNREG");
+                        }
+                        /* device is registered, now check if it is checked out */
+                        loanQuery.whereEqualTo("dev_id", deviceId);
+                        return loanQuery.findInBackground();
+                    }
+                })
+                .onSuccess(new Continuation<List<ParseObject>, Void>() {
+                    @Override
+                    public Void then(Task<List<ParseObject>> task) throws
+                            Exception {
+                        List<ParseObject> result = task.getResult();
+                        if (result.size() == 0) {
+                            /* device is not checked out */
+                            Intent next = new Intent(UserListActivity.this,
+                                    UserSignActivity.class);
+                            next.putExtra("user_id", selectedUid);
+                            next.putExtra("user_name", selectedUname);
+                            next.putExtra("user_obj", userObjId);
+                            next.putExtra("dev_id", deviceId);
+                            startActivityForResult(next, GET_USER_SIGNATURE);
+                        } else {
+                            throw new RuntimeException("ONLOAN");
+                        }
+                        return null;
+                    }
+                })
+                .continueWith(new Continuation<Void, Object>() {
+                    @Override
+                    public Object then(Task<Void> task) throws Exception {
+                        if (task.isFaulted()) {
+                            /* we are here becase the device just scanned
+                               is not registered.
+                             */
+                            Exception e = task.getError();
+                            String error = e.getMessage();
+                            if ("UNREG".equals(error)) {
+                                Intent ndev = new Intent(UserListActivity
+                                        .this, NewDeviceActivity.class);
+                                ndev.putExtra("scannedId", deviceId);
+                                ndev.putExtra("scannedModel",
+                                        scannedModel);
+                                ndev.putExtra("scannedOS", scannedOS);
+                                ndev.putExtra("scannedFF", scannedFF);
+                                startActivityForResult(ndev,
+                                        REGISTER_DEVIVE_4_CHECKOUT);
+                            }
+                            else if ("ONLOAN".equals(error)) {
+                                Toast.makeText (UserListActivity.this,
+                                        "Device " + deviceId + " is already" +
+                                                " checked out",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        return null;
+                    }
+                }, Task.UI_THREAD_EXECUTOR);
     }
 
     @Override
@@ -293,15 +407,19 @@ public class UserListActivity extends Activity implements View
 
     @Override
     public void onClick(View view) {
-        if (requestedAction == Consts.ACTION_SELECT_USER) {
+        if (requestedAction == Consts.ACTION_SELECT_USER_FOR_CHECKOUT) {
             /* Select user for checkout */
-            Intent result = new Intent();
-            ParseProxyObject ppObj = allUsers.get(selectedPosition);
-            result.putExtra ("user_obj", ppObj.getObjectId());
-            result.putExtra ("user_id", ppObj.getString("user_id"));
-            result.putExtra ("user_name", ppObj.getString("user_name"));
-            setResult(RESULT_OK, result);
-            finish();
+//            Intent result = new Intent();
+            ParseProxyObject usrObj = allUsers.get(selectedPosition);
+            selectedUid = usrObj.getString("user_id");
+            userObjId = usrObj.getObjectId();
+            selectedUname = usrObj.getString("user_name");
+
+            /* scan for device info */
+            IntentIntegrator ii = new IntentIntegrator(this);
+            ii.initiateScan();
+//            setResult(RESULT_OK, result);
+//            finish();
         }
         else {
             Intent i = new Intent(this, NewUserActivity.class);
@@ -318,7 +436,7 @@ public class UserListActivity extends Activity implements View
 
     @Override
     public void onUserSelected(int position) {
-        if (requestedAction == Consts.ACTION_SELECT_USER &&
+        if (requestedAction == Consts.ACTION_SELECT_USER_FOR_CHECKOUT &&
                 fab.getAlpha() == 0.0f) {
             ObjectAnimator anim = ObjectAnimator.ofFloat(fab, "alpha",
                     0, 1);

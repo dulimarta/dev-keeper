@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DeviceCheckoutActivity" />
+        <activity android:name=".UserSignActivity" />
         <activity android:name=".DeviceCheckinActivity" />
         <activity
             android:name=".UserListActivity" />

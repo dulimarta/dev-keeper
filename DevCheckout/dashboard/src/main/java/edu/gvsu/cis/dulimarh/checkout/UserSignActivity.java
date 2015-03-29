@@ -27,7 +27,7 @@ import bolts.Continuation;
 import bolts.Task;
 //import android.util.Log;
 
-public class DeviceCheckoutActivity extends Activity implements OnClickListener{
+public class UserSignActivity extends Activity implements OnClickListener{
     final String TAG = getClass().getName();
 
     private SignatureView signature;
