@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:layout_margin="4dp"
+                android:padding="8dp">
+
+    <LinearLayout
+        android:id="@+id/group"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.CardView
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:elevation="4dp"
+            card_view:cardCornerRadius="4dp">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Device Details"
+                    android:id="@+id/textView"
+                    android:textStyle="bold"/>
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:id="@+id/device_image"
+                    android:layout_below="@+id/textView"
+                    android:src="@drawable/ic_launcher"/>
+
+                <TextView
+                    android:id="@+id/dev_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:layout_alignTop="@id/device_image"
+                    android:layout_toRightOf="@id/device_image"
+                    android:layout_alignParentRight="true"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Device ID here"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="device name here"
+                    android:id="@+id/dev_name"
+                    android:layout_below="@+id/dev_id"
+                    android:layout_alignLeft="@+id/dev_id"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="device type"
+                    android:id="@+id/dev_type"
+                    android:layout_below="@+id/dev_name"
+                    android:layout_alignLeft="@+id/dev_name"/>
+
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:elevation="4dp"
+            card_view:cardCornerRadius="4dp">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Checkout Details"
+                    android:textStyle="bold"
+                    android:id="@+id/textView3"
+                    android:paddingTop="10dp"/>
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:id="@+id/user_photo"
+                    android:src="@drawable/ic_launcher"
+                    android:layout_below="@+id/textView3"
+                    android:layout_alignParentLeft="true"/>
+
+                <TextView
+                    android:id="@+id/user_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:layout_alignTop="@id/user_photo"
+                    android:layout_toRightOf="@id/user_photo"
+                    android:layout_alignParentRight="true"
+                    android:text="User ID here"/>
+
+                <TextView
+                    android:id="@+id/out_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/user_id"
+                    android:layout_alignLeft="@id/user_id"
+                    android:layout_alignParentRight="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="Checkout date here"/>
+
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/sig_imgview"
+        android:contentDescription="@string/app_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_launcher"
+        android:layout_below="@+id/group"
+        android:layout_alignParentBottom="true"/>
+
+    <edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton
+        android:id="@+id/checkin"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:text="@string/btn_checkin"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:elevation="@dimen/fab_elevation"
+        android:background="@drawable/fab_background">
+
+        <ImageView
+            android:layout_width="@dimen/fab_icon_size"
+            android:layout_height="@dimen/fab_icon_size"
+            android:src="@mipmap/return_dev"
+            android:layout_gravity="center"
+            android:duplicateParentState="true"/>
+    </edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton>
+
+
+</RelativeLayout>

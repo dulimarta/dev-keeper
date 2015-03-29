@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="8dp">
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/the_list" />
+
+    <edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton
+        android:id="@+id/add_new"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:text="@string/btn_checkin"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:elevation="@dimen/fab_elevation"
+        android:background="@drawable/fab_background">
+
+        <ImageView
+            android:id="@+id/fab_image"
+            android:layout_width="@dimen/fab_icon_size"
+            android:layout_height="@dimen/fab_icon_size"
+            android:src="@drawable/ic_add"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:duplicateParentState="true"/>
+    </edu.gvsu.cis.dulimarh.checkout.custom_ui.FloatingActionButton>
+
+</RelativeLayout>
