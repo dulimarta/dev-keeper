@@ -246,23 +246,28 @@ public class DevOutDetailsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IntentResult scanResult = IntentIntegrator.parseActivityResult
-                (requestCode, resultCode, data);
-        if (scanResult != null) {
-            final String contents = data.getStringExtra("SCAN_RESULT");
+        if (resultCode == Activity.RESULT_OK) {
+
+            IntentResult scanResult = IntentIntegrator.parseActivityResult
+                    (requestCode, resultCode, data);
+            if (scanResult != null) {
+                final String contents = data.getStringExtra("SCAN_RESULT");
+                if (contents == null) return;
             /* JSON keys: id, model, os, form_factor */
-            try {
-                JSONObject jObj = new JSONObject(contents);
-                String scanned = jObj.getString("id");
-                if (scanned.equals(dev_id))
-                    showDialog(DIALOG_CONFIRM_CHECKIN, dev_id, obj_id);
-                else {
-                    showDialog(DIALOG_WRONG_DEVICE, dev_id, contents);
+
+                try {
+                    JSONObject jObj = new JSONObject(contents);
+                    String scanned = jObj.getString("id");
+                    if (scanned.equals(dev_id))
+                        showDialog(DIALOG_CONFIRM_CHECKIN, dev_id, obj_id);
+                    else {
+                        showDialog(DIALOG_WRONG_DEVICE, dev_id, contents);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+                return;
             }
-            return;
         }
         else
             super.onActivityResult(requestCode, resultCode, data);
