@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="background_avail">#ff63ac3f</color>
-  <color name="background_onloan">#ffa32513</color>
+  <color name="background_avail">#c5e1a5</color>
+  <color name="background_onloan">#aed581</color>
+    <color name="primary">#8bc34a</color>
+    <color name="primaryDark">#689f38</color>
+    <color name="accent">#ffff4081</color>
+    <color name="accentMuted">#ffff80ab</color>
+    <color name="textPrimary">#000000</color>
 </resources>

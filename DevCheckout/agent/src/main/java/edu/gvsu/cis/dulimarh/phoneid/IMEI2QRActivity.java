@@ -183,11 +183,11 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         registerReceiver(localReceiver, new IntentFilter(getPackageName() + ".HansLocalBroadcast"));
-        if (userId == null || userId.length() == 0) {
-            top.setBackgroundResource(R.color.background_avail);
-        }
-        else
-            top.setBackgroundResource(R.color.background_onloan);
+//        if (userId == null || userId.length() == 0) {
+//            top.setBackgroundResource(R.color.background_avail);
+//        }
+//        else
+//            top.setBackgroundResource(R.color.background_onloan);
         if (qrCodeImg != null) return;
         if (isNetworkAvailable()) {
             myTask = new URLTask();

@@ -19,7 +19,8 @@
     <application
         android:icon="@drawable/qr_gvsu"
         android:label="@string/app_name" 
-        android:allowBackup="true">
+        android:allowBackup="true"
+        android:theme="@style/AppTheme">
         <activity
             android:name=".IMEI2QRActivity"
             android:label="@string/app_name"
