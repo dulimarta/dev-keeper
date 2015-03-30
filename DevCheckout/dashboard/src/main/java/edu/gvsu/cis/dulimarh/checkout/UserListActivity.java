@@ -56,7 +56,7 @@ public class UserListActivity extends Activity implements View
     private UserAdapter uAdapter;
     private int selectedPosition;
     private FloatingActionButton fab;
-    private String selectedUid, selectedUname, userObjId;
+    private String selectedUid, selectedUname, userObjId, deviceJSONStr;
     private int requestedAction = 0;
     private ProgressDialog progress;
     /* (non-Javadoc)
@@ -268,14 +268,19 @@ public class UserListActivity extends Activity implements View
             /* TODO signature for checkout is complete */
             finish();
         }
+        else if (requestCode == REGISTER_DEVIVE_4_CHECKOUT) {
+            if (resultCode == RESULT_OK) {
+                doCheckOut(deviceJSONStr);
+            }
+        }
         else {
             /* scan result for device details */
             IntentResult scanResult = IntentIntegrator
                     .parseActivityResult(requestCode, resultCode, data);
             if (scanResult == null) return;
-            final String scannedData = scanResult.getContents();
-            if (scannedData == null) return;
-            doCheckOut(scannedData);
+            deviceJSONStr = scanResult.getContents();
+            if (deviceJSONStr == null) return;
+            doCheckOut(deviceJSONStr);
         }
     }
 

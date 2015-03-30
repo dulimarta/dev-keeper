@@ -34,6 +34,7 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseInstallation;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.PushService;
 
@@ -50,6 +51,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.List;
+
+import bolts.Continuation;
+import bolts.Task;
 
 public class IMEI2QRActivity extends Activity implements OnClickListener {
     private final String TAG = getClass().getName();
@@ -71,10 +75,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Parse.initialize(this, "AGs2nPlOxM7rA1BnUAbeVySTSRud6EhL7JF8sd4f",
-//                "z5CgnppcixOqpAzHOdnTfT6ktKKzk6aicH8p1Rvb");
-        Parse.initialize(this, "C8rZuZwkSAFnH2vmgCn4mrtkyh89qFmqXw8pIPpB",
-                "LmGNHi2nXy2BoZfoLiBohrGVX5lgZqyIp4ft0n2A");
+        Parse.initialize(this, "aLvdYW4Md0neSVfgTxiqsmRSo5sIPJYHDeVcYO3i",
+                "CvF1F4yjlyr8X42eE5PXWa0mhMNVKoHhcIwIeSrg");
         Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
         ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
         Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
@@ -86,7 +88,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         signature = (ImageView) findViewById(R.id.signature_image);
         qr.setOnClickListener(this);
         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-        wifiID= wm.getConnectionInfo().getMacAddress();
+        wifiID = wm.getConnectionInfo().getMacAddress();
         try {
             if (savedInstanceState != null) {
                 userId = savedInstanceState.getString("userId");
@@ -120,16 +122,44 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
 
         id.setText(wifiID);
         thisInstall.put("dev_id", wifiID);
-        thisInstall.saveInBackground();
-        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
-        qr.setOnClickListener(new OnClickListener() {
-            
-            @Override
-            public void onClick(View v) {
-                URLTask ut = new URLTask();
-                ut.execute();
-            }
-        });
+        thisInstall.saveInBackground()
+                .continueWith(new Continuation<Void, Object>() {
+                    @Override
+                    public Object then(Task<Void> task) throws Exception {
+                        if (task.isFaulted()) {
+                            Log.d("HANS", "Can't update installation " +
+                                    "data " + task.getError().getMessage
+                                    ());
+                        }
+                        return null;
+                    }
+                }, Task.UI_THREAD_EXECUTOR);
+//        PushService.setDefaultPushCallback(this, IMEI2QRActivity.class);
+//        ParsePush.subscribeInBackground("")
+//                .onSuccess(new Continuation<Void, Object>() {
+//                    @Override
+//                    public Object then(Task<Void> task) throws Exception {
+//                        Toast.makeText(IMEI2QRActivity.this,
+//                                "Successful ParsePush subscription",
+//                                Toast.LENGTH_LONG).show();
+//                        return null;
+//                    }
+//                }, Task.UI_THREAD_EXECUTOR)
+//                .continueWith(new Continuation<Object, Object>() {
+//                    @Override
+//                    public Object then(Task<Object> task) throws Exception {
+//                        if (task.isFaulted()) {
+//                            Log.d("HANS", "ParsePush subscription error " +
+//                                    "" + task.getError().getMessage());
+//                            Toast.makeText(IMEI2QRActivity.this,
+//                                    "Unable to subscribe to ParsePush "
+//                                            + task.getError().getMessage(),
+//                                    Toast.LENGTH_LONG).show();
+//
+//                        }
+//                        return null;
+//                    }
+//                }, Task.UI_THREAD_EXECUTOR);
     }
     
     
