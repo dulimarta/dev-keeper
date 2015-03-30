@@ -102,7 +102,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                     signature.setImageBitmap(signatureImg);
                     signature.setVisibility(View.VISIBLE);
                 } else {
-                    user.setText("is not checked out");
+                    user.setText("is available");
                     signature.setVisibility(View.GONE);
                 }
             } else {

@@ -90,6 +90,11 @@ public class UserListActivity extends Activity implements View
                     (ArrayList<ParseProxyObject>) savedInstanceState
                             .getSerializable
                             ("allUsers");
+            if (savedInstanceState.containsKey("selectedUid"))
+                selectedUid = savedInstanceState.getString("selectedUid");
+            if (savedInstanceState.containsKey("selectedUname"))
+                selectedUname = savedInstanceState.getString
+                        ("selectedUname");
         } else {
             selectedPosition = -1;
             allUsers = new ArrayList<ParseProxyObject>();
@@ -110,6 +115,12 @@ public class UserListActivity extends Activity implements View
         super.onSaveInstanceState(outState);
         outState.putSerializable("allUsers", allUsers);
         outState.putInt("selection", selectedPosition);
+        if (selectedUid != null) {
+            outState.putString("selectedUid", selectedUid);
+        }
+        if (selectedUname != null) {
+            outState.putString("selectedUname", selectedUname);
+        }
     }
 
     @Override
