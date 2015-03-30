@@ -41,7 +41,11 @@ public class UserSignActivity extends Activity implements OnClickListener{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.checkout);
-        Bundle param = getIntent().getExtras();
+        Bundle param;
+        if (savedInstanceState != null)
+            param = savedInstanceState;
+        else
+            param = getIntent().getExtras();
         deviceId = param.getString("dev_id");
         userId = param.getString("user_id");
         userName = param.getString("user_name");
@@ -59,7 +63,16 @@ public class UserSignActivity extends Activity implements OnClickListener{
         clear.setOnClickListener(this);
         signature.setDrawingCacheEnabled(true);
     }
-    
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("dev_id", deviceId);
+        outState.putString("user_id", userId);
+        outState.putString("user_name", userName);
+        outState.putString("user_obj", userObj);
+    }
+
     protected void saveBitmap(String name) {
         super.onDestroy();
         Bitmap bmp = signature.getDrawingCache();
