@@ -74,7 +74,7 @@ public class UserListActivity extends Activity implements View
         progress.setIndeterminate(true);
 
         Intent data = getIntent();
-        if (data.hasExtra("action")) {
+        if (data != null && data.hasExtra("action")) {
             requestedAction = data.getIntExtra("action", 0);
             if (requestedAction == Consts.ACTION_SELECT_USER_FOR_CHECKOUT) {
                 img.setImageResource(R.mipmap.ic_checkout);

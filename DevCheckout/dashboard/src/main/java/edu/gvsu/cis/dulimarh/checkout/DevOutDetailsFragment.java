@@ -173,7 +173,6 @@ public class DevOutDetailsFragment extends Fragment {
                             sig.setImageDrawable(d);
                         } else
                             sig.setImageDrawable(storedDrawable);
-                        userphoto.setImageDrawable(storedDrawable);
                         pf = (ParseFile) userObj.getParseFile
                                 ("user_photo");
                         storedDrawable = pf != null ? ImageStore.get(pf
@@ -186,6 +185,8 @@ public class DevOutDetailsFragment extends Fragment {
                             ImageStore.put(pf.getUrl(), d);
                             userphoto.setImageDrawable(d);
                         }
+                        else
+                            userphoto.setImageDrawable(storedDrawable);
                         sig.setVisibility(View.VISIBLE);
                         checkin.setEnabled(true);
 
@@ -202,42 +203,6 @@ public class DevOutDetailsFragment extends Fragment {
         
         return v;
     }
-
-    /* Use an inner class in place of direct instance variable declaration
-     * to avoid "Parse.Initialize" error when this class is loaded by JVM
-     */
-//    private class PingHandler implements OnClickListener {
-//
-//        @Override
-//        public void onClick(View v) {
-//            try {
-//                JSONObject pingMsg = new JSONObject(
-//                        "{\"action\": \"edu.gvsu.cis.checkout.UPDATE\"," +
-//                        "\"message\" : \"Ping\"}"
-//                        );
-//                ParsePush notify = new ParsePush();
-//                notify.setChannel("Hans");
-//                notify.setData(pingMsg);
-//                Log.d(TAG, "Sending " + pingMsg.toString(3));
-//                notify.sendInBackground(new SendCallback() {
-//                    
-//                    @Override
-//                    public void done(ParseException arg0) {
-//                        if (arg0 == null)
-//                            Toast.makeText(getActivity(), "Ping delivered", 
-//                                Toast.LENGTH_LONG).show();
-//                        else
-//                            Toast.makeText(getActivity(), 
-//                                    "ParsePush error: " + arg0.getMessage(), 
-//                                    Toast.LENGTH_LONG).show();
-//                    }
-//                });
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        
-//    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {

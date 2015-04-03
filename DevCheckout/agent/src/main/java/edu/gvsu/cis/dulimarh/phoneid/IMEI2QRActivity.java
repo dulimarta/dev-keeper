@@ -18,6 +18,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
@@ -63,7 +64,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private static final int NETWORK_ERROR_DIALOG = 1;
 
     private LinearLayout top;
-    private TextView id, user;
+    private TextView id, user, avail;
+    private CardView cv_out;
     private ImageView qr, signature;
     private ProgressDialog progress;
     private String wifiID, userId;
@@ -83,6 +85,10 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         setContentView(R.layout.main);
         top = (LinearLayout) findViewById(R.id.topLayout);
         id = (TextView) findViewById(R.id.id);
+        avail = (TextView) findViewById(R.id.available);
+        cv_out = (CardView) findViewById(R.id.cardview_checkout);
+        cv_out.setVisibility(View.GONE);
+        avail.setVisibility(View.GONE);
         user = (TextView) findViewById(R.id.user);
         qr = (ImageView) findViewById(R.id.qr_code);
         signature = (ImageView) findViewById(R.id.signature_image);
@@ -99,11 +105,13 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 id.setText(wifiID);
                 if (userId.length() > 0) {
                     user.setText("checked out by " + userId);
+                    cv_out.setVisibility(View.VISIBLE);
+                    avail.setVisibility(View.GONE);
                     signature.setImageBitmap(signatureImg);
                     signature.setVisibility(View.VISIBLE);
                 } else {
-                    user.setText("is available");
-                    signature.setVisibility(View.GONE);
+                    cv_out.setVisibility(View.GONE);
+                    avail.setVisibility(View.VISIBLE);
                 }
             } else {
                 jsonID = new JSONObject();
@@ -295,6 +303,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 user.setText("Checked out by " + (String) res[1]);
                 top.setBackgroundResource(R.color.background_onloan);
                 userId = (String) res[1];
+                avail.setVisibility(View.GONE);
+                cv_out.setVisibility(View.VISIBLE);
                 ParseFile sig = (ParseFile) res[2];
                 try {
                     byte[] sigData = sig.getData();
@@ -307,8 +317,9 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 }
             }
             else {
-                user.setText("Device is available");
                 top.setBackgroundResource(R.color.background_avail);
+                avail.setVisibility(View.VISIBLE);
+                cv_out.setVisibility(View.GONE);
                 signature.setVisibility(View.GONE);
                 userId = "";
             }
