@@ -12,6 +12,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -48,6 +50,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -66,11 +69,11 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     private LinearLayout top;
     private TextView id, user, avail;
     private CardView cv_out;
-    private ImageView qr, signature;
+    private ImageView qr, signature, photo;
     private ProgressDialog progress;
     private String wifiID, userId;
     private JSONObject jsonID;
-    private Bitmap qrCodeImg, signatureImg;
+    private Bitmap qrCodeImg, signatureImg, photoImg;
     private URLTask myTask;
     
 
@@ -92,6 +95,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
         user = (TextView) findViewById(R.id.user);
         qr = (ImageView) findViewById(R.id.qr_code);
         signature = (ImageView) findViewById(R.id.signature_image);
+        photo = (ImageView) findViewById(R.id.user_photo);
         qr.setOnClickListener(this);
         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
         wifiID = wm.getConnectionInfo().getMacAddress();
@@ -100,6 +104,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 userId = savedInstanceState.getString("userId");
                 jsonID = new JSONObject(savedInstanceState.getString("devId"));
                 qrCodeImg = savedInstanceState.getParcelable("qrcode");
+                photoImg = savedInstanceState.getParcelable("photo");
                 signatureImg = savedInstanceState.getParcelable("signature");
                 qr.setImageBitmap(qrCodeImg);
                 id.setText(wifiID);
@@ -107,6 +112,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                     user.setText("checked out by " + userId);
                     cv_out.setVisibility(View.VISIBLE);
                     avail.setVisibility(View.GONE);
+                    photo.setImageBitmap(photoImg);
                     signature.setImageBitmap(signatureImg);
                     signature.setVisibility(View.VISIBLE);
                 } else {
@@ -176,9 +182,10 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+        //super.onSaveInstanceState(outState);
         outState.putParcelable("qrcode", qrCodeImg);
         outState.putParcelable("signature", signatureImg);
+        outState.putParcelable("photo", photoImg);
         outState.putString("userId", userId);
         outState.putString("devId", jsonID.toString());
     }
@@ -261,7 +268,7 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 dim = 512;
             String url = String.format("%s&chs=%dx%d&chl=%s", CHART_URL,
                     dim, dim, URLEncoder.encode(jsonID.toString()));
-            Object[] result = new Object[3];
+            Object[] result = new Object[4];
             HttpGet req = new HttpGet(url);
             try {
                 HttpResponse res = client.execute(req);
@@ -275,6 +282,15 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                     ParseObject obj = qRes.get(0);
                     result[1] = obj.getString("user_id");
                     result[2] = (ParseFile) obj.get("signature");
+                    ParseObject uObj = obj.getParseObject("user_obj");
+                    uObj.fetchIfNeeded();
+                    ParseFile uPic = uObj.getParseFile("user_photo");
+
+                    ByteArrayInputStream bis = new
+                            ByteArrayInputStream(uPic.getData());
+
+                    photoImg = BitmapFactory.decodeStream(bis);
+                    result[3] = photoImg;
                 }
                 else
                     result[1] = null;
@@ -303,6 +319,8 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
                 user.setText("Checked out by " + (String) res[1]);
                 top.setBackgroundResource(R.color.background_onloan);
                 userId = (String) res[1];
+                Bitmap bmp = (Bitmap) res[3];
+                photo.setImageBitmap(bmp);
                 avail.setVisibility(View.GONE);
                 cv_out.setVisibility(View.VISIBLE);
                 ParseFile sig = (ParseFile) res[2];

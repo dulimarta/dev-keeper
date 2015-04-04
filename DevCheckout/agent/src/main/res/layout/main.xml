@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         card_view:cardElevation="6dp"
         card_view:cardCornerRadius="8dp"
-        android:padding="8dp"
         android:layout_marginBottom="12dp">
 
         <LinearLayout
@@ -20,6 +19,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_gravity="center_horizontal"
+            android:padding="8dp"
             >
 
             <ImageView
@@ -43,8 +43,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Device is available"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginRight="8dp"/>
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
@@ -54,29 +53,41 @@
         android:layout_height="wrap_content"
         card_view:cardElevation="6dp"
         card_view:cardCornerRadius="8dp"
-        android:layout_margin="12dp"
+        android:padding="8dp"
         >
-        <LinearLayout
+
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal"
-            >
+            android:layout_height="210dp">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:id="@+id/signature_image"
-            android:visibility="gone"
-            android:padding="8dp"/>
+            <ImageView
+                android:layout_width="210dp"
+                android:layout_height="210dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentTop="true"
+                android:id="@+id/user_photo"
+                android:scaleType="fitXY"/>
 
-        <TextView
-            android:id="@+id/user"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="user info goes here"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-        </LinearLayout>
+            <TextView
+                android:id="@+id/user"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/user_photo"
+                android:layout_alignTop="@id/user_photo"
+                android:layout_margin="8dp"
+                android:text="user info goes here"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <ImageView
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/user"
+                android:layout_alignLeft="@id/user"
+                android:id="@+id/signature_image"
+                android:layout_margin="8dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
+
+        </RelativeLayout>
     </android.support.v7.widget.CardView>
 </LinearLayout>
