@@ -121,6 +121,8 @@ public class DevOutListFragment extends Fragment implements
 
     public void updateDeviceList()
     {
+        checkouts.clear();
+        myadapter.notifyDataSetChanged();
         new ParseQuery<ParseObject>(Consts.DEVICE_LOAN_TABLE)
                 .findInBackground()
                 .continueWithTask(new Continuation<List<ParseObject>,
@@ -136,7 +138,6 @@ public class DevOutListFragment extends Fragment implements
                         ArrayList */
                         ArrayList<Task<Void>> tasks = new
                                 ArrayList<Task<Void>>();
-                        checkouts.clear();
                         for (ParseObject p : results.getResult()) {
                             tasks.add(findUserImageAsync(p));
                             checkouts.add(new ParseProxyObject(p));

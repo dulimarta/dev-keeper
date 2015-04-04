@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import bolts.Continuation;
 import bolts.Task;
@@ -50,6 +51,7 @@ public class UserSignActivity extends Activity implements OnClickListener{
         userId = param.getString("user_id");
         userName = param.getString("user_name");
         userObj = param.getString("user_obj");
+        Log.d("HANS", "Inside UserSignActivity: user_obj is " + userObj);
         devId = (TextView) findViewById(R.id.dev_id);
         userInfo = (TextView) findViewById(R.id.user_info);
         devId.setText("Device: " + deviceId);
@@ -91,6 +93,7 @@ public class UserSignActivity extends Activity implements OnClickListener{
     
     private void post()
     {
+        Log.d("HANS", "About to save user signature");
         Bitmap sig = signature.getDrawingCache();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         sig.compress(CompressFormat.PNG, 90, stream);
@@ -101,12 +104,21 @@ public class UserSignActivity extends Activity implements OnClickListener{
                     @Override
                     public Void then(Task<Void> task) throws
                             Exception {
+                        Log.d("HANS", "Signature is saved, " +
+                                "about to store checkout record for " +
+                                deviceId);
                         ParseQuery<ParseObject> q;
                         q = new ParseQuery<ParseObject>(Consts
                                 .ALL_DEVICE_TABLE);
                         q.whereEqualTo("device_id", deviceId);
-                        devicePO = q.find().get(0);
+                        List<ParseObject> qRes = q.find();
+                        Log.d("HANS", "Query to " + Consts
+                                .ALL_DEVICE_TABLE + " return " + qRes
+                                        .size());
+                        devicePO = qRes.get(0);
                         q = new ParseQuery<ParseObject>(Consts.USER_TABLE);
+                        Log.d("HANS", "Query to " + Consts
+                                .USER_TABLE + " for user " + userObj);
                         userPO = q.get(userObj);
                         ParseObject checkout = new ParseObject(Consts.DEVICE_LOAN_TABLE);
                         checkout.put("dev_id", deviceId);
@@ -121,6 +133,8 @@ public class UserSignActivity extends Activity implements OnClickListener{
         .onSuccess(new Continuation<Void, Void>() {
             @Override
             public Void then(Task<Void> task) throws Exception {
+                Log.d("HANS", "Checkout record is saved, " +
+                        "sending push notification");
                 ParsePushUtils.pushTo(deviceId, "Registered to " + userId);
                 setResult(RESULT_OK);
                 finish();
@@ -130,7 +144,10 @@ public class UserSignActivity extends Activity implements OnClickListener{
         .continueWith(new Continuation<Void, Object>() {
             @Override
             public Object then(Task<Void> task) throws Exception {
+                Log.d("HANS", "Continue at UserSignActivity line 138");
                 if (task.isFaulted()) {
+                    Log.d("HANS", "Error in checking out " + task
+                            .getError().getMessage());
 //                    Toast.makeText(DeviceCheckoutActivity.this,
 //                            "Cannot checkout device: " + task.getError()
 //                            .getMessage(),
@@ -140,7 +157,7 @@ public class UserSignActivity extends Activity implements OnClickListener{
                 }
                 return null;
             }
-        });
+        }, Task.UI_THREAD_EXECUTOR);
     }
     
     @Override

@@ -85,6 +85,7 @@ public class UserListActivity extends Activity implements View
 
         countMap = new HashMap<String, Integer>();
         if (savedInstanceState != null) {
+            Log.d("HANS", "Restoring saved states");
             selectedPosition = savedInstanceState.getInt("selection");
             allUsers =
                     (ArrayList<ParseProxyObject>) savedInstanceState
@@ -95,6 +96,8 @@ public class UserListActivity extends Activity implements View
             if (savedInstanceState.containsKey("selectedUname"))
                 selectedUname = savedInstanceState.getString
                         ("selectedUname");
+            if (savedInstanceState.containsKey("userObjId"))
+                userObjId = savedInstanceState.getString("userObjId");
         } else {
             selectedPosition = -1;
             allUsers = new ArrayList<ParseProxyObject>();
@@ -112,7 +115,8 @@ public class UserListActivity extends Activity implements View
      */
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+        Log.d("HANS", "UserListActivity onSaveInstanceState");
+        //super.onSaveInstanceState(outState);
         outState.putSerializable("allUsers", allUsers);
         outState.putInt("selection", selectedPosition);
         if (selectedUid != null) {
@@ -120,6 +124,9 @@ public class UserListActivity extends Activity implements View
         }
         if (selectedUname != null) {
             outState.putString("selectedUname", selectedUname);
+        }
+        if (userObjId != null) {
+            outState.putString("userObjId", userObjId);
         }
     }
 
@@ -357,7 +364,8 @@ public class UserListActivity extends Activity implements View
                             next.putExtra("user_name", selectedUname);
                             next.putExtra("user_obj", userObjId);
                             next.putExtra("dev_id", deviceId);
-                            Log.d("HANS", "About to obtain user signature");
+                            Log.d("HANS", "About to obtain user " +
+                                    "signature for user_obj " + userObjId);
                             startActivityForResult(next, GET_USER_SIGNATURE);
                         } else {
                             Log.d("HANS", "Device is on loan");
@@ -444,7 +452,9 @@ public class UserListActivity extends Activity implements View
             selectedUname = usrObj.getString("user_name");
 
             /* scan for device info */
-            Log.d("HANS", "About to scan device QR code");
+            Log.d("HANS", "Selection: " +
+                    selectedUid + " " + userObjId + " " + selectedUname +
+                    ". About to scan device QR code");
             IntentIntegrator ii = new IntentIntegrator(this);
             ii.initiateScan();
         }
