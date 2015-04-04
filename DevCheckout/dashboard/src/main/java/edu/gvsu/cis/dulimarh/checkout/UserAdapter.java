@@ -68,7 +68,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
 
     @Override
     public int getItemCount() {
-        Log.d("HANS", "User count is " + datasource.size());
         return datasource.size();
     }
 

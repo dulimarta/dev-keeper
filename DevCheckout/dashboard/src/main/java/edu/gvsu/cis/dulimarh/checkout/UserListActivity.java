@@ -217,8 +217,6 @@ public class UserListActivity extends Activity implements View
                     }
                 });
 
-                Log.d("HANS", "Notify dataset changed, " +
-                        "dataset size " + allUsers.size());
                 uAdapter.notifyDataSetChanged();
                 return null;
             }
@@ -286,6 +284,7 @@ public class UserListActivity extends Activity implements View
         }
         else {
             /* scan result for device details */
+            Log.d("HANS", "Got the device QR code");
             IntentResult scanResult = IntentIntegrator
                     .parseActivityResult(requestCode, resultCode, data);
             if (scanResult == null) return;
@@ -297,6 +296,7 @@ public class UserListActivity extends Activity implements View
 
    private void doCheckOut (final String jsonStr)
     {
+        Log.d("HANS", "About to checkout");
         final String scannedModel, scannedOS, scannedFF;
         ParseQuery<ParseObject> idQuery = new ParseQuery<ParseObject>
                 (Consts.ALL_DEVICE_TABLE);
@@ -314,8 +314,11 @@ public class UserListActivity extends Activity implements View
             scannedModel = jObj.getString("model");
             scannedOS = jObj.getString("os");
             scannedFF = jObj.getString("form_factor");
+            Log.d("HANS", "Device info: " + deviceId + " " +
+              scannedModel);
         } catch (JSONException e) {
             e.printStackTrace();
+            Log.e("HANS", "Error in parsing JSON string from QR code");
             Toast.makeText(this, "Error in scanning device information",
                     Toast.LENGTH_SHORT).show();
             return;
@@ -329,7 +332,9 @@ public class UserListActivity extends Activity implements View
                             (Task<List<ParseObject>> task)
                             throws Exception {
                         List<ParseObject> result = task.getResult();
+                        Log.d("HANS", "Returned from id query");
                         if (result.size() == 0) {
+                            Log.d("HANS", "Device is not registered");
                             throw new RuntimeException("UNREG");
                         }
                         /* device is registered, now check if it is checked out */
@@ -341,17 +346,21 @@ public class UserListActivity extends Activity implements View
                     @Override
                     public Void then(Task<List<ParseObject>> task) throws
                             Exception {
+                        Log.d("HANS", "Return from load query");
                         List<ParseObject> result = task.getResult();
                         if (result.size() == 0) {
                             /* device is not checked out */
+                            Log.d("HANS", "Device is available");
                             Intent next = new Intent(UserListActivity.this,
                                     UserSignActivity.class);
                             next.putExtra("user_id", selectedUid);
                             next.putExtra("user_name", selectedUname);
                             next.putExtra("user_obj", userObjId);
                             next.putExtra("dev_id", deviceId);
+                            Log.d("HANS", "About to obtain user signature");
                             startActivityForResult(next, GET_USER_SIGNATURE);
                         } else {
+                            Log.d("HANS", "Device is on loan");
                             throw new RuntimeException("ONLOAN");
                         }
                         return null;
@@ -360,6 +369,7 @@ public class UserListActivity extends Activity implements View
                 .continueWith(new Continuation<Void, Object>() {
                     @Override
                     public Object then(Task<Void> task) throws Exception {
+                        Log.d("HANS", "Continue Bolt task");
                         if (task.isFaulted()) {
                             /* we are here becase the device just scanned
                                is not registered.
@@ -367,6 +377,7 @@ public class UserListActivity extends Activity implements View
                             Exception e = task.getError();
                             String error = e.getMessage();
                             if ("UNREG".equals(error)) {
+                                Log.d("HANS", "About to register new dev");
                                 Intent ndev = new Intent(UserListActivity
                                         .this, NewDeviceActivity.class);
                                 ndev.putExtra("scannedId", deviceId);
@@ -378,6 +389,8 @@ public class UserListActivity extends Activity implements View
                                         REGISTER_DEVIVE_4_CHECKOUT);
                             }
                             else if ("ONLOAN".equals(error)) {
+                                Log.d("HANS", "Toast warning for device " +
+                                        "on loan");
                                 Toast.makeText (UserListActivity.this,
                                         "Device " + deviceId + " is already" +
                                                 " checked out",
@@ -425,19 +438,18 @@ public class UserListActivity extends Activity implements View
     public void onClick(View view) {
         if (requestedAction == Consts.ACTION_SELECT_USER_FOR_CHECKOUT) {
             /* Select user for checkout */
-//            Intent result = new Intent();
             ParseProxyObject usrObj = allUsers.get(selectedPosition);
             selectedUid = usrObj.getString("user_id");
             userObjId = usrObj.getObjectId();
             selectedUname = usrObj.getString("user_name");
 
             /* scan for device info */
+            Log.d("HANS", "About to scan device QR code");
             IntentIntegrator ii = new IntentIntegrator(this);
             ii.initiateScan();
-//            setResult(RESULT_OK, result);
-//            finish();
         }
         else {
+            /* The other action is to add a new user */
             Intent i = new Intent(this, NewUserActivity.class);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 getWindow().setExitTransition(new Explode());
