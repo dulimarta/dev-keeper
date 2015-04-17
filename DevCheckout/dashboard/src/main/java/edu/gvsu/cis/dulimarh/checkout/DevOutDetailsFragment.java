@@ -175,18 +175,18 @@ public class DevOutDetailsFragment extends Fragment {
                             sig.setImageDrawable(storedDrawable);
                         pf = (ParseFile) userObj.getParseFile
                                 ("user_photo");
-                        storedDrawable = pf != null ? ImageStore.get(pf
-                                .getUrl()) : null;
-                        if (storedDrawable == null) {
-                            ByteArrayInputStream bis = new
-                                    ByteArrayInputStream(pf.getData());
-                            Drawable d = Drawable.createFromStream(bis,
-                                    "");
-                            ImageStore.put(pf.getUrl(), d);
-                            userphoto.setImageDrawable(d);
+                        if (pf != null) {
+                            storedDrawable = ImageStore.get(pf.getUrl());
+                            if (storedDrawable == null) {
+                                ByteArrayInputStream bis = new
+                                        ByteArrayInputStream(pf.getData());
+                                Drawable d = Drawable.createFromStream(bis,
+                                        "");
+                                ImageStore.put(pf.getUrl(), d);
+                                userphoto.setImageDrawable(d);
+                            } else
+                                userphoto.setImageDrawable(storedDrawable);
                         }
-                        else
-                            userphoto.setImageDrawable(storedDrawable);
                         sig.setVisibility(View.VISIBLE);
                         checkin.setEnabled(true);
 

@@ -109,7 +109,7 @@ public class DevOutListFragment extends Fragment implements
                 ParseObject usrObj = obj.getParseObject("user_obj");
                 usrObj.fetchIfNeeded();
                 ParseFile pf = usrObj.getParseFile("user_photo");
-                if (ImageStore.get(pf.getUrl()) == null) {
+                if (pf != null && ImageStore.get(pf.getUrl()) == null) {
                     Drawable d = Drawable.createFromStream(new
                             ByteArrayInputStream(pf.getData()), "");
                     ImageStore.put(usrObj.getObjectId(), d);
