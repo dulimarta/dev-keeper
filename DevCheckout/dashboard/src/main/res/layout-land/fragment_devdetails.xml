@@ -37,7 +37,7 @@
                     android:layout_height="80dp"
                     android:id="@+id/device_image"
                     android:layout_below="@+id/textView"
-                    android:src="@drawable/ic_launcher"/>
+                    android:src="@mipmap/device_image"/>
 
                 <TextView
                     android:id="@+id/dev_id"
@@ -97,7 +97,7 @@
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:id="@+id/user_photo"
-                    android:src="@drawable/ic_launcher"
+                    android:src="@mipmap/device_image"
                     android:layout_below="@+id/textView3"
                     android:layout_alignParentLeft="true"/>
 

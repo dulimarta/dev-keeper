@@ -17,6 +17,7 @@
     <uses-permission
         android:name="edu.gvsu.cis.dulimarh.phoneid.permission.C2D_MESSAGE"/>
     <application
+        android:name="DevAgentApp"
         android:icon="@drawable/qr_gvsu"
         android:label="@string/app_name" 
         android:allowBackup="true"

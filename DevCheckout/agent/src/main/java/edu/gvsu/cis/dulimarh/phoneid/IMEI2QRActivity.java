@@ -80,9 +80,6 @@ public class IMEI2QRActivity extends Activity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Parse.initialize(this, "aLvdYW4Md0neSVfgTxiqsmRSo5sIPJYHDeVcYO3i",
-                "CvF1F4yjlyr8X42eE5PXWa0mhMNVKoHhcIwIeSrg");
-        Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
         ParseInstallation thisInstall = ParseInstallation.getCurrentInstallation();
         Log.d("HANS", "Installation ID is " + thisInstall.getInstallationId());
         setContentView(R.layout.main);
