@@ -1,0 +1,23 @@
+{
+  "name": "webApp",
+  "version": "0.1",
+  "homepage": "https://github.com/dulimarta/dev-keeper",
+  "authors": [
+    "Hans Dulimarta <hans.dulimarta@gmail.com>"
+  ],
+  "description": "WebApp for dev-keeper",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.8.0-rc.2"
+  }
+}
