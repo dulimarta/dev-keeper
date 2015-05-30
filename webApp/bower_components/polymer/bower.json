@@ -1,6 +1,6 @@
 {
   "name": "polymer",
-  "version": "0.8.0-rc.6",
+  "version": "1.0.2",
   "main": [
     "polymer.html"
   ],
@@ -17,10 +17,9 @@
     "url": "https://github.com/Polymer/polymer.git"
   },
   "dependencies": {
-    "webcomponentsjs": "^0.6.0"
+    "webcomponentsjs": "^0.7.2"
   },
   "devDependencies": {
-    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#master",
     "web-component-tester": "*"
   },
   "private": true

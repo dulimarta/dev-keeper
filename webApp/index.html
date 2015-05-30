@@ -6,63 +6,34 @@
   <meta name="description" content="My Parse App">
   <meta name="viewport" content="width=device-width">
   <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-  <link rel="import" href="devkeeper_components/user-list.html">
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/styles.css">
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.4.2.min.js"></script>
-</head>
-
-<body>
-  
-  <div id="main">
-    <h1>You're ready to use Parse!</h1>
-
-    <p>Read the documentation and start building your JavaScript app:</p>
-
-    <ul>
-      <li><a href="https://www.parse.com/docs/js_guide">Parse JavaScript Guide</a></li>
-      <li><a href="https://www.parse.com/docs/js">Parse JavaScript API Documentation</a></li>
-    </ul>
-
-    <user-list>
-
-    </user-list>
-    <div style="display:none" class="error">
-      Looks like there was a problem saving the test object. Make sure you've set your application ID and javascript key correctly in the call to <code>Parse.initialize</code> in this file.
-    </div>
-
-    <div style="display:none" class="success">
-      <p>We've also just created your first object using the following code:</p>
-      
-        <code>
-          var TestObject = Parse.Object.extend("TestObject");<br/>
-          var testObject = new TestObject();<br/>)
-          testObject.save({foo: "bar"});
-        </code>
-    </div>
-  </div>
-
   <script type="text/javascript">
     Parse.initialize("aLvdYW4Md0neSVfgTxiqsmRSo5sIPJYHDeVcYO3i",
-            "BJfvlQom6C5cRIJSewidgrCNc29l3O0xY5HsJf6G");
-    
-    var UsersObj = Parse.Object.extend("Users");
-    var query = new Parse.Query(UsersObj);
-    query.find({
-      success: function(results) {
-        for (var i = 0; i < results.length; i++) {
-          var uObj = results[i];
-          console.log (uObj.get('user_id'), uObj.get('user_name'));
-          var photo = uObj.get("user_photo");
-          console.log(photo);
-        }
-      },
-      error: function(err) {
-        console.log(err);
-      }
-    });
+        "BJfvlQom6C5cRIJSewidgrCNc29l3O0xY5HsJf6G");
   </script>
+  <link rel="import" href="bower_components/paper-drawer-panel/paper-drawer-panel.html">
+  <link rel="import" href="bower_components/paper-header-panel/paper-header-panel.html">
+  <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+  <link rel="import" href="devkeeper_components/user-list.html">
+  <style>
+    paper-toolbar {
+      background-color: #ee324d;
+      color:white;
+    }
+  </style>
+</head>
+
+<body fullbleed layout horizontal>
+<paper-drawer-panel>
+  <paper-header-panel drawer>
+    <paper-toolbar>Application</paper-toolbar>
+    <div>Hans</div>
+  </paper-header-panel>
+  <paper-header-panel main>
+    <paper-toolbar><div>Title</div></paper-toolbar>
+  </paper-header-panel>
+</paper-drawer-panel>
 </body>
 
 </html>

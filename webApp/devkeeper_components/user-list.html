@@ -3,9 +3,37 @@
   <style>
   </style>
   <template>
-    <div>This is supposed to be a list of users</div>
+    <div>Registered Users</div>
+    <template is="x-repeat" items="{{users}}">
+      <div><span>{{item.user_id}}</span></div>
+      <div><span>{{item.user_name}}</span></div>
+    </template>
   </template>
 </dom-module>
 <script>
-  Polymer({is: "user-list"});
+  Polymer({
+    is: "user-list",
+    ready:function() {
+      this.users = [{email:"one@mail.com"}, {email:"two@hotmail.com"}];
+      var UsersObj = Parse.Object.extend("Users");
+      var query = new Parse.Query(UsersObj);
+      //var arr = this.users;
+      query.find({
+        success: function(results) {
+          for (var i = 0; i < results.length; i++) {
+            var uObj = results[i];
+            this.users.push({
+              user_id : uObj.get('user_id'),
+              user_name : uObj.get('user_name')
+            });
+//            var photo = uObj.get("user_photo");
+//            console.log(photo);
+          }
+        }.bind(this),
+        error: function(err) {
+          console.log(err);
+        }
+      });
+    }
+  });
 </script>
