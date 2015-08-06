@@ -4,36 +4,48 @@
   </style>
   <template>
     <div>Registered Users</div>
-    <template is="x-repeat" items="{{users}}">
+    <template is="dom-repeat" items="{{users}}">
       <div><span>{{item.user_id}}</span></div>
       <div><span>{{item.user_name}}</span></div>
+      <div><img src="{{item.user_photo_url}}" width="100" height="100"></img></div>
     </template>
   </template>
 </dom-module>
 <script>
   Polymer({
     is: "user-list",
+    properties : {
+      users: Array
+    },
+    userLoaded: function(results) {
+      this.users = [];
+      for (var i = 0; i < results.length; i++) {
+        var uObj = results[i];
+        var photo = uObj.get("user_photo");
+        if (typeof(photo) !== "undefined") {
+          this.push('users', {
+            user_id: uObj.get('user_id'),
+            user_name: uObj.get('user_name'),
+            user_photo_url: photo.url()
+          });
+        }
+        else {
+          this.push('users', {
+            user_id: uObj.get('user_id'),
+            user_name: uObj.get('user_name'),
+            user_photo_url: "images/user.svg"
+          });
+        }
+      }
+      console.log ("After loop", this.users);
+    },
     ready:function() {
-      this.users = [{email:"one@mail.com"}, {email:"two@hotmail.com"}];
       var UsersObj = Parse.Object.extend("Users");
       var query = new Parse.Query(UsersObj);
-      //var arr = this.users;
-      query.find({
-        success: function(results) {
-          for (var i = 0; i < results.length; i++) {
-            var uObj = results[i];
-            this.users.push({
-              user_id : uObj.get('user_id'),
-              user_name : uObj.get('user_name')
-            });
-//            var photo = uObj.get("user_photo");
-//            console.log(photo);
-          }
-        }.bind(this),
-        error: function(err) {
-          console.log(err);
-        }
-      });
+      query.find().done(this.userLoaded.bind(this),
+        function(err) {
+          console.log("Fail to load users", err);
+        });
     }
   });
 </script>
