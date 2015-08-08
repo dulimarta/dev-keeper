@@ -21,6 +21,7 @@
     "polymer": "polymer/polymer#^1.0.0",
     "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^1.0.0",
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.0.0",
-    "paper-header-panel": "PolymerElements/paper-header-panel#^1.0.0"
+    "paper-header-panel": "PolymerElements/paper-header-panel#^1.0.0",
+    "vaadin-components": "0.3.0-beta4"
   }
 }
