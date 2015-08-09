@@ -1,0 +1,58 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link href="../bower_components/vaadin-components/vaadin-grid/vaadin-grid.html" rel="import">
+<dom-module id="loan-list">
+  <style>
+  </style>
+  <template>
+    <div>Device on Loan</div>
+    <v-grid selection-mode="single" id="loangrid">
+      <table>
+        <colgroup>
+          <col header-text="Device">
+          <col header-text="Borrower">
+          <col header-text="Signature">
+          <col header-text="Check Out Date">
+        </colgroup>
+        <tbody>
+        <template is="dom-repeat" items="{{loans}}">
+          <tr>
+            <td>{{item.dev_id}}</td>
+            <td>{{item.user_id}}</td>
+            <td><img src="{{item.user_signature}}" width="200"/></td>
+            <td>{{item.checkout_date}}</td>
+          </tr>
+        </template>
+        </tbody>
+      </table>
+    </v-grid>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "loan-list",
+    properties: {
+      loans: Array
+    },
+    dataLoaded: function (results) {
+      this.loans = [];
+      for (var i = 0; i < results.length; i++) {
+        var uObj = results[i];
+        var photo = uObj.get("signature");
+        this.push('loans', {
+          dev_id: uObj.get('dev_id'),
+          user_id: uObj.get('user_id'),
+          user_signature: photo.url(),
+          checkout_date: uObj.createdAt.toDateString()
+        });
+      }
+    },
+    ready: function () {
+      var loanObj = Parse.Object.extend("DevOut");
+      var query = new Parse.Query(loanObj);
+      query.find().done(this.dataLoaded.bind(this),
+          function (err) {
+            console.log("Fail to load loan information", err);
+          });
+    }
+  });
+</script>
