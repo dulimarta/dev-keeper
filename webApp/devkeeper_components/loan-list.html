@@ -33,26 +33,30 @@
     properties: {
       loans: Array
     },
-    dataLoaded: function (results) {
-      this.loans = [];
-      for (var i = 0; i < results.length; i++) {
-        var uObj = results[i];
-        var photo = uObj.get("signature");
-        this.push('loans', {
-          dev_id: uObj.get('dev_id'),
-          user_id: uObj.get('user_id'),
-          user_signature: photo.url(),
-          checkout_date: uObj.createdAt.toDateString()
-        });
-      }
-    },
     ready: function () {
       var loanObj = Parse.Object.extend("DevOut");
       var query = new Parse.Query(loanObj);
-      query.find().done(this.dataLoaded.bind(this),
-          function (err) {
-            console.log("Fail to load loan information", err);
+
+      /* use Parse.Promise */
+      query.find().then(function (results) {
+        this.loans = [];
+        var devTable = Parse.Object.extend("Devices");
+        var devQuery = new Parse.Query(devTable);
+        results.forEach(function (loanObj) {
+          var photo = loanObj.get("signature");
+          var devId = loanObj.get("dev_id");
+          //var tmp1 = devQuery.get(devId);
+          this.push('loans', {
+            dev_id: devId,
+            //dev_name: dev.get("name"),
+            user_id: loanObj.get('user_id'),
+            user_signature: photo.url(),
+            checkout_date: loanObj.createdAt.toDateString()
           });
+        }.bind(this));
+      }.bind(this)).fail(function (err) {
+        console.log("Fail to load loan information", err);
+      });
     }
   });
 </script>
