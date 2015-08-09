@@ -16,6 +16,7 @@
   <link rel="import" href="bower_components/paper-header-panel/paper-header-panel.html">
   <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
   <link rel="import" href="devkeeper_components/user-list.html">
+  <link rel="import" href="devkeeper_components/device-list.html">
   <style>
     paper-toolbar {
       background-color: #ee324d;
@@ -31,8 +32,14 @@
     <div>Hans</div>
   </paper-header-panel>
   <paper-header-panel main>
-    <paper-toolbar><div>Title</div></paper-toolbar>
+    <paper-toolbar>
+      <div>Title</div>
+    </paper-toolbar>
     <user-list></user-list>
+    <div>
+
+      <device-list></device-list>
+    </div>
   </paper-header-panel>
 </paper-drawer-panel>
 </body>

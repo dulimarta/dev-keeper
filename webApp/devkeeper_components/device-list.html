@@ -1,0 +1,57 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link href="../bower_components/vaadin-components/vaadin-grid/vaadin-grid.html" rel="import">
+<dom-module id="device-list">
+  <style>
+  </style>
+  <template>
+    <div>Registered Devices</div>
+    <v-grid selection-mode="single">
+      <table>
+        <colgroup>
+          <col header-text="ID">
+          <col header-text="Name">
+          <col header-text="OS">
+          <col header-text="Type">
+        </colgroup>
+        <tbody>
+        <template is="dom-repeat" items="{{devices}}">
+          <tr>
+            <td>{{item.device_id}}</td>
+            <td>{{item.name}}</td>
+            <td>{{item.os}}</td>
+            <td>{{item.name}}</td>
+          </tr>
+        </template>
+        </tbody>
+      </table>
+  </template>
+  </v-grid>
+</dom-module>
+<script>
+  Polymer({
+    is: "device-list",
+    properties : {
+      devices: Array
+    },
+    deviceLoaded: function(results) {
+      this.devices = [];
+      for (var i = 0; i < results.length; i++) {
+        var devObj = results[i];
+        this.push('devices', {
+          device_id: devObj.get('device_id'),
+          name: devObj.get('name'),
+          os: devObj.get('os'),
+          type: devObj.get('type')
+        });
+      }
+    },
+    ready:function() {
+      var deviceObj = Parse.Object.extend("Devices");
+      var query = new Parse.Query(deviceObj);
+      query.find().done(this.deviceLoaded.bind(this),
+        function(err) {
+          console.log("Fail to load users", err);
+        });
+    }
+  });
+</script>
