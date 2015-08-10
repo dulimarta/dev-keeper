@@ -17,7 +17,7 @@
         <template is="dom-repeat" items="{{loans}}">
           <tr>
             <td><span>{{item.dev_name}}</span> (<span>{{item.dev_id}}</span>)</td>
-            <td>{{item.user_id}}</td>
+            <td><span>{{item.user_name}}</span> [<span>{{item.user_id}}</span></td>
             <td><img src="{{item.user_signature}}" width="200"/></td>
             <td>{{item.checkout_date}}</td>
           </tr>
@@ -36,6 +36,10 @@
     ready: function () {
       var loanObj = Parse.Object.extend("DevOut");
       var query = new Parse.Query(loanObj);
+      var devTable = Parse.Object.extend("Devices");
+      var devQuery = new Parse.Query(devTable);
+      var userTable = Parse.Object.extend("Users");
+      var userQuery = new Parse.Query(userTable);
 
       /* use Parse.Promise */
       query.find().then(function (results) {
@@ -43,27 +47,32 @@
 
         results.forEach(function (loanObj) {
           /* TODO: move the table and query declaration out of the loop? */
-          var devTable = Parse.Object.extend("Devices");
-          var devQuery = new Parse.Query(devTable);
           var devId = loanObj.get("device_obj");
+          var userId = loanObj.get("user_obj");
 
           /* pass the result of the DevOut query as a resolved promise */
           promises.push (Parse.Promise.as(loanObj));
 
-          /* create a new promise for querying the device object */
+          /* create a new promise for querying the device and user objects */
           promises.push (devQuery.get(devId.id));
+          promises.push (userQuery.get(userId.id));
         });
         return Parse.Promise.when(promises);
       }).then(function() {
         this.loans = [];
-        for (var k = 0; k < arguments.length/2; k++) {
-          var loanObj = arguments[2*k];
-          var devObj = arguments[2*k+1];
+        for (var k = 0; k < arguments.length/3; k++) {
+          /* the implicit variable "arguments" is the incoming parameter
+             of this function.
+           */
+          var loanObj = arguments[3*k];
+          var devObj = arguments[3*k + 1];
+          var userObj = arguments[3*k + 2];
           var photo = loanObj.get("signature");
           this.push('loans', {
             dev_id: devObj.get("device_id"),
             dev_name: devObj.get("name"),
             user_id: loanObj.get('user_id'),
+            user_name: userObj.get("user_name"),
             user_signature: photo.url(),
             checkout_date: loanObj.createdAt.toDateString()
           });
