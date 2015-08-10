@@ -16,7 +16,7 @@
         <tbody>
         <template is="dom-repeat" items="{{loans}}">
           <tr>
-            <td>{{item.dev_id}}</td>
+            <td><span>{{item.dev_name}}</span> (<span>{{item.dev_id}}</span>)</td>
             <td>{{item.user_id}}</td>
             <td><img src="{{item.user_signature}}" width="200"/></td>
             <td>{{item.checkout_date}}</td>
@@ -39,21 +39,36 @@
 
       /* use Parse.Promise */
       query.find().then(function (results) {
-        this.loans = [];
-        var devTable = Parse.Object.extend("Devices");
-        var devQuery = new Parse.Query(devTable);
+        var promises = [];
+
         results.forEach(function (loanObj) {
+          /* TODO: move the table and query declaration out of the loop? */
+          var devTable = Parse.Object.extend("Devices");
+          var devQuery = new Parse.Query(devTable);
+          var devId = loanObj.get("device_obj");
+
+          /* pass the result of the DevOut query as a resolved promise */
+          promises.push (Parse.Promise.as(loanObj));
+
+          /* create a new promise for querying the device object */
+          promises.push (devQuery.get(devId.id));
+        });
+        return Parse.Promise.when(promises);
+      }).then(function() {
+        this.loans = [];
+        for (var k = 0; k < arguments.length/2; k++) {
+          var loanObj = arguments[2*k];
+          var devObj = arguments[2*k+1];
           var photo = loanObj.get("signature");
-          var devId = loanObj.get("dev_id");
-          //var tmp1 = devQuery.get(devId);
           this.push('loans', {
-            dev_id: devId,
-            //dev_name: dev.get("name"),
+            dev_id: devObj.get("device_id"),
+            dev_name: devObj.get("name"),
             user_id: loanObj.get('user_id'),
             user_signature: photo.url(),
             checkout_date: loanObj.createdAt.toDateString()
           });
-        }.bind(this));
+        }
+        return Parse.Promise.as(true);
       }.bind(this)).fail(function (err) {
         console.log("Fail to load loan information", err);
       });
