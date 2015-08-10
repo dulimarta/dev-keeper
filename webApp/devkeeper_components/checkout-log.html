@@ -1,0 +1,77 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link href="../bower_components/vaadin-components/vaadin-grid/vaadin-grid.html" rel="import">
+<dom-module id="checkout-log">
+  <style>
+  </style>
+  <template>
+    <div>Checkout History</div>
+    <v-grid selection-mode="single" id="usergrid">
+      <table>
+        <colgroup>
+          <col header-text="Device">
+          <col header-text="Used by">
+          <col header-text="Check Out">
+          <col header-text="CheckIn">
+          <col header-text="Loan Duration">
+        </colgroup>
+        <tbody>
+        <template is="dom-repeat" items="{{devices}}">
+          <tr>
+            <td><span>{{item.dev_id}}</span></td>
+            <td><span>{{item.borrower}}</span></td>
+            <td><span>{{item.date_out}}</span></td>
+            <td><span>{{item.date_in}}</span></td>
+            <td><span>{{item.duration}}</span></td>
+          </tr>
+        </template>
+        </tbody>
+      </table>
+    </v-grid>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "checkout-log",
+    properties : {
+      devices: Array
+    },
+    prettyDuration: function(d_millisec) {
+      var t = d_millisec / 1000; /* convert to seconds */
+      if (t < 60)
+        return t.toFixed(0) + " seconds";
+      t /= 60;
+      if (t < 60)
+        return t.toFixed(0) + " minutes";
+      t /= 60;
+      if (t < 24)
+        return t.toFixed(0) + " hours";
+      t /= 24;
+      if (t < 30)
+        return t.toFixed(0) + " days";
+      t /= 30;
+      if (t < 12)
+        return t.toFixed(0) + " months";
+      t /= 12;
+      return t.toFixed(0) + " years";
+    },
+    ready:function() {
+      var logTable = Parse.Object.extend("CheckoutLog");
+      var query = new Parse.Query(logTable);
+      query.find().then(function(log_entries){
+        this.devices = [];
+        log_entries.forEach(function (entry) {
+          var timestamp_out = entry.get("checkout_date").getTime()
+          var timestamp_in = entry.createdAt.getTime();
+          this.push('devices', {
+            dev_id: entry.get("dev_id"),
+            borrower: entry.get("user_id"),
+            date_out: entry.get("checkout_date"),
+            date_in: entry.createdAt,
+            duration: this.prettyDuration(timestamp_in - timestamp_out)
+          });
+        }.bind(this));
+      }.bind(this));
+      console.log ("End of ready function");
+    }
+  });
+</script>
