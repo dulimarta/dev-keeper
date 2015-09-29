@@ -10,9 +10,9 @@ public interface Consts {
     public static final String LOG_TABLE = "ChekoutLog";
 //   The following are Hans' id and client key
     public static final String PARSE_APP_ID =
-            "C8rZuZwkSAFnH2vmgCn4mrtkyh89qFmqXw8pIPpB";
+            "aLvdYW4Md0neSVfgTxiqsmRSo5sIPJYHDeVcYO3i";
     public static final String PARSE_CLIENT_KEY =
-            "LmGNHi2nXy2BoZfoLiBohrGVX5lgZqyIp4ft0n2A";
+            "CvF1F4yjlyr8X42eE5PXWa0mhMNVKoHhcIwIeSrg";
 //   The following are Jonathan's id and client key
 //    public static final String PARSE_APP_ID =
 //            "3k6jFJ5IYcetRe6tQ24yGms0P78RQuQYXy48idyP";

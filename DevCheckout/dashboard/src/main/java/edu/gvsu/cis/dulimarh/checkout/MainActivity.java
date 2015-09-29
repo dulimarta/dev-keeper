@@ -227,31 +227,35 @@ public class MainActivity extends Activity implements
                         logObj.put("user_id", obj.getString("user_id"));
                         logObj.put("checkout_date", obj.getCreatedAt());
                         obj.delete();
-                        logObj.save();
-                        deviceRemoved(devId);
+                        return logObj.saveInBackground();
                     }
                     else {
                         throw new IllegalStateException("NOT_CHECKED_OUT");
                     }
+                }
+            }).onSuccess(new Continuation<Task<Void>, Task<Void>>() {
+                @Override
+                public Task<Void> then(Task<Task<Void>> task) throws
+                        Exception {
+                    deviceRemoved(devId);
+                    Toast.makeText(MainActivity.this,
+                        "Device " + devId + " successfully checked in",
+                        Toast.LENGTH_SHORT).show();
+                    return task.getResult();
+                }
+            }, Task.UI_THREAD_EXECUTOR)
+            /* Task that show Toast must run on the UI thread */
+            .continueWith(new Continuation<Task<Void>, Void>() {
+                @Override
+                public Void then(Task<Task<Void>> task) throws Exception {
+                    if (task.isFaulted()) {
+                        Toast.makeText(MainActivity.this,
+                                "Unable checkin device id " + devId,
+                                Toast.LENGTH_SHORT).show();
+                    }
                     return null;
                 }
-            })
-        .continueWith(new Continuation<Task<Void>, Object>() {
-            @Override
-            public Object then(Task<Task<Void>> task) throws Exception {
-                if (task.isFaulted()) {
-                    Toast.makeText(MainActivity.this,
-                            "Can't checkin device id " + devId,
-                            Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(MainActivity.this,
-                            "Device " + devId + " successfully checked in",
-                            Toast.LENGTH_SHORT).show();
-                }
-                return null;
-            }
-        }, Task.UI_THREAD_EXECUTOR);
+            }, Task.UI_THREAD_EXECUTOR);
     }
 
     /* (non-Javadoc)

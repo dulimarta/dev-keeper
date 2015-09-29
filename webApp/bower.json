@@ -1,27 +1,16 @@
 {
-  "name": "webApp",
-  "version": "0.1",
-  "homepage": "https://github.com/dulimarta/dev-keeper",
-  "authors": [
-    "Hans Dulimarta <hans.dulimarta@gmail.com>"
-  ],
-  "description": "WebApp for dev-keeper",
-  "moduleType": [
-    "node"
-  ],
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
+  "name": "polymer-starter-kit",
+  "private": true,
   "dependencies": {
-    "polymer": "polymer/polymer#^1.0.0",
-    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^1.0.0",
-    "paper-toolbar": "PolymerElements/paper-toolbar#^1.0.0",
-    "paper-header-panel": "PolymerElements/paper-header-panel#^1.0.0",
-    "vaadin-components": "0.3.0-beta4"
+    "polymer": "Polymer/polymer#^1.1.0",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.0",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.1",
+    "platinum-elements": "PolymerElements/platinum-elements#^1.1.0",
+    "neon-elements": "PolymerElements/neon-elements#^1.0.0",
+    "page": "visionmedia/page.js#~1.6.3"
+  },
+  "devDependencies": {
+    "web-component-tester": "*",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0"
   }
 }
