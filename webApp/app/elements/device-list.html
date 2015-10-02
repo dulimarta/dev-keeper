@@ -16,7 +16,7 @@
         <tbody>
         <template is="dom-repeat" items="{{devices}}">
           <tr>
-            <td>{{item.device_id}}</td>
+            <td>{{item.deviceid}}</td>
             <td>{{item.name}}</td>
             <td>{{item.os}}</td>
             <td>{{item.name}}</td>
@@ -29,7 +29,7 @@
 </dom-module>
 <script>
   Polymer({
-    is: "device-list",
+    is: 'device-list',
     properties : {
       devices: Array
     },
@@ -38,7 +38,7 @@
       for (var i = 0; i < results.length; i++) {
         var devObj = results[i];
         this.push('devices', {
-          device_id: devObj.get('device_id'),
+          deviceid: devObj.get('device_id'),
           name: devObj.get('name'),
           os: devObj.get('os'),
           type: devObj.get('type')
@@ -46,11 +46,11 @@
       }
     },
     ready:function() {
-      var deviceObj = Parse.Object.extend("Devices");
+      var deviceObj = Parse.Object.extend('Devices');
       var query = new Parse.Query(deviceObj);
       query.find().done(this.deviceLoaded.bind(this),
         function(err) {
-          console.log("Fail to load users", err);
+          console.log('Fail to load users', err);
         });
     }
   });

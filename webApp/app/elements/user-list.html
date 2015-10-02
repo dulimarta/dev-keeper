@@ -18,9 +18,9 @@
         <tbody>
         <template is="dom-repeat" items="{{users}}">
           <tr>
-            <td><img src="{{item.user_photo_url}}" width="64" height="64" /></td>
-            <td><span>{{item.user_id}}</span></td>
-            <td><span>{{item.user_name}}</span></td>
+            <td><img src="{{item.userphotourl}}" width="64" height="64" /></td>
+            <td><span>{{item.userid}}</span></td>
+            <td><span>{{item.username}}</span></td>
           </tr>
         </template>
         </tbody>
@@ -30,7 +30,7 @@
 </dom-module>
 <script>
   Polymer({
-    is: "user-list",
+    is: 'user-list',
     properties : {
       users: Array
     },
@@ -38,23 +38,23 @@
       this.users = [];
       for (var i = 0; i < results.length; i++) {
         var uObj = results[i];
-        var photo = uObj.get("user_photo");
-        if (typeof(photo) !== "undefined") {
+        var photo = uObj.get('user_photo');
+        if (typeof(photo) !== 'undefined') {
           this.push('users', {
-            user_id: uObj.get('user_id'),
-            user_name: uObj.get('user_name'),
-            user_photo_url: photo.url()
+            userid: uObj.get('user_id'),
+            username: uObj.get('user_name'),
+            userphotourl: photo.url()
           });
         }
         else {
           this.push('users', {
-            user_id: uObj.get('user_id'),
-            user_name: uObj.get('user_name'),
-            user_photo_url: "images/user.svg"
+            userid: uObj.get('user_id'),
+            username: uObj.get('user_name'),
+            userphotourl: 'images/user.svg'
           });
         }
       }
-      console.log ("After loop", this.users);
+      console.log ('After loop', this.users);
     },
     created: function() {
 //      var grid = document.querySelector("v-grid");
@@ -65,13 +65,13 @@
     ready:function() {
       var g = this.$.usergrid;
       g.rowClassGenerator = function(row) {
-        return "hans-class";
+        return 'hans-class';
       };
-      var UsersObj = Parse.Object.extend("Users");
+      var UsersObj = Parse.Object.extend('Users');
       var query = new Parse.Query(UsersObj);
       query.find().done(this.userLoaded.bind(this),
         function(err) {
-          console.log("Fail to load users", err);
+          console.log('Fail to load users', err);
         });
     }
   });
