@@ -50,7 +50,7 @@ public class UserListActivity extends Activity implements View
 
     private static final int MENU_DELETE_USER = Menu.FIRST;
     private static final int GET_USER_SIGNATURE = 0xC0DE01;
-    private static final int REGISTER_DEVIVE_4_CHECKOUT = 0xC0DE02;
+    private static final int REGISTER_DEVICE_4_CHECKOUT = 0xC0DE02;
     private ArrayList<ParseProxyObject> allUsers;
     private Map<String,Integer> countMap;
     private UserAdapter uAdapter;
@@ -284,7 +284,7 @@ public class UserListActivity extends Activity implements View
             /* TODO signature for checkout is complete */
             finish();
         }
-        else if (requestCode == REGISTER_DEVIVE_4_CHECKOUT) {
+        else if (requestCode == REGISTER_DEVICE_4_CHECKOUT) {
             if (resultCode == RESULT_OK) {
                 doCheckOut(deviceJSONStr);
             }
@@ -394,7 +394,7 @@ public class UserListActivity extends Activity implements View
                                 ndev.putExtra("scannedOS", scannedOS);
                                 ndev.putExtra("scannedFF", scannedFF);
                                 startActivityForResult(ndev,
-                                        REGISTER_DEVIVE_4_CHECKOUT);
+                                        REGISTER_DEVICE_4_CHECKOUT);
                             }
                             else if ("ONLOAN".equals(error)) {
                                 Log.d("HANS", "Toast warning for device " +
