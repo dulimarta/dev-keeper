@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -29,8 +30,10 @@ public class DevOutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private ArrayList<ParseProxyObject> datasource;
     private DeviceSelectedListener mylistener;
-    public DevOutAdapter(ArrayList<ParseProxyObject> data,
+    private Context context;
+    public DevOutAdapter(Context ctx, ArrayList<ParseProxyObject> data,
                          DeviceSelectedListener listener) {
+        context = ctx;
         datasource = data;
         mylistener = listener;
     }
@@ -60,7 +63,11 @@ public class DevOutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (user != null) {
                 Drawable photo = ImageStore.get(user);
 
-                dvh.photo.setImageDrawable(photo);
+                if (photo != null)
+                    dvh.photo.setImageDrawable(photo);
+                else
+                    dvh.photo.setImageDrawable(context.getDrawable(R
+                            .drawable.male_user_icon));
             }
             dvh.deviceName.setText(p.getString("dev_id"));
             dvh.checkOutDate.setText("Checkout on: " + DateFormat

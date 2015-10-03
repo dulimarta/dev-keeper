@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.support.v7.widget.RecyclerView;
@@ -48,9 +49,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
     }
 
     @Override
-    public void onBindViewHolder(DeviceViewHolder viewHolder, int i) {
-        if (i > datasource.size()) return;
-        ParseProxyObject dev = datasource.get(i);
+    public void onBindViewHolder(DeviceViewHolder viewHolder, int
+            position) {
+        if (position > datasource.size()) return;
+        ParseProxyObject dev = datasource.get(position);
         String devId = dev.getString("device_id");
         viewHolder.deviceName.setText (dev.getString("name"));
         viewHolder.deviceId.setText (devId);
@@ -63,6 +65,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
             viewHolder.statusIcon.setVisibility(View.GONE);
             viewHolder.devStatus.setText("Available");
         }
+        if (position == selectedIndex)
+            viewHolder.cell.setBackgroundResource(R.color.fab_color_muted);
+        else
+            viewHolder.cell.setBackgroundColor(Color.WHITE);
     }
 
     @Override
@@ -75,9 +81,11 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
 
         public TextView deviceName, deviceId, devStatus;
         public ImageView devIcon, statusIcon;
+        public View cell;
 
         public DeviceViewHolder(View cellView) {
             super(cellView);
+            cell = cellView;
             deviceId = (TextView) cellView.findViewById(R.id.dev_id);
             deviceName = (TextView) cellView.findViewById(R.id.devicename);
             devStatus = (TextView) cellView.findViewById(R.id.dev_status_text);
@@ -90,10 +98,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter
 
         @Override
         public void onClick(View view) {
-            selectedIndex = getPosition();
+            selectedIndex = getAdapterPosition();
             boolean onLoan = checkedOutIds.containsKey(datasource.get
                     (selectedIndex).getObjectId());
-            mylistener.onDeviceSelected(selectedIndex, !onLoan);
+//            mylistener.onDeviceSelected(selectedIndex, !onLoan);
         }
     }
 }

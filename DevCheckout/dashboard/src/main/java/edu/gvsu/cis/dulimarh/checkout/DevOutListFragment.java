@@ -61,7 +61,7 @@ public class DevOutListFragment extends Fragment implements
                     .getSerializable("checkouts");
         else
             checkouts = new ArrayList<ParseProxyObject>();
-        myadapter = new DevOutAdapter(checkouts, this);
+        myadapter = new DevOutAdapter(getActivity(), checkouts, this);
         myrecyclerview.setAdapter(myadapter);
         return v;
     }

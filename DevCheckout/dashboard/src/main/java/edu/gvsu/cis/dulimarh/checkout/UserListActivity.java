@@ -102,7 +102,7 @@ public class UserListActivity extends Activity implements View
             selectedPosition = -1;
             allUsers = new ArrayList<ParseProxyObject>();
         }
-        uAdapter = new UserAdapter(allUsers, countMap, this);
+        uAdapter = new UserAdapter(this, allUsers, countMap, this);
         RecyclerView rview = (RecyclerView) findViewById(R.id.the_list);
         rview.setAdapter(uAdapter);
         RecyclerView.LayoutManager mgr = new LinearLayoutManager(this);
@@ -248,13 +248,13 @@ public class UserListActivity extends Activity implements View
     /* (non-Javadoc)
      * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
      */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        MenuInflater pump = getMenuInflater();
-        pump.inflate(R.menu.user_list, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        super.onCreateOptionsMenu(menu);
+//        MenuInflater pump = getMenuInflater();
+//        pump.inflate(R.menu.user_list, menu);
+//        return true;
+//    }
 
 
     /* (non-Javadoc)

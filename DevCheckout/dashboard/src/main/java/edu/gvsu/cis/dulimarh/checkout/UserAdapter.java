@@ -1,5 +1,6 @@
 package edu.gvsu.cis.dulimarh.checkout;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
@@ -27,10 +28,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
     private Map<String,Integer> checkoutCounter;
     private UserSelectedListener uListener;
     private int selectedIndex;
+    private Context context;
 
-    public UserAdapter(List<ParseProxyObject> ds, Map<String,Integer> cc,
+    public UserAdapter(Context ctx, List<ParseProxyObject> ds, Map<String,
+            Integer>
+            cc,
                        UserSelectedListener ulistener)
     {
+        context = ctx;
         datasource = ds;
         checkoutCounter = cc;
         this.uListener = ulistener;
@@ -59,6 +64,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
         Drawable d = ImageStore.get(user.getObjectId());
         if (d != null) {
             holder.photo.setImageDrawable(d);
+        }
+        else {
+            holder.photo.setImageDrawable(context.getDrawable(R.drawable
+                    .male_user_icon));
         }
         if (position == selectedIndex)
             holder.cell.setBackgroundResource(R.color.fab_color_muted);
@@ -89,8 +98,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter
 
         @Override
         public void onClick(View view) {
-            selectedIndex = getPosition();
-            uListener.onUserSelected(getPosition());
+            selectedIndex = getAdapterPosition();
+            uListener.onUserSelected(getAdapterPosition());
         }
     }
 }
